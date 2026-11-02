@@ -416,3 +416,11 @@ select.r-pill {
     transition: none;
   }
 }
+
+/* Any input with an answer in it */
+input:not([type="range"], [type="checkbox"], [type="radio"], [type="date"]):not(:placeholder-shown),
+textarea:not(:placeholder-shown),
+select:not([multiple]),
+input[type="date"][data-filled="true"] {
+  background: var(--color-filled);
+}

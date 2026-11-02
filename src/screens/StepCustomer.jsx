@@ -10,7 +10,7 @@ export default function StepCustomer({ vm }) {
         <div className="p-16px flex col gap-8px bg-bg bd-1px-solid-grey-2 r-12px">
           <span className="t-14px w-600">Economic buyer</span>
           <label className="t-12px c-ink-2" htmlFor="f-br">Role or title</label>
-          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-br" name="buyerRole" value={vm.f.buyerRole} onChange={vm.onField} />
+          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-br" name="buyerRole" value={vm.f.buyerRole} onChange={vm.onField} placeholder=" " />
           <span className="t-12px c-ink-2">What they care about</span>
           <div className="flex gap-6px wrap">
             {vm.careChips.map((c, i_) => (
@@ -20,18 +20,18 @@ export default function StepCustomer({ vm }) {
             ))}
           </div>
           <label className="t-12px c-ink-2" htmlFor="f-mot">What motivates them to purchase</label>
-          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-mot" name="mot" value={vm.f.mot} onChange={vm.onField} />
+          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-mot" name="mot" value={vm.f.mot} onChange={vm.onField} placeholder=" " />
           <label className="t-12px c-ink-2" htmlFor="f-succ">How they define success</label>
-          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-succ" name="success" value={vm.f.success} onChange={vm.onField} />
+          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-succ" name="success" value={vm.f.success} onChange={vm.onField} placeholder=" " />
         </div>
         <div className="p-16px flex col gap-8px bg-bg bd-1px-solid-grey-2 r-12px">
           <span className="t-14px w-600">Operational user</span>
           <label className="t-12px c-ink-2" htmlFor="f-or">Role or title</label>
-          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-or" name="opRole" value={vm.f.opRole} onChange={vm.onField} />
+          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-or" name="opRole" value={vm.f.opRole} onChange={vm.onField} placeholder=" " />
           <label className="t-12px c-ink-2" htmlFor="f-ot">Function or team</label>
           <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-ot" name="opTeam" value={vm.f.opTeam} onChange={vm.onField} placeholder="Growth, marketing, ops" />
           <label className="t-12px c-ink-2" htmlFor="f-oc">What they ultimately care about</label>
-          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-oc" name="opCares" value={vm.f.opCares} onChange={vm.onField} />
+          <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-oc" name="opCares" value={vm.f.opCares} onChange={vm.onField} placeholder=" " />
         </div>
         <div className="p-16px flex col gap-8px bg-bg bd-1px-solid-grey-2 r-12px">
           <div className="flex justify-space-between items-center gap-8px">
@@ -43,7 +43,7 @@ export default function StepCustomer({ vm }) {
               <label className="t-12px c-ink-2" htmlFor="f-ew">Who they are</label>
               <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-ew" name="endWho" value={vm.f.endWho} onChange={vm.onField} placeholder="e.g. e-commerce customers" />
               <label className="t-12px c-ink-2" htmlFor="f-ec">What they ultimately care about</label>
-              <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-ec" name="endCares" value={vm.f.endCares} onChange={vm.onField} />
+              <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-ec" name="endCares" value={vm.f.endCares} onChange={vm.onField} placeholder=" " />
             </>
           )}
         </div>
@@ -59,7 +59,7 @@ export default function StepCustomer({ vm }) {
             </svg>
           </button>
         </div>
-        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-problem" name="problem" value={vm.f.problem} onChange={vm.onField} rows="2" />
+        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-problem" name="problem" value={vm.f.problem} onChange={vm.onField} rows="2" placeholder=" " />
         <div className="two">
           <div className="flex col gap-6px">
             <label className="t-13px" htmlFor="f-who">Who feels this most?</label>
@@ -71,7 +71,7 @@ export default function StepCustomer({ vm }) {
           </div>
           <div className="flex col gap-6px">
             <label className="t-13px" htmlFor="f-short">Why current solutions fall short</label>
-            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-short" name="short" value={vm.f.short} onChange={vm.onField} />
+            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-short" name="short" value={vm.f.short} onChange={vm.onField} placeholder=" " />
           </div>
         </div>
       </div>
@@ -104,19 +104,19 @@ export default function StepCustomer({ vm }) {
       <div className="two">
         <div className="flex col gap-6px">
           <label className="t-13px flex gap-8px items-center" htmlFor="f-diff">What makes you different{vm.badge && (<span className="t-11px p-1px-8px r-9px bd-1px-solid-muted c-ink-2">{vm.badgeText}</span>)}</label>
-          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-diff" name="diff" value={vm.f.diff} onChange={vm.onField} />
+          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-diff" name="diff" value={vm.f.diff} onChange={vm.onField} placeholder=" " />
         </div>
         <div className="flex col gap-6px">
           <label className="t-13px" htmlFor="f-diffWhy">Why this matters</label>
-          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-diffWhy" name="diffWhy" value={vm.f.diffWhy} onChange={vm.onField} />
+          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-diffWhy" name="diffWhy" value={vm.f.diffWhy} onChange={vm.onField} placeholder=" " />
         </div>
         <div className="flex col gap-6px">
           <label className="t-13px" htmlFor="f-out">What outcomes users are trying to achieve</label>
-          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-out" name="outcomes" value={vm.f.outcomes} onChange={vm.onField} />
+          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-out" name="outcomes" value={vm.f.outcomes} onChange={vm.onField} placeholder=" " />
         </div>
         <div className="flex col gap-6px">
           <label className="t-13px" htmlFor="f-sw">What would make them switch</label>
-          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sw" name="switchTo" value={vm.f.switchTo} onChange={vm.onField} />
+          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sw" name="switchTo" value={vm.f.switchTo} onChange={vm.onField} placeholder=" " />
         </div>
       </div>
     </div>

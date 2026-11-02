@@ -20,11 +20,11 @@ export default function PreciseEditingPanel({ vm }) {
             {vm.allCm.map((cmt, i_) => (
               <Fragment key={i_}>
                 <div className="flex col gap-8px">
-                  <div className="self-flex-end maxw-88pct p-10px-12px r-12px-12px-4px-12px bg-ink c-bg flex col gap-6px">
+                  <div className="self-flex-end maxw-88pct p-10px-12px r-12px bg-ink c-bg flex col gap-6px">
                     <span className="t-14px lh-1_45">{cmt.text}</span>
                     <span className="self-flex-start t-11px p-2px-8px r-9px bg-ink-2">{cmt.where}</span>
                   </div>
-                  <div className="self-flex-start w-px-100pct p-12px r-12px-12px-12px-4px bg-bg bd-1px-solid-grey-2 flex col gap-10px">
+                  <div className="self-flex-start w-px-100pct p-12px r-12px bg-bg bd-1px-solid-grey-2 flex col gap-10px">
                     {cmt.thinking && (
                       <span className="t-13px c-ink-2">Working on {cmt.label}…</span>
                     )}

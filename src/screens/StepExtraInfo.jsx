@@ -11,19 +11,19 @@ export default function StepExtraInfo({ vm }) {
         <div className="two">
           <div className="flex col gap-6px">
             <label className="t-13px" htmlFor="f-val">Primary value delivered</label>
-            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-val" name="value" value={vm.f.value} onChange={vm.onField} />
+            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-val" name="value" value={vm.f.value} onChange={vm.onField} placeholder=" " />
           </div>
           <div className="flex col gap-6px">
             <label className="t-13px" htmlFor="f-emo">Secondary or emotional value</label>
-            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-emo" name="emo" value={vm.f.emo} onChange={vm.onField} />
+            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-emo" name="emo" value={vm.f.emo} onChange={vm.onField} placeholder=" " />
           </div>
           <div className="flex col gap-6px">
             <label className="t-13px" htmlFor="f-wedge">What feature gets users to try it first</label>
-            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wedge" name="wedge" value={vm.f.wedge} onChange={vm.onField} />
+            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wedge" name="wedge" value={vm.f.wedge} onChange={vm.onField} placeholder=" " />
           </div>
           <div className="flex col gap-6px">
             <label className="t-13px" htmlFor="f-wedgeWhy">Why it's compelling compared to alternatives</label>
-            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wedgeWhy" name="wedgeWhy" value={vm.f.wedgeWhy} onChange={vm.onField} />
+            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wedgeWhy" name="wedgeWhy" value={vm.f.wedgeWhy} onChange={vm.onField} placeholder=" " />
           </div>
         </div>
         <div className="flex justify-space-between items-center">
@@ -35,9 +35,9 @@ export default function StepExtraInfo({ vm }) {
             </svg>
           </button>
         </div>
-        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-feel" name="feel" value={vm.f.feel} onChange={vm.onField} rows="2" />
+        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-feel" name="feel" value={vm.f.feel} onChange={vm.onField} rows="2" placeholder=" " />
         <label className="t-13px" htmlFor="f-diffFeel">What should feel fundamentally different from existing solutions?</label>
-        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-diffFeel" name="diffFeel" value={vm.f.diffFeel} onChange={vm.onField} rows="2" />
+        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-diffFeel" name="diffFeel" value={vm.f.diffFeel} onChange={vm.onField} rows="2" placeholder=" " />
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Core job to be done</span>
@@ -55,15 +55,15 @@ export default function StepExtraInfo({ vm }) {
         <div className="three">
           <div className="flex col gap-6px">
             <label className="t-12px c-ink-2" htmlFor="f-wf1">Where the user typically starts</label>
-            <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf1" name="wfStart" value={vm.f.wfStart} onChange={vm.onField} />
+            <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf1" name="wfStart" value={vm.f.wfStart} onChange={vm.onField} placeholder=" " />
           </div>
           <div className="flex col gap-6px">
             <label className="t-12px c-ink-2" htmlFor="f-wf2">The aha moment</label>
-            <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf2" name="wfAha" value={vm.f.wfAha} onChange={vm.onField} />
+            <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf2" name="wfAha" value={vm.f.wfAha} onChange={vm.onField} placeholder=" " />
           </div>
           <div className="flex col gap-6px">
             <label className="t-12px c-ink-2" htmlFor="f-wf3">What success looks like</label>
-            <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf3" name="wfSuccess" value={vm.f.wfSuccess} onChange={vm.onField} />
+            <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf3" name="wfSuccess" value={vm.f.wfSuccess} onChange={vm.onField} placeholder=" " />
           </div>
         </div>
         <button className="self-flex-start p-6px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.toggleSig} aria-expanded={vm.sigOpen}>{vm.sigLabel}</button>
@@ -71,11 +71,11 @@ export default function StepExtraInfo({ vm }) {
           <div className="two">
             <div className="flex col gap-6px">
               <label className="t-12px c-ink-2" htmlFor="f-sg1">Users' unprompted reactions</label>
-              <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sg1" name="sigReact" value={vm.f.sigReact} onChange={vm.onField} />
+              <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sg1" name="sigReact" value={vm.f.sigReact} onChange={vm.onField} placeholder=" " />
             </div>
             <div className="flex col gap-6px">
               <label className="t-12px c-ink-2" htmlFor="f-sg2">What would feel noticeably easier or faster</label>
-              <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sg2" name="sigEasier" value={vm.f.sigEasier} onChange={vm.onField} />
+              <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sg2" name="sigEasier" value={vm.f.sigEasier} onChange={vm.onField} placeholder=" " />
             </div>
           </div>
         )}

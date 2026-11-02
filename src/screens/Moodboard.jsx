@@ -18,8 +18,8 @@ export default function Moodboard({ vm }) {
           <span className="t-12px" style={{ color: vm.cur.primary }}>{vm.cur.wordFont}</span>
           <span className="t-52px lh-1" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>
         </div>
-        <div className="tile relative bg-track p-10px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img0} aria-pressed={vm.pinSel.img0} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img0} />{vm.cur.img0}</div>
-        <div className="tile relative bg-line p-10px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img1} aria-pressed={vm.pinSel.img1} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img1} />{vm.cur.img1}</div>
+        <div className="tile relative bg-track p-16px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img0} aria-pressed={vm.pinSel.img0} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img0} />{vm.cur.img0}</div>
+        <div className="tile relative bg-line p-16px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img1} aria-pressed={vm.pinSel.img1} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img1} />{vm.cur.img1}</div>
         <div className="tile relative gc-span-2 gr-span-2 p-22px flex col justify-space-between" style={{ background: vm.cur.deep, color: vm.cur.accentText }}>
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.typeDisplay} aria-pressed={vm.pinSel.typeDisplay} aria-label="Add to precise editing" />
@@ -34,7 +34,7 @@ export default function Moodboard({ vm }) {
             <span className="t-17px" style={{ fontFamily: `'${vm.cur.body}', sans-serif` }}>{vm.cur.body} · abcdefghijklmnopqrstuvwxyz</span>
           </span>
         </div>
-        <div className="tile relative gc-span-2 gr-span-2 p-14px flex gap-10px" style={{ background: vm.cur.light, fontFamily: `'${vm.cur.body}', sans-serif` }}>
+        <div className="tile relative gc-span-2 gr-span-2 p-14px flex gap-10px brand-ui" style={{ background: vm.cur.light, fontFamily: `'${vm.cur.body}', sans-serif` }}>
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.preview} aria-pressed={vm.pinSel.preview} aria-label="Add to precise editing" />
           )}<PieceActions vm={vm} piece={vm.pieces.preview} />
@@ -68,7 +68,7 @@ export default function Moodboard({ vm }) {
             </Fragment>
           ))}
         </div>
-        <div className="tile relative p-16px flex col justify-center gap-10px items-flex-start" style={{ background: vm.cur.surface }}>
+        <div className="tile relative p-16px flex col justify-center gap-10px items-flex-start brand-ui" style={{ background: vm.cur.surface }}>
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.ui} aria-pressed={vm.pinSel.ui} aria-label="Add to precise editing" />
           )}<PieceActions vm={vm} piece={vm.pieces.ui} />
@@ -86,8 +86,8 @@ export default function Moodboard({ vm }) {
             </Fragment>
           ))}
         </div>
-        <div className={`tile relative gr-span-2 bg-line p-10px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img2} aria-pressed={vm.pinSel.img2} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img2} />{vm.cur.img2}</div>
-        <div className={`tile relative gr-span-2 bg-track p-10px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img3} aria-pressed={vm.pinSel.img3} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img3} />{vm.cur.img3}</div>
+        <div className={`tile relative gr-span-2 bg-line p-16px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img2} aria-pressed={vm.pinSel.img2} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img2} />{vm.cur.img2}</div>
+        <div className={`tile relative gr-span-2 bg-track p-16px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img3} aria-pressed={vm.pinSel.img3} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img3} />{vm.cur.img3}</div>
         {!vm.presenting && (
         <section className="rec gc-span-2 gr-span-2 p-18px-20px flex col gap-10px bg-bg bd-1px-solid-grey-2 r-12px" aria-labelledby="why-h">
           <span className="flex gap-6px items-center t-12px c-ink-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z" /><path d="M18 15l.8 2 2 .8-2 .8L18 21l-.8-2.4-2-.8 2-.8z" /></svg>AI recommendation</span>

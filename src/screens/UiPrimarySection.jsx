@@ -30,7 +30,7 @@ export default function UiPrimarySection({ vm }) {
           <span className="t-14px">On {vm.cur.darkName}, for dark mode: {vm.cur.uiDarkRatio}:1</span>
         </div>
         <div className="flex col gap-10px justify-center p-16px r-10px" style={{ background: vm.cur.light, fontFamily: `'${vm.cur.body}', sans-serif` }}>
-          <div className="flex gap-10px wrap">
+          <div className="brand-ui flex gap-10px wrap">
             <span className="p-10px-16px r-6px c-bg t-14px" style={{ background: vm.cur.ui }}>Default</span>
             <span className="p-10px-16px r-6px c-bg t-14px" style={{ background: vm.cur.uiHover }}>Hover</span>
             <span className="p-10px-16px r-6px o-0_6 t-14px" style={{ background: vm.cur.surface, color: vm.cur.ink }}>Disabled</span>

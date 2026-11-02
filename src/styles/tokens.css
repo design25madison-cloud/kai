@@ -48,7 +48,28 @@
   --text-52: 52px;
   --text-64: 64px;
 
-  /* Radius */
+  /* Radius: nothing in the interface goes below --radius-min. The numbered tokens
+     only exist because utilities reference them. .brand-ui restores their real values. */
+  --radius-min: 24px;
+  --radius-2: var(--radius-min);
+  --radius-3: var(--radius-min);
+  --radius-4: var(--radius-min);
+  --radius-5: var(--radius-min);
+  --radius-6: var(--radius-min);
+  --radius-8: var(--radius-min);
+  --radius-9: var(--radius-min);
+  --radius-10: var(--radius-min);
+  --radius-12: var(--radius-min);
+  --radius-14: var(--radius-min);
+  --radius-full: 50%;
+  --radius-pill: 120px;
+
+  /* Filled inputs */
+  --color-filled: #FFF0E8;
+}
+
+/* Generated brand previews show that brand's UI, so KAI's rounding doesn't apply inside them. */
+.brand-ui {
   --radius-2: 2px;
   --radius-3: 3px;
   --radius-4: 4px;
@@ -59,6 +80,4 @@
   --radius-10: 10px;
   --radius-12: 12px;
   --radius-14: 14px;
-  --radius-full: 50%;
-  --radius-pill: 120px;
 }

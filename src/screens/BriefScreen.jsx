@@ -29,15 +29,16 @@ export default function BriefScreen({ vm }) {
         <section className="r-12px bd-1px-solid-grey-2 p-18px flex col gap-14px" aria-label="Voice entry">
           {vm.voice.idle && (
             <>
-              <div className="flex gap-16px items-center wrap">
-                <button className="w-px-56px h-56px r-50pct bd-0 bg-action flex items-center justify-center p-0 flex-none" type="button" onClick={vm.startVoice} aria-label={vm.voice.startAria}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <div className="flex gap-16px items-flex-start">
+                <button className="w-px-38px h-38px r-50pct bd-0 bg-action flex items-center justify-center p-0 flex-none" type="button" onClick={vm.startVoice} aria-label={vm.voice.startAria}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="9" y="3" width="6" height="11" rx="3" />
                     <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
                   </svg>
                 </button>
-                <div className="flex-1 minw-220px flex col gap-4px">
-                  <span className="t-16px w-600">Talk through {vm.voice.section}</span>
+                <div className="flex-1 minw-0 flex col gap-8px">
+                  <span className="t-16px w-600">Talk through the brand</span>
+                  <span className="t-15px">You can talk about the branding you are working on and we will auto-populate the fields for you</span>
                 </div>
               </div>
             </>

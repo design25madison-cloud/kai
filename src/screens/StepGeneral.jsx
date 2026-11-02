@@ -15,7 +15,7 @@ export default function StepGeneral({ vm }) {
         </button>
       )}
       {vm.imported && (
-        <div className="p-14px-16px flex justify-space-between items-center gap-12px wrap bg-bg bd-1px-solid-grey-2 r-12px">
+        <div className="p-14px-16px flex col items-flex-start gap-12px bg-bg bd-1px-solid-grey-2 r-12px">
           <span className="t-14px"><strong>{vm.importName}</strong> · {vm.importText}</span>
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={vm.confirmAll}>{vm.confirmLabel}</button>
         </div>
@@ -27,7 +27,7 @@ export default function StepGeneral({ vm }) {
         {vm.legalOpen && (
           <>
             <label className="t-13px" htmlFor="f-legal">Legal name</label>
-            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-legal" name="legal" value={vm.f.legal} onChange={vm.onField} />
+            <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-legal" name="legal" value={vm.f.legal} onChange={vm.onField} placeholder=" " />
           </>
         )}
       </div>
@@ -55,7 +55,7 @@ export default function StepGeneral({ vm }) {
                 <option value="Pitch deck">Pitch deck</option>
                 <option value="Other">Other</option>
               </select>
-              <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" type="date" value={d.date} onChange={d.setDate} aria-label="Deadline" />
+              <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" type="date" data-filled={!!d.date} value={d.date} onChange={d.setDate} aria-label="Deadline" />
               <button className="w-px-40px h-40px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={d.remove} aria-label="Remove deliverable">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />

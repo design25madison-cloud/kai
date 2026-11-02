@@ -34,7 +34,7 @@ export default function PaletteSection({ vm }) {
                 )}<PieceActions vm={vm} piece={{ label: c.name, locked: c.locked, toggleLock: c.toggleLock, comment: c.pinC }} />
               </div>
               {vm.sec.palette.editing && (
-                <input className="p-8px r-pill bd-1px-solid-grey-2 t-13px ff-monospace" value={c.text} onChange={c.setHex} aria-label={c.aria} />
+                <input className="p-8px r-pill bd-1px-solid-grey-2 t-13px ff-monospace" value={c.text} onChange={c.setHex} aria-label={c.aria} placeholder=" " />
               )}
               <span className="t-14px w-600">{c.name}</span>
               <span className="t-12px c-ink-2">{c.show} · {c.role} · {c.ratio}%</span>
@@ -59,10 +59,10 @@ export default function PaletteSection({ vm }) {
             <button className="pick" type="button" onClick={vm.pins.palUsage} aria-pressed={vm.pinSel.palUsage} aria-label="Comment on the palette in use" />
           )}<PieceActions vm={vm} piece={vm.pieces.palUsage} />
           <span className="t-26px w-600" style={{ fontFamily: `'${vm.cur.display}', sans-serif`, color: vm.cur.primary }}>{vm.cur.headline}</span>
-          <span className="self-flex-start p-9px-14px r-6px c-bg t-13px" style={{ background: vm.cur.ui }}>Get started</span>
+          <span className="brand-ui self-flex-start p-9px-14px r-6px c-bg t-13px" style={{ background: vm.cur.ui }}>Get started</span>
         </div>
         <div className="h-180px r-10px p-18px flex items-center justify-center" style={{ background: vm.cur.light }}>
-          <div className="w-px-70pct r-10px p-16px flex col gap-8px" style={{ background: vm.cur.card, border: `1px solid ${vm.cur.surface}`, fontFamily: `'${vm.cur.body}', sans-serif` }}>
+          <div className="brand-ui w-px-70pct r-10px p-16px flex col gap-8px" style={{ background: vm.cur.card, border: `1px solid ${vm.cur.surface}`, fontFamily: `'${vm.cur.body}', sans-serif` }}>
             <span className="t-14px w-600" style={{ color: vm.cur.ink }}>Card title</span>
             <span className="h-8px r-4px" style={{ background: vm.cur.surface }} />
             <span className="h-8px w-px-60pct r-4px" style={{ background: vm.cur.surface }} />

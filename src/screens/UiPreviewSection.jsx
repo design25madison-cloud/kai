@@ -17,7 +17,7 @@ export default function UiPreviewSection({ vm }) {
           <span className="t-13px" style={{ color: vm.cur.ink }}>Reports</span>
           <span className="t-13px" style={{ color: vm.cur.ink }}>Settings</span>
         </div>
-        <div className="flex-1 p-20px flex col gap-14px minw-0" style={{ background: vm.cur.light }}>
+        <div className="brand-ui flex-1 p-20px flex col gap-14px minw-0" style={{ background: vm.cur.light }}>
           <div className="flex justify-space-between items-center pr-36px">
             <span className="t-20px w-600" style={{ fontFamily: `'${vm.cur.display}', sans-serif`, color: vm.cur.ink }}>Dashboard</span>
             <span className="p-8px-14px r-6px c-bg t-13px" style={{ background: vm.cur.ui }}>New report</span>

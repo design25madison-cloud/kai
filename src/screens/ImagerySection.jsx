@@ -21,7 +21,7 @@ export default function ImagerySection({ vm }) {
         {vm.cur.imageCards.map((im, i_) => (
           <Fragment key={i_}>
             <div className="flex col gap-6px">
-              <div className="relative ar-4-3 r-10px bg-track flex items-flex-end justify-space-between p-10px t-13px c-ink-2" style={{ border: `2px solid ${im.pinBd}` }}>
+              <div className="relative ar-4-3 r-10px bg-track flex items-flex-end justify-space-between p-16px t-13px c-ink-2" style={{ border: `2px solid ${im.pinBd}` }}>
                 {vm.cmode && (
                   <button className="pick" type="button" onClick={im.pinC} aria-pressed={im.picked} aria-label={im.pinAria} />
                 )}<PieceActions vm={vm} piece={{ label: im.label, locked: im.locked, toggleLock: im.pin, comment: im.pinC }} />

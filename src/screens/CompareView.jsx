@@ -75,7 +75,7 @@ export default function CompareView({ vm }) {
                 <div className="grid cols-repeat-3-minmax-0-1fr gap-6px">
                   {col.imgTop.map((im, i_) => (
                     <Fragment key={i_}>
-                      <span className="ar-1 r-6px bg-track t-10px p-6px flex items-flex-end c-ink-2">{im.label}</span>
+                      <span className="ar-1 r-6px bg-track t-10px p-12px flex items-flex-end c-ink-2">{im.label}</span>
                     </Fragment>
                   ))}
                 </div>

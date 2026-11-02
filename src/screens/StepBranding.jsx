@@ -35,7 +35,7 @@ export default function StepBranding({ vm }) {
         {vm.taglines.map((t, i_) => (
           <Fragment key={i_}>
             <div className="flex gap-8px">
-              <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={t.text} onChange={t.set} aria-label="Tagline" />
+              <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={t.text} onChange={t.set} aria-label="Tagline" placeholder=" " />
               <button className="w-px-40px h-40px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={t.remove} aria-label="Remove tagline">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
@@ -59,7 +59,7 @@ export default function StepBranding({ vm }) {
           ))}
         </div>
         <label className="t-12px c-muted" htmlFor="f-lookNote">Anything else about the look? (optional)</label>
-        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-lookNote" name="lookNote" value={vm.f.lookNote} onChange={vm.onField} />
+        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-lookNote" name="lookNote" value={vm.f.lookNote} onChange={vm.onField} placeholder=" " />
       </div>
       <div className="flex col gap-14px">
         <span className="t-13px">Emotional tone</span>
@@ -106,7 +106,7 @@ export default function StepBranding({ vm }) {
                 <div className="w-px-64px h-64px r-8px bd-1px-solid-line" style={{ background: vm.pk.hex }} />
                 <div className="flex col gap-4px">
                   <label className="t-12px" htmlFor="pk-hex">Hex</label>
-                  <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} />
+                  <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} placeholder=" " />
                 </div>
               </div>
               <div className="flex col gap-4px">
