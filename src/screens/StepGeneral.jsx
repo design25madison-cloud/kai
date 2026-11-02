@@ -44,7 +44,7 @@ export default function StepGeneral({ vm }) {
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-desc" name="desc" value={vm.f.desc} onChange={vm.onField} rows="2" placeholder="A short, plain-language description of what the company does and for whom." />
       </div>
       <div className="flex col gap-8px">
-        <span className="t-13px">Requested deliverables and deadlines</span>
+        <span className="t-13px">Requested deliverables</span>
         {vm.deliv.map((d, i_) => (
           <Fragment key={i_}>
             <div className="flex gap-8px items-center">
@@ -55,7 +55,6 @@ export default function StepGeneral({ vm }) {
                 <option value="Pitch deck">Pitch deck</option>
                 <option value="Other">Other</option>
               </select>
-              <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" type="date" data-filled={!!d.date} value={d.date} onChange={d.setDate} aria-label="Deadline" />
               <button className="w-px-40px h-40px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={d.remove} aria-label="Remove deliverable">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
@@ -78,7 +77,7 @@ export default function StepGeneral({ vm }) {
         </div>
       </div>
       <div className="flex col gap-8px">
-        <span className="t-13px">Team votes or preferences on the name</span>
+        <span className="t-13px">Name preferences</span>
         {vm.votes.map((v, i_) => (
           <Fragment key={i_}>
             <div className="flex gap-8px items-center p-8px-10px bg-bg bd-1px-solid-grey-2 r-12px">

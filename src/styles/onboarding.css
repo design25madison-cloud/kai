@@ -418,10 +418,9 @@ select.r-pill {
 }
 
 /* Any input with an answer in it: no fill, black text, black outline. Empty inputs keep Grey 2. */
-input:not([type="range"], [type="checkbox"], [type="radio"], [type="date"]):not(:placeholder-shown),
+input:not([type="range"], [type="checkbox"], [type="radio"]):not(:placeholder-shown),
 textarea:not(:placeholder-shown),
-select:not([multiple]),
-input[type="date"][data-filled="true"] {
+select:not([multiple]) {
   border-color: var(--color-ink);
   color: var(--color-ink);
 }

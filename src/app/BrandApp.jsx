@@ -37,7 +37,7 @@ export default class BrandApp extends Component {
       f, tone: ['Sturdy', 'Industrial', 'Precise'], looks: { 0: 'a', 1: 'b', 2: 'b', 3: 'b' }, sl: { warmth: 35, energy: 45, serious: 70 },
       avoidC: ['#5A136A'], avoidT: ['Gradients', 'Neon'],
       brandsA: [{ name: '[Brand you admire]', why: '[Why]' }], brandsX: [{ name: '[Brand to avoid resembling]', why: '' }],
-      deliv: [{ type: 'Logo', date: '2026-11-02' }, { type: 'Website', date: '2026-12-23' }], domains: ['ferra.example'], votes: ['Ferra', '[Alternate name]'],
+      deliv: [{ type: 'Logo' }, { type: 'Website' }], domains: ['ferra.example'], votes: ['Ferra', '[Alternate name]'],
       taglines: ['[Working tagline]'], buyerCares: ['ROI', 'Reliability'], comps: [{ name: '[Competitor]', url: '' }], alts: ['[Current workaround]']
     };
   }
@@ -47,10 +47,10 @@ export default class BrandApp extends Component {
     const smp = this.sampleState(), sf = smp.f;
     const pickF = (keys) => { const o = {}; keys.forEach(k => { o[k] = sf[k]; }); return o; };
     if (n === 1) return {
-      section: 'the basics', prompts: ['What you are calling it', 'What it does and for whom', 'What you need and by when', 'Domains you secured', 'Names the team likes'],
-      transcript: 'Okay, so the working name is Ferra, like iron. It is [what the company does] for [who it is for]. We secured ferra dot example. We need a logo in about two weeks and the website by December twenty-third. The team likes Ferra best, and [an alternate name] came second.',
+      section: 'the basics', prompts: ['What you are calling it', 'What it does and for whom', 'What you need', 'Domains you secured', 'Names the team likes'],
+      transcript: 'Okay, so the working name is Ferra, like iron. It is [what the company does] for [who it is for]. We secured ferra dot example. We need a logo and a website. The team likes Ferra best, and [an alternate name] came second.',
       items: [{ label: 'Working name', f: pickF(['name']) }, { label: 'Company description', f: pickF(['desc']) }, { label: 'Domains secured', x: { domains: smp.domains } },
-        { label: 'Deliverables and deadlines', x: { deliv: smp.deliv } }, { label: 'Team name votes', x: { votes: smp.votes } }]
+        { label: 'Deliverables', x: { deliv: smp.deliv } }, { label: 'Name preferences', x: { votes: smp.votes } }]
     };
     if (n === 2) return {
       section: 'your brand', prompts: ['Where the name comes from', 'How it should look and feel', 'Brands you admire or want to avoid', 'Colors and styles to stay away from', 'Any taglines'],
@@ -498,7 +498,7 @@ export default class BrandApp extends Component {
     const listRm = (key, i) => () => set({ [key]: s[key].filter((_, j) => j !== i) });
     const fromField = (field, key, make) => () => { const v = (s.f[field] || '').trim(); if (!v) return; set({ [key]: s[key].concat([make ? make(v) : v]), f: Object.assign({}, s.f, { [field]: '' }) }); };
     const onEnter = (fn) => (e) => { if (e.key === 'Enter') { e.preventDefault(); fn(); } };
-    const deliv = s.deliv.map((d, i) => ({ type: d.type, date: d.date, setType: listUpd('deliv', i, 'type'), setDate: listUpd('deliv', i, 'date'), remove: listRm('deliv', i) }));
+    const deliv = s.deliv.map((d, i) => ({ type: d.type, setType: listUpd('deliv', i, 'type'), remove: listRm('deliv', i) }));
     const domains = s.domains.map((d, i) => ({ label: d, aria: 'Remove ' + d, remove: listRm('domains', i) }));
     const addDomain = fromField('domainIn', 'domains');
     const swap = (i, j) => () => { if (j < 0 || j >= s.votes.length) return; const a = s.votes.slice(); const t = a[i]; a[i] = a[j]; a[j] = t; set({ votes: a }); };
@@ -698,7 +698,7 @@ export default class BrandApp extends Component {
       confirmAll: () => set({ confirmed: true }), confirmLabel: s.confirmed ? 'Confirmed' : 'Confirm all',
       f, onField: (e) => { const k = e.target.name; set({ f: Object.assign({}, s.f, { [k]: e.target.value }) }); },
       onSlider: (e) => { const k = e.target.name; set({ sl: Object.assign({}, s.sl, { [k]: Number(e.target.value) }) }); },
-      deliv, addDeliv: () => set({ deliv: s.deliv.concat([{ type: 'Logo', date: '' }]) }),
+      deliv, addDeliv: () => set({ deliv: s.deliv.concat([{ type: 'Logo' }]) }),
       domains, domainKey: onEnter(addDomain), votes, addVote: fromField('voteIn', 'votes'),
       legalOpen: s.legalOpen, toggleLegal: () => set({ legalOpen: !s.legalOpen }), legalLabel: s.legalOpen ? 'Hide legal name' : 'Different legal name?',
       mic: () => this.showToast('Listening… your answer is transcribed into this field (prototype)'),
