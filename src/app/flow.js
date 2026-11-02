@@ -114,7 +114,7 @@ function exportVals(app) {
     run: () => {
       if (!usable(current)) return;
       if (current.id === "pdf") return app.printDirection(sel);
-      const content = current.build({ d: app.current(), f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, domains: s.domains, agreedRound: s.meeting.agreedRound, sections: sel });
+      const content = current.build({ d: app.current(), f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, banned: s.banned, domains: s.domains, agreedRound: s.meeting.agreedRound, sections: sel });
       downloadFile(current.name, content, current.mime);
       set({ allMenu: false });
       app.showToast(current.name + " downloaded.");
@@ -242,7 +242,7 @@ export function flowVals(app) {
   });
 
   if (isHandoff) {
-    const files = handoffFiles({ d, f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, domains: s.domains, agreedRound: meeting.agreedRound });
+    const files = handoffFiles({ d, f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, banned: s.banned, domains: s.domains, agreedRound: meeting.agreedRound });
     const sel = files.find((x) => x.id === s.handoffFile) || files[0];
     vals.handoff = {
       name: s.f.name || "Your brand",

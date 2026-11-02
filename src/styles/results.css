@@ -18,6 +18,13 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+.results-header__row {
+  min-height: 38px;
+}
+/* Without tabs to sit on the divider, the last row needs its own space. */
+.results-header__row:last-child {
+  padding-bottom: 12px;
+}
 .results-header__actions,
 .results-header__crumb,
 .results-tools {
@@ -312,4 +319,112 @@
   .piece-actions {
     transition: none;
   }
+}
+
+/* Direction chooser: what you see first after generating */
+.chooser {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px 24px 80px;
+}
+.chooser__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chooser__title {
+  margin: 0;
+  font-size: var(--text-28);
+}
+.chooser__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.direction-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-grey-2);
+  border-radius: var(--radius-min);
+}
+.direction-card__mark {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-min);
+  font-size: 44px;
+  line-height: 1;
+}
+.direction-card__palette {
+  height: 32px;
+  display: flex;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+}
+.direction-card__type {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* Fixed line heights, since each direction's fonts have different metrics. */
+.direction-card__display {
+  font-size: var(--text-22);
+  font-weight: 600;
+  line-height: 30px;
+}
+.direction-card__body {
+  font-size: var(--text-14);
+  line-height: 20px;
+}
+.direction-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-grey-1);
+}
+.direction-card__name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: var(--text-16);
+  font-weight: 600;
+}
+.direction-card__rec {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font-size: var(--text-11);
+  font-weight: 400;
+}
+.direction-card__choose {
+  margin-top: auto;
+}
+/* Restricted words */
+.language-flag {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-pill);
+  background: var(--color-tint);
+  font-size: var(--text-13);
+}
+.language-note {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-tint);
+  font-size: var(--text-13);
 }

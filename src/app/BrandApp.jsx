@@ -2,6 +2,7 @@ import { Component } from "react";
 import Root from "../screens/Root.jsx";
 import { ALL_SECTIONS, typeScaleOf } from "./exports.js";
 import { flowVals, newMeeting } from "./flow.js";
+import { restrictedHits } from "./language.js";
 
 export default class BrandApp extends Component {
   constructor(props) {
@@ -9,7 +10,7 @@ export default class BrandApp extends Component {
     this.state = {
       screen: 'splash', path: 'brief', step: 1, imported: false, confirmed: false,
       f: this.blankF(), tone: [], looks: {}, sl: { warmth: 50, energy: 50, serious: 50 },
-      avoidC: [], avoidT: [], brandsA: [], brandsX: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
+      avoidC: [], avoidT: [], banned: [], brandsA: [], brandsX: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
       refs: [], refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
       pk: { open: false, h: 280, s: 70, l: 30, text: null },
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
@@ -21,7 +22,7 @@ export default class BrandApp extends Component {
     this._init = JSON.parse(JSON.stringify(this.state));
   }
   blankF() {
-    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
+    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
       'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];
     const o = { who: 'operator' }; keys.forEach(k => { o[k] = ''; }); return o;
   }
@@ -247,6 +248,8 @@ export default class BrandApp extends Component {
       if (!logo && this.pref('logo', 'letters') === 'avoid') { const w = base[i].words.findIndex(x => x[0] !== 'Anta'); if (base[i].words[0][0] === 'Anta') o.wordV = w; }
       if (!deck && this.pref('deck', 'fonts') === 'like') o.body = 'IBM Plex Sans';
       if (!deck && this.pref('deck', 'fonts') === 'avoid') { const t = base[i].types.findIndex(x => x[1] !== 'IBM Plex Sans' && x[0] !== 'IBM Plex Sans'); if (base[i].types[0].includes('IBM Plex Sans')) o.typeV = t; }
+      const clean = base[i].voices.findIndex(v => !restrictedHits(this.state.banned, v).length);
+      if (clean > 0) o.voiceV = clean;
       o.lock = lock;
     });
     return ov;
@@ -274,7 +277,13 @@ export default class BrandApp extends Component {
     }
     if (mod === 'word') { if (lock.word) return null; return { wordV: ((ov.wordV || 0) + 1) % base.words.length, wordFont: null, track: null }; }
     if (mod === 'type') { if (lock.type) return null; return { typeV: ((ov.typeV || 0) + 1) % base.types.length, display: null, body: null }; }
-    if (mod === 'voice') { if (lock.voice) return null; return { voiceV: ((ov.voiceV || 0) + 1) % base.voices.length, tone: null, headline: null }; }
+    if (mod === 'voice') {
+      if (lock.voice) return null;
+      const n = base.voices.length, from = ov.voiceV || 0;
+      let next = (from + 1) % n;
+      for (let k = 1; k <= n; k++) { const c = (from + k) % n; if (!restrictedHits(this.state.banned, base.voices[c]).length) { next = c; break; } }
+      return { voiceV: next, tone: null, headline: null };
+    }
     if (mod === 'refs') {
       const imgs = (ov.images || base.images.map(x => [x[0], x[1], false])).map(x => x.slice());
       if (imgs.every(x => x[2])) return null;
@@ -357,7 +366,7 @@ export default class BrandApp extends Component {
       ui, uiMix, uiHover: this.mix(ui, 0.15), uiRatio: uiR.toFixed(2), uiDarkRatio: this.ratio(ui, darkO).toFixed(2), linkColor,
       passLabel: uiR >= 4.5 ? 'Passes AA' : 'Fails AA', passBg: uiR >= 4.5 ? 'var(--color-ink)' : 'var(--color-coral)',
       darkRoles: [{ role: 'Background', name: names[darkIdx] }, { role: 'Text', name: lightName }, { role: 'Wordmark and headings', name: surfName }, { role: 'Buttons', name: 'UI primary' }],
-      tone, toneArr, headline, micro: vv.micro, reason: base.reason, match: base.match, tradeoff: base.tradeoff,
+      tone, toneArr, headline, micro: vv.micro, hits: restrictedHits(s.banned, { tone: toneArr, headline, micro: vv.micro }), reason: base.reason, match: base.match, tradeoff: base.tradeoff,
       imgs, imageCards, img0: imgs[0][0], img1: imgs[1][0], img2: imgs[2][0], img3: imgs[3][0], word: (this.state.f.name || 'Name').toUpperCase(),
       locks: { word: !!lock.word, palette: [0, 1, 2, 3, 4].every(k => swLock[k]), ui: !!ov.uiFixed, type: !!lock.type, voice: !!lock.voice, refs: imgs.every(x => x[2]) },
       lk
@@ -506,6 +515,8 @@ export default class BrandApp extends Component {
     const taglines = s.taglines.map((t, i) => ({ text: t, set: listUpd('taglines', i), remove: listRm('taglines', i) }));
     const careChips = ['ROI', 'Growth', 'Efficiency', 'Reliability', 'Cost', 'Risk'].map(label => Object.assign({ label, on: s.buyerCares.includes(label), toggle: toggleIn('buyerCares', label) }, on(s.buyerCares.includes(label))));
     const comps = s.comps.map((c, i) => ({ name: c.name, url: c.url, setName: listUpd('comps', i, 'name'), setUrl: listUpd('comps', i, 'url'), remove: listRm('comps', i) }));
+    const bannedChips = s.banned.map((w, i) => ({ label: w, aria: 'Remove ' + w, remove: listRm('banned', i) }));
+    const addBanned = fromField('bannedIn', 'banned');
     const alts = s.alts.map((a, i) => ({ label: a, aria: 'Remove ' + a, remove: listRm('alts', i) }));
     const SUGG = ['Patagonia', 'Caterpillar', 'Teenage Engineering', 'Braun', 'Leica', 'Carhartt', 'Muji', 'Stripe'];
     const brandGroup = (key, field, title, inputId) => {
@@ -697,6 +708,7 @@ export default class BrandApp extends Component {
       showUpload: s.path === 'brief' && !s.imported, imported: s.imported, badge: s.imported && !s.confirmed,
       doImport: () => set(Object.assign({ imported: true, arts: s.arts.some(a => a.id === 'brief') ? s.arts : [{ id: 'brief', role: 'follow' }].concat(s.arts) }, this.sampleState())),
       confirmAll: () => set({ confirmed: true }), confirmLabel: s.confirmed ? 'Confirmed' : 'Confirm all',
+      banned: s.banned, bannedChips, addBanned, bannedKey: onEnter(addBanned),
       f, onField: (e) => { const k = e.target.name; set({ f: Object.assign({}, s.f, { [k]: e.target.value }) }); },
       onSlider: (e) => { const k = e.target.name; set({ sl: Object.assign({}, s.sl, { [k]: Number(e.target.value) }) }); },
       deliv, addDeliv: () => set({ deliv: s.deliv.concat([{ type: 'Logo' }]) }),
@@ -725,7 +737,7 @@ export default class BrandApp extends Component {
       generate: () => {
         if (missing > 0) return;
         set({ screen: 'gen', genStep: 0 }); clearInterval(this._g);
-        this._g = setInterval(() => { const n = this.state.genStep + 1; if (n > 4) { clearInterval(this._g); this.setState({ screen: 'out', option: 0, ov: this.followOv(), mixBase: null, comments: [], view: 'dir', draft: null, darkPrev: false, cmode: false, meeting: Object.assign({}, this.state.meeting, { marks: {}, notice: null, agreedRound: null }) }); } else { this.setState({ genStep: n }); } }, 650);
+        this._g = setInterval(() => { const n = this.state.genStep + 1; if (n > 4) { clearInterval(this._g); this.setState({ screen: 'out', option: 0, ov: this.followOv(), mixBase: null, comments: [], view: 'choose', draft: null, darkPrev: false, cmode: false, meeting: Object.assign({}, this.state.meeting, { marks: {}, notice: null, agreedRound: null }) }); } else { this.setState({ genStep: n }); } }, 650);
       },
       genSteps,
       backToBrief: () => set({ screen: 'brief', step: 5 }),
@@ -762,9 +774,15 @@ export default class BrandApp extends Component {
       keep: s.keep, keepPct: s.keep + '%', setKeep: (e) => set({ keep: Number(e.target.value) }),
       keepName: BANDS[band][0],
       keepStops: BANDS.map((bd, k) => ({ label: bd[0], on: band === k, bg: band === k ? 'var(--color-action)' : '#FFFFFF', fg: band === k ? '#FFFFFF' : 'var(--color-ink)', bd: band === k ? 'var(--color-action)' : 'var(--color-grey-1)', pick: () => set({ keep: bd[1] }) })),
-      isDir: s.view !== 'cmp', isCmp: s.view === 'cmp',
+      isDir: s.view === 'dir', isCmp: s.view === 'cmp', isChoose: s.view === 'choose', viewChoose: () => set({ view: 'choose', edit: null, draft: null, cmode: false }),
+      chooser: OPT.map((o, k) => {
+        const d = this.optionData(k);
+        return { label: d.label, name: k === 3 ? 'Your mix' : d.name, rec: k === 0, word: d.word, wordFont: d.wordFont, trackPx: d.trackPx, surface: d.surface, primary: d.primary,
+          colors: d.colors, display: d.display, body: d.body, words: d.toneArr.map(t => t[0]).slice(0, 4).join(' · '), hits: d.hits,
+          pick: () => { set({ option: k, view: 'dir', edit: null, draft: null, cmode: false }); window.scrollTo(0, 0); } };
+      }),
       viewDir: () => set({ view: 'dir' }), viewCmp: () => set({ view: 'cmp', edit: null, draft: null }),
-      vDirBg: s.view !== 'cmp' ? 'var(--color-action)' : 'transparent', vDirFg: s.view !== 'cmp' ? '#FFFFFF' : 'var(--color-ink)',
+      vDirBg: s.view === 'dir' ? 'var(--color-action)' : 'transparent', vDirFg: s.view === 'dir' ? '#FFFFFF' : 'var(--color-ink)',
       vCmpBg: s.view === 'cmp' ? 'var(--color-action)' : 'transparent', vCmpFg: s.view === 'cmp' ? '#FFFFFF' : 'var(--color-ink)',
       darkPrev: s.darkPrev, toggleDark: () => set({ darkPrev: !s.darkPrev }),
       darkBg: s.darkPrev ? 'var(--color-action)' : '#FFFFFF', darkFg: s.darkPrev ? '#FFFFFF' : 'var(--color-ink)',

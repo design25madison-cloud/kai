@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CompareView from "./CompareView.jsx";
+import DirectionChooser from "./DirectionChooser.jsx";
 import ExportMenu from "./ExportMenu.jsx";
 import ImagerySection from "./ImagerySection.jsx";
 import KaiLogo from "./KaiLogo.jsx";
@@ -35,16 +36,19 @@ export default function OutputScreen({ vm }) {
               </div>
             </div>
             <div className="results-header__actions">
-              <div className="relative">
+              {!vm.isChoose && <div className="relative">
                 <button className="icon-btn" type="button" onClick={vm.toggleAll} aria-expanded={vm.allMenu} aria-label="Export page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4" /><path d="M7 9l5-5 5 5" /><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" /></svg></button>
                 {vm.allMenu && <ExportMenu menu={vm.exportMenu} />}
-              </div>
+              </div>}
             </div>
           </div>
-          <div className="results-header__row">
+          {!vm.isChoose && <div className="results-header__row">
+            <div className="results-header__crumb">
             <div className="view-toggle" role="group" aria-label="View">
               <button className="view-toggle__btn" type="button" onClick={vm.viewDir} aria-pressed={vm.isDir} style={{ background: vm.vDirBg, color: vm.vDirFg }}>Direct</button>
               <button className="view-toggle__btn" type="button" onClick={vm.viewCmp} aria-pressed={vm.isCmp} style={{ background: vm.vCmpBg, color: vm.vCmpFg }}>Compare</button>
+            </div>
+            <button className="link-btn" type="button" onClick={vm.viewChoose}>All directions</button>
             </div>
             <div className="results-tools">
               <button className="tool-btn" type="button" onClick={vm.toggleCmode} aria-pressed={vm.cmode} style={{ background: vm.cmBg, color: vm.cmFg }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={vm.cmFg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /></svg>{vm.cmodeLabel}</button>
@@ -53,7 +57,7 @@ export default function OutputScreen({ vm }) {
                 <button className="tool-btn bg-bg" type="button" onClick={vm.regenAll} aria-label="Regenerate everything unlocked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Regenerate</button>
               )}
             </div>
-          </div>
+          </div>}
           {vm.isDir && (
             <div className="results-tabs" role="tablist" aria-label="Directions">
               {vm.optTabs.map((t) => (
@@ -98,6 +102,7 @@ export default function OutputScreen({ vm }) {
         </div>
       )}
       {vm.isCmp && <CompareView vm={vm} />}
+      {vm.isChoose && <DirectionChooser vm={vm} />}
     </div>
   );
 }

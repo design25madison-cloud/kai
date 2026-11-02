@@ -101,7 +101,7 @@ ${imports.join("\n")}
 `;
 }
 
-export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound, sections = ALL_SECTIONS }) {
+export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRound, sections = ALL_SECTIONS }) {
   const has = (id) => sections.includes(id);
   const name = f.name || "Brand";
   const about = [];
@@ -113,8 +113,11 @@ export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound, sections 
       ? `White text on it is ${d.uiRatio}:1, which passes AA.`
       : `White text on it is only ${d.uiRatio}:1, which fails AA. Fix this before shipping.`;
   const status = agreedRound ? `Agreed in alignment round ${agreedRound}.` : "Not yet agreed in an alignment meeting.";
+  const language = banned.length ? `## Words not to use\n\nNever use these words in any copy, in any form: ${banned.join(", ")}.` : "";
   const blocks = [`# ${name} brand rules\n\nDirection: ${d.name}. ${status} This is a starting direction, not a finished brand. The designer owns the final system.`];
   if (about.length) blocks.push(about.join("\n"));
+  // A restriction applies to everything, so it stays in whichever sections are exported.
+  if (language) blocks.push(language);
 
   const color = [];
   if (has("palette")) {
@@ -145,7 +148,7 @@ export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound, sections 
     blocks.push(`## Voice\n\n${d.tone.map((t) => `- Be ${t.yes.toLowerCase()}, not ${t.no.toLowerCase()}.`).join("\n")}\n\n- Sample headline: "${d.headline}"\n- Sample interface line: "${d.micro}"`);
   }
   const avoid = has("palette") ? [...(avoidT || []).map((t) => "Don't use " + t.toLowerCase() + "."), ...(avoidC || []).map((h) => `Don't use ${h}.`)] : [];
-  if ((has("palette") || has("voice")) && (f.avoidOther || "").trim()) avoid.push("Avoid these words and visuals: " + f.avoidOther.trim());
+  if (has("palette") && (f.avoidOther || "").trim()) avoid.push("Avoid these visuals: " + f.avoidOther.trim());
   if (avoid.length) blocks.push("## Avoid\n\n" + avoid.map((a) => "- " + a).join("\n"));
   if (has("refs")) {
     blocks.push(`## Imagery\n\nReference images set direction only. They aren't licensed for use, so don't ship them.\n\n${d.imgs.map((im) => `- ${im[0]} (${im[1]})`).join("\n")}`);

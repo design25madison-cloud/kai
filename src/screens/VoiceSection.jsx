@@ -17,6 +17,8 @@ export default function VoiceSection({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-13px" type="button" onClick={vm.sec.voice.toggleEdit} aria-pressed={vm.sec.voice.editing} style={{ background: vm.sec.voice.editBg, color: vm.sec.voice.editFg }}>{vm.sec.voice.editLabel}</button>
         </div>
       </div>
+      {vm.cur.hits.length > 0 && <span className="language-flag">Uses a restricted word: {vm.cur.hits.join(", ")}. Regenerate or edit it.</span>}
+      {vm.banned.length > 0 && vm.cur.hits.length === 0 && <span className="language-note">Not used: {vm.banned.join(", ")}</span>}
       <div className="three">
         {vm.cur.tone.map((tn, i_) => (
           <Fragment key={i_}>

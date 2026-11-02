@@ -34,6 +34,23 @@ export default function StepTone({ vm }) {
           </Fragment>
         ))}
       </div>
+      <div className="flex col gap-8px">
+        <label className="t-13px" htmlFor="f-banned">Words we can't use</label>
+        <div className="flex gap-8px wrap items-center">
+          {vm.bannedChips.map((w) => (
+            <span key={w.label} className="file-chip">
+              {w.label}
+              <button className="file-chip__remove" type="button" onClick={w.remove} aria-label={w.aria}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </span>
+          ))}
+          <input className="flex-1 minw-180px p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-banned" name="bannedIn" value={vm.f.bannedIn} onChange={vm.onField} onKeyDown={vm.bannedKey} placeholder="Type a word, then Enter" />
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addBanned}>Add</button>
+        </div>
+      </div>
       <div className="flex col gap-14px">
         <span className="t-15px w-600">Product direction</span>
         <div className="two">

@@ -98,8 +98,8 @@ export default function StepBranding({ vm }) {
             </Fragment>
           ))}
         </div>
-        <label className="t-13px mt-6px" htmlFor="f-avoidOther">Words or visuals to avoid</label>
-        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-avoidOther" name="avoidOther" value={vm.f.avoidOther} onChange={vm.onField} placeholder="For example: rugged, hard hats, handshake photos" />
+        <label className="t-13px mt-6px" htmlFor="f-avoidOther">Visuals to avoid</label>
+        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-avoidOther" name="avoidOther" value={vm.f.avoidOther} onChange={vm.onField} placeholder="For example: hard hats, handshake photos" />
       </div>
       <div className="two">
         {vm.brandGroups.map((bg, i_) => (
