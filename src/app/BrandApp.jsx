@@ -677,7 +677,7 @@ export default class BrandApp extends Component {
     };
     const fol = s.arts.filter(a => this.artRole(a.id) === 'follow' && AD[a.id].short), ctxA = s.arts.filter(a => this.artRole(a.id) === 'context');
     const HD = this.heard(), band = this.keepBand();
-    const BANDS = [['Keep what I have', 10, 'We keep your logo, colors, fonts, and images fixed and build the rest around them.'], ['Evolve it', 37, 'We keep what is recognizable and refresh the rest. Your notes decide what stays.'], ['Loosely inspired', 62, 'Your uploads set the mood, but every option can move away from them.'], ['Start fresh', 90, 'We only read your uploads for context. Expect three new directions.']];
+    const BANDS = [['Keep exactly as is', 10, 'We keep your logo, colors, fonts, and images fixed and build the rest around them.'], ['Alter it slighty', 37, 'We keep what is recognizable and refresh the rest. Your notes decide what stays.'], ['Alter it a lot', 62, 'Your uploads set the mood, but every option can move away from them.'], ['Totally change it', 90, 'We only read your uploads for context. Expect three new directions.']];
     const O_SAMPLE = 'I like the warm brown in the logo, but the letters feel too techy. The deck fonts are fine, and the photos are close but a bit dark.';
     const oWords = O_SAMPLE.split(' ');
     const toggleOpinionVoice = () => {
@@ -748,8 +748,7 @@ export default class BrandApp extends Component {
         if (u.cid) patch.comments = s.comments.map(c => c.id === u.cid ? Object.assign({}, c, { status: 'proposed' }) : c);
         clearTimeout(this._t); set(patch);
       },
-      arts, hasArts: s.arts.length > 0, addArts, uploadH: s.arts.length ? '96px' : '160px',
-      uploadTitle: s.arts.length ? 'Add more files' : 'Drop files here, or click to add',
+      arts, hasArts: s.arts.length > 0, addArts,
       badgeText: briefCtx ? 'Suggested' : 'Imported', importName: AD.brief.name,
       importText: briefCtx ? '36 answers suggested. Fields marked Suggested are drafts, so check each one.' : '36 answers imported. Fields marked Imported came from your brief.',
       hasFollowNote: s.arts.length > 0,
@@ -759,10 +758,9 @@ export default class BrandApp extends Component {
       oLive: s.oRec ? (oWords.slice(0, s.oRec.shown).join(' ') || 'Listening…') : '', toggleOpinionVoice,
       oMicBg: s.oRec ? 'var(--color-ink)' : 'var(--color-action)', oMicAria: s.oRec ? 'Stop and add what you said' : 'Talk about what you uploaded',
       oMicText: s.oRec ? 'Listening… tap to stop' : 'Talk instead of typing',
-      oStarters: [['I like the', 'I like the '], ["I don't want the", "I don't want the "]].map(t => ({ label: t[0], add: () => { const n = (s.opinion || '').trim(); set({ opinion: (n ? n + (/[.!?]$/.test(n) ? ' ' : ', ') + t[1].toLowerCase() : t[1]) }); } })),
       hasHeard: HD.said.length > 0, heardText: HD.said.join(', ') + '.',
       keep: s.keep, keepPct: s.keep + '%', setKeep: (e) => set({ keep: Number(e.target.value) }),
-      keepName: BANDS[band][0], keepDesc: BANDS[band][2],
+      keepName: BANDS[band][0],
       keepStops: BANDS.map((bd, k) => ({ label: bd[0], on: band === k, bg: band === k ? 'var(--color-action)' : '#FFFFFF', fg: band === k ? '#FFFFFF' : 'var(--color-ink)', bd: band === k ? 'var(--color-action)' : 'var(--color-grey-1)', pick: () => set({ keep: bd[1] }) })),
       isDir: s.view !== 'cmp', isCmp: s.view === 'cmp',
       viewDir: () => set({ view: 'dir' }), viewCmp: () => set({ view: 'cmp', edit: null, draft: null }),

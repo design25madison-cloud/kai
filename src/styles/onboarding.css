@@ -162,3 +162,209 @@ select.r-pill {
 .breadcrumbs__current {
   font-weight: 600;
 }
+
+/* Upload page */
+.upload {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 96px 24px 80px;
+}
+.upload__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.upload__title {
+  margin: 0;
+  font-size: var(--text-32);
+  font-weight: 600;
+  line-height: 38.4px;
+}
+.upload__intro {
+  margin: 0;
+  font-size: var(--text-16);
+  line-height: 24px;
+}
+.upload__files {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dropzone {
+  height: 127px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px dashed var(--color-grey-2);
+  border-radius: var(--radius-10);
+  background: var(--color-bg);
+  font-size: var(--text-15);
+  font-weight: 500;
+}
+.dropzone:hover {
+  border-color: var(--color-action);
+}
+.file-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 8px;
+}
+.file-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-grey-1);
+  border-radius: 100px;
+  font-size: var(--text-13);
+}
+/* The icon is 10px. Negative margin gives a larger target without changing the chip's size. */
+.file-chip__remove {
+  width: 22px;
+  height: 22px;
+  margin: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+}
+.file-chip__remove:hover {
+  background: var(--color-grey-1);
+}
+.upload__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.upload__section--opinion {
+  gap: 10px;
+}
+.upload__h2 {
+  margin: 0;
+  font-size: var(--text-18);
+  font-weight: 600;
+}
+.opinion {
+  border: 1px solid var(--color-grey-2);
+  border-radius: var(--radius-12);
+  overflow: hidden;
+}
+.opinion__text {
+  display: block;
+  width: 100%;
+  height: 118px;
+  margin: 0;
+  padding: 14px;
+  border: 0;
+  background: var(--color-bg);
+  font-size: var(--text-15);
+  line-height: 22.5px;
+  resize: none;
+  overflow: auto;
+}
+.opinion__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-grey-2);
+}
+.opinion__mic {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+}
+.opinion__heard {
+  padding: 8px 12px;
+  border-radius: var(--radius-8);
+  background: var(--color-grey-1);
+  font-size: var(--text-13);
+}
+.keep {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border: 1px solid var(--color-grey-2);
+  border-radius: var(--radius-12);
+}
+.keep__ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-13);
+  font-weight: 600;
+}
+.keep__track {
+  position: relative;
+  height: 28px;
+}
+.keep__rail,
+.keep__fill {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  height: 8px;
+  border-radius: var(--radius-4);
+}
+.keep__rail {
+  right: 0;
+  background: var(--color-grey-1);
+}
+.keep__fill {
+  background: var(--color-action);
+}
+.keep__input {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+.keep__stops {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.keep__stop {
+  padding: 7px 6px;
+  border: 1px solid;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-12);
+}
+.upload__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.upload__continue {
+  padding: 12px 32px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-action);
+  color: var(--color-bg);
+  font-size: var(--text-16);
+  font-weight: 500;
+}
+.upload__continue:hover {
+  background: var(--color-action-hover);
+}
+@media (max-width: 560px) {
+  .keep__stops {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
