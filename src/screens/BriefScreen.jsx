@@ -3,7 +3,7 @@ import KaiLogo from "./KaiLogo.jsx";
 import { Fragment } from "react";
 import StepBranding from "./StepBranding.jsx";
 import StepCustomer from "./StepCustomer.jsx";
-import StepExtraInfo from "./StepExtraInfo.jsx";
+import StepTone from "./StepTone.jsx";
 import StepGeneral from "./StepGeneral.jsx";
 import StepReview from "./StepReview.jsx";
 
@@ -78,7 +78,7 @@ export default function BriefScreen({ vm }) {
       {vm.isS1 && <StepGeneral vm={vm} />}
       {vm.isS2 && <StepBranding vm={vm} />}
       {vm.isS3 && <StepCustomer vm={vm} />}
-      {vm.isS4 && <StepExtraInfo vm={vm} />}
+      {vm.isS4 && <StepTone vm={vm} />}
       {vm.isS5 && <StepReview vm={vm} />}
       <div className="flex justify-flex-end gap-12px pt-8px bd-t-1px-solid-divider">
         {vm.notLast && (

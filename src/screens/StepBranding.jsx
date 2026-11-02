@@ -17,20 +17,6 @@ export default function StepBranding({ vm }) {
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-meaning" name="meaning" value={vm.f.meaning} onChange={vm.onField} rows="2" placeholder="Where does the name come from?" />
       </div>
       <div className="flex col gap-8px">
-        <span className="t-13px">Tone or qualities the name should convey</span>
-        <div className="flex gap-8px wrap">
-          {vm.toneChips.map((c, i_) => (
-            <Fragment key={i_}>
-              <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
-            </Fragment>
-          ))}
-        </div>
-        <div className="flex gap-8px maxw-420px">
-          <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
-          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
-        </div>
-      </div>
-      <div className="flex col gap-8px">
         <span className="t-13px">Working taglines or directions (optional)</span>
         {vm.taglines.map((t, i_) => (
           <Fragment key={i_}>
@@ -60,20 +46,6 @@ export default function StepBranding({ vm }) {
         </div>
         <label className="t-12px c-muted" htmlFor="f-lookNote">Anything else about the look? (optional)</label>
         <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-lookNote" name="lookNote" value={vm.f.lookNote} onChange={vm.onField} placeholder=" " />
-      </div>
-      <div className="flex col gap-14px">
-        <span className="t-13px">Emotional tone</span>
-        {vm.sliders.map((sl, i_) => (
-          <Fragment key={i_}>
-            <div className="flex col gap-4px">
-              <input className="w-px-100pct accent-ink" type="range" min="0" max="100" name={sl.key} value={sl.val} onChange={vm.onSlider} aria-label={sl.aria} />
-              <div className="flex justify-space-between t-12px c-muted">
-                <span>{sl.l}</span>
-                <span>{sl.r}</span>
-              </div>
-            </div>
-          </Fragment>
-        ))}
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Colors to avoid</span>

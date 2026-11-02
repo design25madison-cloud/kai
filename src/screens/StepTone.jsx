@@ -1,10 +1,38 @@
 import { Fragment } from "react";
 
-export default function StepExtraInfo({ vm }) {
+export default function StepTone({ vm }) {
   return (
     <div className="flex col gap-24px">
       <div className="flex col gap-4px">
-        <h2 className="m-0 t-22px w-600">Extra info</h2>
+        <h2 className="m-0 t-22px w-600">Tone</h2>
+      </div>
+      <div className="flex col gap-8px">
+        <span className="t-13px">Tone or qualities the name should convey</span>
+        <div className="flex gap-8px wrap">
+          {vm.toneChips.map((c, i_) => (
+            <Fragment key={i_}>
+              <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
+            </Fragment>
+          ))}
+        </div>
+        <div className="flex gap-8px maxw-420px">
+          <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
+        </div>
+      </div>
+      <div className="flex col gap-14px">
+        <span className="t-13px">Emotional tone</span>
+        {vm.sliders.map((sl, i_) => (
+          <Fragment key={i_}>
+            <div className="flex col gap-4px">
+              <input className="w-px-100pct accent-ink" type="range" min="0" max="100" name={sl.key} value={sl.val} onChange={vm.onSlider} aria-label={sl.aria} />
+              <div className="flex justify-space-between t-12px c-muted">
+                <span>{sl.l}</span>
+                <span>{sl.r}</span>
+              </div>
+            </div>
+          </Fragment>
+        ))}
       </div>
       <div className="flex col gap-14px">
         <span className="t-15px w-600">Product direction</span>
@@ -38,17 +66,6 @@ export default function StepExtraInfo({ vm }) {
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-feel" name="feel" value={vm.f.feel} onChange={vm.onField} rows="2" placeholder=" " />
         <label className="t-13px" htmlFor="f-diffFeel">What should feel fundamentally different from existing solutions?</label>
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-diffFeel" name="diffFeel" value={vm.f.diffFeel} onChange={vm.onField} rows="2" placeholder=" " />
-      </div>
-      <div className="flex col gap-8px">
-        <span className="t-13px">Core job to be done</span>
-        <div className="p-14px flex wrap gap-8px items-center t-15px bg-bg bd-1px-solid-grey-2 r-12px">
-          <span>When</span>
-          <input className="flex-1 minw-140px p-8px-10px r-pill bd-1px-solid-grey-2 bg-bg" name="jWhen" value={vm.f.jWhen} onChange={vm.onField} aria-label="Situation" placeholder="situation" />
-          <span>, I want to</span>
-          <input className="flex-1 minw-140px p-8px-10px r-pill bd-1px-solid-grey-2 bg-bg" name="jWant" value={vm.f.jWant} onChange={vm.onField} aria-label="Motivation" placeholder="motivation" />
-          <span>, so I can</span>
-          <input className="flex-1 minw-140px p-8px-10px r-pill bd-1px-solid-grey-2 bg-bg" name="jSo" value={vm.f.jSo} onChange={vm.onField} aria-label="Outcome" placeholder="outcome" />
-        </div>
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">High-level workflow</span>

@@ -22,7 +22,7 @@ export default class BrandApp extends Component {
   }
   blankF() {
     const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'avoidOther', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
-      'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'jWhen', 'jWant', 'jSo', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];
+      'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];
     const o = { who: 'operator' }; keys.forEach(k => { o[k] = ''; }); return o;
   }
   sampleState() {
@@ -30,8 +30,7 @@ export default class BrandApp extends Component {
       name: 'Ferra', desc: '[Company description from your brief: what it does and for whom]', meaning: 'Fe, iron: strength that holds under load.',
       buyerRole: '[Buyer role]', mot: '[What motivates them to purchase]', success: '[How they define success]', opRole: '[Operator role]', opTeam: '[Function or team]', opCares: '[What they care about]',
       problem: '[The problem your brief describes]', short: '[Why current solutions fall short]', diff: '[What makes you different]', diffWhy: '[Why this matters]',
-      outcomes: '[Outcomes users want]', switchTo: '[What would make them switch]', value: '[Primary value]', emo: '[Secondary or emotional value]',
-      jWhen: '[situation]', jWant: '[motivation]', jSo: '[outcome]'
+      outcomes: '[Outcomes users want]', switchTo: '[What would make them switch]', value: '[Primary value]', emo: '[Secondary or emotional value]'
     });
     return {
       f, tone: ['Sturdy', 'Industrial', 'Precise'], looks: { 0: 'a', 1: 'b', 2: 'b', 3: 'b' }, sl: { warmth: 35, energy: 45, serious: 70 },
@@ -54,9 +53,9 @@ export default class BrandApp extends Component {
     };
     if (n === 2) return {
       section: 'your brand', prompts: ['Where the name comes from', 'How it should look and feel', 'Brands you admire or want to avoid', 'Colors and styles to stay away from', 'Any taglines'],
-      transcript: 'Ferra comes from Fe, the symbol for iron, so strength that holds under load. It should feel sturdy, industrial, and precise. Warm rather than cold, clean and minimal, more serious than playful. We like [a brand we admire] because [why]. We do not want to look like [a brand to avoid]. No gradients, no neon, and stay away from purple. A working tagline is [working tagline].',
-      items: [{ label: 'Name meaning', f: pickF(['meaning']) }, { label: 'Tone of the name', x: { tone: smp.tone } }, { label: 'Look and feel', x: { looks: smp.looks } },
-        { label: 'Emotional tone', x: { sl: smp.sl }, force: true }, { label: 'Colors to avoid', x: { avoidC: smp.avoidC } }, { label: 'Treatments to avoid', x: { avoidT: smp.avoidT } },
+      transcript: 'Ferra comes from Fe, the symbol for iron, so strength that holds under load. It should look warm rather than cold, clean and minimal. We like [a brand we admire] because [why]. We do not want to look like [a brand to avoid]. No gradients, no neon, and stay away from purple. A working tagline is [working tagline].',
+      items: [{ label: 'Name meaning', f: pickF(['meaning']) }, { label: 'Look and feel', x: { looks: smp.looks } },
+        { label: 'Colors to avoid', x: { avoidC: smp.avoidC } }, { label: 'Treatments to avoid', x: { avoidT: smp.avoidT } },
         { label: 'Brands admired', x: { brandsA: smp.brandsA } }, { label: 'Brands to avoid', x: { brandsX: smp.brandsX } }, { label: 'Taglines', x: { taglines: smp.taglines } }]
     };
     if (n === 3) return {
@@ -68,11 +67,10 @@ export default class BrandApp extends Component {
         { label: 'Differentiation', f: pickF(['diff', 'diffWhy']) }, { label: 'Audience motivation', f: pickF(['outcomes', 'switchTo']) }]
     };
     return {
-      section: 'your product', prompts: ['The main value it delivers', 'What gets people to try it', 'How it should feel to use', 'A typical day using it'],
-      transcript: 'The main value is [primary value], and it should make people feel [emotional value]. People will try it first for [the wedge feature], because [why it beats alternatives]. Using it should feel [how it feels end to end]. A typical day starts with [situation], the aha moment is [aha moment], and success looks like [outcome].',
-      items: [{ label: 'Value', f: { value: sf.value, emo: sf.emo } }, { label: 'Wedge feature', f: { wedge: '[Feature that gets users to try it]', wedgeWhy: '[Why it beats alternatives]' } },
+      section: 'your tone', prompts: ['How the name should come across', 'The main value it delivers', 'What gets people to try it', 'How it should feel to use'],
+      transcript: 'It should feel sturdy, industrial, and precise, and more serious than playful. The main value is [primary value], and it should make people feel [emotional value]. People will try it first for [the wedge feature], because [why it beats alternatives]. Using it should feel [how it feels end to end]. The aha moment is [aha moment], and success looks like [outcome].',
+      items: [{ label: 'Tone of the name', x: { tone: smp.tone } }, { label: 'Emotional tone', x: { sl: smp.sl }, force: true }, { label: 'Value', f: { value: sf.value, emo: sf.emo } }, { label: 'Wedge feature', f: { wedge: '[Feature that gets users to try it]', wedgeWhy: '[Why it beats alternatives]' } },
         { label: 'Product feel', f: { feel: '[How it should feel end to end]', diffFeel: '[What should feel different]' } },
-        { label: 'Job to be done', f: pickF(['jWhen', 'jWant', 'jSo']) },
         { label: 'Workflow', f: { wfStart: '[Where users start]', wfAha: '[The aha moment]', wfSuccess: '[What success looks like]' } }]
     };
   }
@@ -476,7 +474,7 @@ export default class BrandApp extends Component {
     const on = (b) => b ? { bg: 'var(--color-action)', fg: '#FFFFFF' } : { bg: '#FFFFFF', fg: 'var(--color-ink)' };
 
 
-    const stepNames = ['General', 'Branding', 'Customer', 'Extra info', 'Review'];
+    const stepNames = ['General', 'Branding', 'Customer', 'Tone', 'Review'];
     const steps = stepNames.map((label, k) => {
       const n = k + 1;
       return { label, current: s.step === n ? 'step' : undefined, pick: () => set({ step: n }) };
@@ -523,7 +521,7 @@ export default class BrandApp extends Component {
     });
 
     const core = [
-      ['Working name', !!f.name, 1], ['Company description', !!f.desc, 1], ['Domains secured', s.domains.length > 0, 1], ['Name meaning', !!f.meaning, 2], ['Tone of the name', s.tone.length > 0, 2],
+      ['Working name', !!f.name, 1], ['Company description', !!f.desc, 1], ['Domains secured', s.domains.length > 0, 1], ['Name meaning', !!f.meaning, 2], ['Tone of the name', s.tone.length > 0, 4],
       ['Look and feel', Object.keys(s.looks).length > 0, 2], ['Colors or treatments to avoid', s.avoidC.length + s.avoidT.length > 0, 2],
       ['Brands admired', s.brandsA.length > 0, 2], ['Core problem', !!f.problem, 3], ['Differentiation', !!f.diff, 3]
     ];
