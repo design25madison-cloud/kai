@@ -5,7 +5,7 @@ export default function StepBranding({ vm }) {
   return (
     <div className="flex col gap-24px">
       <h2 className="m-0 t-22px w-600">Branding</h2>
-      <div className="flex col gap-6px">
+      <div className="flex col gap-8px">
         <div className="flex justify-space-between items-center">
           <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         </div>
@@ -39,7 +39,9 @@ export default function StepBranding({ vm }) {
             </Fragment>
           ))}
         </div>
-        <label className="t-12px c-muted" htmlFor="f-lookNote">Anything else about the look? (optional)</label>
+      </div>
+      <div className="flex col gap-8px">
+        <label className="t-13px" htmlFor="f-lookNote">Anything else about the look? (optional)</label>
         <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-lookNote" name="lookNote" value={vm.f.lookNote} onChange={vm.onField} placeholder=" " />
       </div>
       <div className="flex col gap-8px">
@@ -91,7 +93,9 @@ export default function StepBranding({ vm }) {
             </div>
           </div>
         )}
-        <span className="t-13px mt-6px">Graphical treatments to avoid</span>
+      </div>
+      <div className="flex col gap-8px">
+        <span className="t-13px">Graphical treatments to avoid</span>
         <div className="flex gap-8px wrap">
           {vm.treatChips.map((c, i_) => (
             <Fragment key={i_}>
@@ -99,7 +103,9 @@ export default function StepBranding({ vm }) {
             </Fragment>
           ))}
         </div>
-        <label className="t-13px mt-6px" htmlFor="f-avoidOther">Visuals to avoid</label>
+      </div>
+      <div className="flex col gap-8px">
+        <label className="t-13px" htmlFor="f-avoidOther">Visuals to avoid</label>
         <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-avoidOther" name="avoidOther" value={vm.f.avoidOther} onChange={vm.onField} placeholder="For example: hard hats, handshake photos" />
       </div>
       <div className="two">

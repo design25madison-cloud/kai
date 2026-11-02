@@ -20,7 +20,7 @@ export default function StepTone({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
         </div>
       </div>
-      <div className="flex col gap-14px">
+      <div className="flex col gap-16px">
         <span className="t-13px">Emotional tone</span>
         {vm.sliders.map((sl, i_) => (
           <Fragment key={i_}>
@@ -51,22 +51,22 @@ export default function StepTone({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addBanned}>Add</button>
         </div>
       </div>
-      <div className="flex col gap-14px">
+      <div className="flex col gap-16px">
         <span className="t-15px w-600">Product direction</span>
         <div className="two">
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-13px" htmlFor="f-val">Primary value delivered</label>
             <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-val" name="value" value={vm.f.value} onChange={vm.onField} placeholder=" " />
           </div>
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-13px" htmlFor="f-emo">Secondary or emotional value</label>
             <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-emo" name="emo" value={vm.f.emo} onChange={vm.onField} placeholder=" " />
           </div>
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-13px" htmlFor="f-wedge">What feature gets users to try it first</label>
             <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wedge" name="wedge" value={vm.f.wedge} onChange={vm.onField} placeholder=" " />
           </div>
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-13px" htmlFor="f-wedgeWhy">Why it's compelling compared to alternatives</label>
             <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wedgeWhy" name="wedgeWhy" value={vm.f.wedgeWhy} onChange={vm.onField} placeholder=" " />
           </div>
@@ -81,15 +81,15 @@ export default function StepTone({ vm }) {
       <div className="flex col gap-8px">
         <span className="t-13px">High-level workflow</span>
         <div className="three">
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-12px c-ink-2" htmlFor="f-wf1">Where the user typically starts</label>
             <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf1" name="wfStart" value={vm.f.wfStart} onChange={vm.onField} placeholder=" " />
           </div>
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-12px c-ink-2" htmlFor="f-wf2">The aha moment</label>
             <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf2" name="wfAha" value={vm.f.wfAha} onChange={vm.onField} placeholder=" " />
           </div>
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-12px c-ink-2" htmlFor="f-wf3">What success looks like</label>
             <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-wf3" name="wfSuccess" value={vm.f.wfSuccess} onChange={vm.onField} placeholder=" " />
           </div>
@@ -97,21 +97,23 @@ export default function StepTone({ vm }) {
         <button className="self-flex-start p-6px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.toggleSig} aria-expanded={vm.sigOpen}>{vm.sigLabel}</button>
         {vm.sigOpen && (
           <div className="two">
-            <div className="flex col gap-6px">
+            <div className="flex col gap-8px">
               <label className="t-12px c-ink-2" htmlFor="f-sg1">Users' unprompted reactions</label>
               <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sg1" name="sigReact" value={vm.f.sigReact} onChange={vm.onField} placeholder=" " />
             </div>
-            <div className="flex col gap-6px">
+            <div className="flex col gap-8px">
               <label className="t-12px c-ink-2" htmlFor="f-sg2">What would feel noticeably easier or faster</label>
               <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sg2" name="sigEasier" value={vm.f.sigEasier} onChange={vm.onField} placeholder=" " />
             </div>
           </div>
         )}
       </div>
-      <div className="flex col gap-10px">
+      <div className="flex col gap-16px">
         <span className="t-15px w-600">Links</span>
-        <label className="t-13px" htmlFor="f-site">Current website build or workspace</label>
-        <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-site" name="site" value={vm.f.site} onChange={vm.onField} placeholder="https://" />
+        <div className="flex col gap-8px">
+          <label className="t-13px" htmlFor="f-site">Current website build or workspace</label>
+          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-site" name="site" value={vm.f.site} onChange={vm.onField} placeholder="https://" />
+        </div>
       </div>
     </div>
   );

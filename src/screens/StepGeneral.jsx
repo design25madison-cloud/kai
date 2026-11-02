@@ -2,7 +2,7 @@ import { Fragment } from "react";
 
 export default function StepGeneral({ vm }) {
   return (
-    <div className="flex col gap-22px">
+    <div className="flex col gap-24px">
       <h2 className="m-0 t-22px w-600">General</h2>
       {vm.showUpload && (
         <button className="h-150px r-10px bd-1px-dashed-grey-2 bg-bg flex col items-center justify-center gap-8px" type="button" onClick={vm.doImport}>
@@ -20,7 +20,7 @@ export default function StepGeneral({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={vm.confirmAll}>{vm.confirmLabel}</button>
         </div>
       )}
-      <div className="flex col gap-6px">
+      <div className="flex col gap-8px">
         <label className="t-13px flex gap-8px items-center" htmlFor="f-name">Working name{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-name" name="name" value={vm.f.name} onChange={vm.onField} placeholder="What are you calling it for now?" />
         <button className="self-flex-start p-4px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.toggleLegal} aria-expanded={vm.legalOpen}>{vm.legalLabel}</button>
@@ -31,7 +31,7 @@ export default function StepGeneral({ vm }) {
           </>
         )}
       </div>
-      <div className="flex col gap-6px">
+      <div className="flex col gap-8px">
         <div className="flex justify-space-between items-center">
           <label className="t-13px flex gap-8px items-center" htmlFor="f-desc">Company description{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         </div>

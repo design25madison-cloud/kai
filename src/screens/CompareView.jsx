@@ -3,7 +3,7 @@ import RefImage from "./RefImage.jsx";
 
 export default function CompareView({ vm }) {
   return (
-    <div className="maxw-1200px m-0-auto p-28px-24px-120px flex col gap-20px">
+    <div className="results-body results-body--compare">
       <div className="flex col gap-6px">
         <h1 className="m-0 t-28px">Compare the three directions</h1>
       </div>

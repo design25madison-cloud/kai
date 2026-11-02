@@ -9,8 +9,8 @@ import StepReview from "./StepReview.jsx";
 
 export default function BriefScreen({ vm }) {
   return (
-    <div className="maxw-760px m-0-auto p-48px-24px-80px flex col gap-28px">
-      <KaiLogo className="page-logo page-logo--flow" />
+    <div className="flow-page gap-28px">
+      <KaiLogo className="page-logo" />
       <div className="flex justify-space-between items-center gap-12px wrap">
         <Breadcrumbs items={vm.crumbs} />
         <button className="p-8px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.startOver}>Start over</button>

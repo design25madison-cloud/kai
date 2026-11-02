@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 16px 38px 10px;
+  padding: 16px var(--page-gutter) 10px;
 }
 .results-header__row {
   display: flex;
@@ -152,9 +152,9 @@
 }
 
 .results-tabs {
-  max-width: 1200px;
+  max-width: calc(var(--results-width) + 2 * var(--page-gutter));
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-gutter);
   display: flex;
   overflow-x: auto;
 }
@@ -171,14 +171,17 @@
 }
 
 /* Rail sits in the left gutter. Below 1420px the body keeps clear of it; from there up the
-   content sits on the design's centered 1200px column. */
+   content sits on the design's centered column. */
 .results-body {
-  max-width: 1200px;
+  max-width: calc(var(--results-width) + 2 * var(--page-gutter));
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 36px;
-  padding: 20px 24px 120px;
+  padding: 24px var(--page-gutter) var(--page-bottom);
+}
+.results-body--compare {
+  gap: 20px;
 }
 .results-body-wrap--rail {
   padding-inline: 110px;
@@ -186,7 +189,7 @@
 
 .progress-rail {
   position: fixed;
-  left: 38px;
+  left: var(--page-gutter);
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;

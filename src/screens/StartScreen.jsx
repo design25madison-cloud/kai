@@ -3,7 +3,7 @@ import KaiLogo from "./KaiLogo.jsx";
 
 export default function StartScreen({ vm }) {
   return (
-    <div className="upload">
+    <div className="upload flow-page">
       <KaiLogo className="page-logo" />
       <Breadcrumbs items={vm.crumbs} />
       <div className="upload__head">

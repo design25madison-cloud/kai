@@ -48,14 +48,16 @@ export default function StepCustomer({ vm }) {
           )}
         </div>
       </div>
-      <div className="flex col gap-10px">
+      <div className="flex col gap-16px">
         <span className="t-15px w-600">Core problem</span>
-        <div className="flex justify-space-between items-center">
-          <label className="t-13px flex gap-8px items-center" htmlFor="f-problem">What problem exists today?{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+        <div className="flex col gap-8px">
+          <div className="flex justify-space-between items-center">
+            <label className="t-13px flex gap-8px items-center" htmlFor="f-problem">What problem exists today?{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+          </div>
+          <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-problem" name="problem" value={vm.f.problem} onChange={vm.onField} rows="2" placeholder=" " />
         </div>
-        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-problem" name="problem" value={vm.f.problem} onChange={vm.onField} rows="2" placeholder=" " />
         <div className="two">
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-13px" htmlFor="f-who">Who feels this most?</label>
             <select className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-who" name="who" value={vm.f.who} onChange={vm.onField}>
               <option value="buyer">Economic buyer</option>
@@ -63,7 +65,7 @@ export default function StepCustomer({ vm }) {
               <option value="end">End user</option>
             </select>
           </div>
-          <div className="flex col gap-6px">
+          <div className="flex col gap-8px">
             <label className="t-13px" htmlFor="f-short">Why current solutions fall short</label>
             <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-short" name="short" value={vm.f.short} onChange={vm.onField} placeholder=" " />
           </div>
@@ -96,19 +98,19 @@ export default function StepCustomer({ vm }) {
         </div>
       </div>
       <div className="two">
-        <div className="flex col gap-6px">
+        <div className="flex col gap-8px">
           <label className="t-13px flex gap-8px items-center" htmlFor="f-diff">What makes you different{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
           <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-diff" name="diff" value={vm.f.diff} onChange={vm.onField} placeholder=" " />
         </div>
-        <div className="flex col gap-6px">
+        <div className="flex col gap-8px">
           <label className="t-13px" htmlFor="f-diffWhy">Why this matters</label>
           <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-diffWhy" name="diffWhy" value={vm.f.diffWhy} onChange={vm.onField} placeholder=" " />
         </div>
-        <div className="flex col gap-6px">
+        <div className="flex col gap-8px">
           <label className="t-13px" htmlFor="f-out">What outcomes users are trying to achieve</label>
           <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-out" name="outcomes" value={vm.f.outcomes} onChange={vm.onField} placeholder=" " />
         </div>
-        <div className="flex col gap-6px">
+        <div className="flex col gap-8px">
           <label className="t-13px" htmlFor="f-sw">What would make them switch</label>
           <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-sw" name="switchTo" value={vm.f.switchTo} onChange={vm.onField} placeholder=" " />
         </div>

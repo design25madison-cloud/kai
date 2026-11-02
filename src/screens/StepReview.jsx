@@ -2,7 +2,7 @@ import { Fragment } from "react";
 
 export default function StepReview({ vm }) {
   return (
-    <div className="flex col gap-20px">
+    <div className="flex col gap-24px">
       <div className="flex col gap-4px">
         <h2 className="m-0 t-22px w-600">Review</h2>
         <p className="m-0 t-14px c-muted">{vm.readyText}</p>

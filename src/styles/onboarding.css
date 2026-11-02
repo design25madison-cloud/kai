@@ -25,16 +25,17 @@
 }
 .page-logo {
   position: absolute;
-  top: 31px;
-  left: 38px;
+  top: var(--page-top);
+  left: var(--page-gutter);
 }
 
-/* The brief's column reaches the logo on narrower screens, so the logo joins the flow. */
-@media (max-width: 1000px) {
-  .page-logo--flow {
-    position: static;
-    align-self: flex-start;
-  }
+/* The one centered column every onboarding screen sits on. */
+.flow-page {
+  max-width: calc(var(--flow-width) + 2 * var(--page-gutter));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--flow-top) var(--page-gutter) var(--page-bottom);
 }
 
 .splash {
@@ -56,7 +57,7 @@
   flex-direction: column;
   align-items: center;
   gap: 33px;
-  padding: clamp(112px, 30vh, 261px) 24px 80px;
+  padding: clamp(112px, 30vh, 261px) var(--page-gutter) var(--page-bottom);
 }
 .welcome__title {
   margin: 0;
@@ -66,7 +67,7 @@
   text-align: center;
 }
 .welcome__options {
-  width: min(632px, 100%);
+  width: min(var(--flow-width), 100%);
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -176,12 +177,7 @@ select.r-pill {
 
 /* Upload page */
 .upload {
-  max-width: 680px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
   gap: 28px;
-  padding: 96px 24px 80px;
 }
 .upload__head {
   display: flex;

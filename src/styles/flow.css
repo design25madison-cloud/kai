@@ -178,10 +178,10 @@
 .round-notice {
   background: var(--color-fill-subtle);
   border-bottom: 1px solid var(--color-divider);
-  padding: 12px 24px;
+  padding: 12px var(--page-gutter);
 }
 .round-notice__inner {
-  max-width: 1200px;
+  max-width: var(--results-width);
   margin: 0 auto;
   display: flex;
   justify-content: space-between;

@@ -49,6 +49,14 @@
   --text-52: 52px;
   --text-64: 64px;
 
+  /* Page margins, shared by every screen */
+  --page-gutter: 38px;
+  --page-top: 24px;
+  --page-bottom: 96px;
+  --flow-top: 96px;
+  --flow-width: 632px;
+  --results-width: 1152px;
+
   /* Radius: nothing in the interface goes below --radius-min. The numbered tokens
      only exist because utilities reference them. .brand-ui restores their real values. */
   --radius-min: 24px;
@@ -64,6 +72,11 @@
   --radius-14: var(--radius-min);
   --radius-full: 50%;
   --radius-pill: 120px;
+}
+@media (max-width: 760px) {
+  :root {
+    --page-gutter: 24px;
+  }
 }
 
 /* Generated brand previews show that brand's UI, so KAI's rounding doesn't apply inside them. */

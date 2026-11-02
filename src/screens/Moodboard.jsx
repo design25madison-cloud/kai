@@ -4,7 +4,7 @@ import RefImage from "./RefImage.jsx";
 
 export default function Moodboard({ vm }) {
   return (
-    <section id="sec-mood" aria-labelledby="mb-h" className="flex col gap-12px smt-16px">
+    <section id="sec-mood" aria-labelledby="mb-h" className="flex col gap-14px smt-16px">
       <div className="flex justify-space-between items-flex-end gap-12px wrap">
         <div className="flex col gap-2px">
           <span className="t-12px c-muted">{vm.f.name} · Moodboard · Direction, not final</span>
