@@ -431,11 +431,11 @@ export default class BrandApp extends Component {
     if (c.sec === 'type') {
       if (c.target === 'body' || /read|body|small|legib/.test(t)) {
         const opts = ['Barlow', 'IBM Plex Sans', 'Work Sans'].filter(x => x !== d.body), nb = opts[n % opts.length];
-        return { kind: 'text', summary: 'Swapped the body face for one with more open letterforms at small sizes.', bText: 'Body: ' + d.body, aText: 'Body: ' + nb,
+        return { kind: 'type', summary: 'Swapped the body face for one with more open letterforms at small sizes.', bType: [d.display, d.body], aType: [d.display, nb], sample: [d.headline, d.micro],
           patch: { body: nb, lock: Object.assign({}, lock, { type: true }) } };
       }
       const tp = base.types[((ov.typeV || 0) + 1 + n) % base.types.length];
-      return { kind: 'text', summary: 'Tried the next type pairing within ' + base.name + '.', bText: d.display + ' with ' + d.body, aText: tp[0] + ' with ' + tp[1],
+      return { kind: 'type', summary: 'Tried the next type pairing within ' + base.name + '.', bType: [d.display, d.body], aType: [tp[0], tp[1]], sample: [d.headline, d.micro],
         patch: { display: tp[0], body: tp[1], lock: Object.assign({}, lock, { type: true }) } };
     }
     if (c.sec === 'refs') {
@@ -443,7 +443,7 @@ export default class BrandApp extends Component {
       const targets = typeof c.target === 'number' ? [c.target] : imgs.map((x, k) => k).filter(k => !imgs[k][2]);
       const bl = targets.map(k => imgs[k][0]);
       targets.forEach(k => { let p = pool[k2 % pool.length], g = 0; while (imgs.some(x => x[0] === p[0]) && g < pool.length) { k2++; p = pool[k2 % pool.length]; g++; } imgs[k] = [p[0], p[1], true]; k2++; });
-      return { kind: 'text', summary: 'Replaced ' + bl.length + (bl.length === 1 ? ' image' : ' images') + ' with searches closer to your note.', bText: bl.join(', '), aText: targets.map(k => imgs[k][0]).join(', '),
+      return { kind: 'images', summary: 'Replaced ' + bl.length + (bl.length === 1 ? ' image' : ' images') + ' with searches closer to your note.', swaps: targets.map((k, x) => [bl[x], imgs[k][0]]),
         patch: { images: imgs, imgN: k2 } };
     }
     if (c.sec === 'voice') {
@@ -613,7 +613,8 @@ export default class BrandApp extends Component {
         return {
           num: c.num, label: c.label, text: c.text, status: st[0], stBg: st[1], stFg: st[2],
           canApply: c.status === 'open', thinking: c.status === 'thinking', proposed: c.status === 'proposed' && !!c.prop,
-          summary: p.summary || '', isColors: p.kind === 'colors', isText: p.kind === 'text', isWord: p.kind === 'word',
+          summary: p.summary || '', isColors: p.kind === 'colors', isText: p.kind === 'text', isWord: p.kind === 'word', isImages: p.kind === 'images', isType: p.kind === 'type',
+          swaps: p.swaps || [], typeRows: p.kind === 'type' ? [['Before', p.bType], ['After', p.aType]] : [], sample: p.sample || [],
           bSw: (p.before || []).map(hex => ({ hex })), aSw: (p.after || []).map(hex => ({ hex })), bText: p.bText || '', aText: p.aText || '',
           bFont: p.bFont || '', bTrack: p.bTrack || '', aFont: p.aFont || '', aTrack: p.aTrack || '',
           apply: () => this.applyAI(c.id), accept: () => this.accept(c.id),

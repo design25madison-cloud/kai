@@ -464,6 +464,30 @@
 .bento .tile:focus-within .ref-caption {
   opacity: 1;
 }
+/* Proposed image swap in the Precise editing panel */
+.swap-images {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.swap-image {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.swap-image__frame {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-min);
+  background: var(--color-grey-1);
+}
+.swap-image__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .ref-credit {
   font-size: var(--text-11);
 }

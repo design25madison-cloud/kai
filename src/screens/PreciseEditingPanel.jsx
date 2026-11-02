@@ -1,4 +1,17 @@
 import { Fragment } from "react";
+import { referenceImage } from "../app/referenceImages.js";
+
+// One side of a proposed image swap. A label with no photo keeps the plain tile.
+function SwapImage({ state, label }) {
+  const image = referenceImage(label);
+  return (
+    <div className="swap-image">
+      <span className="t-11px c-muted">{state}</span>
+      <span className="swap-image__frame">{image && <img src={image.src} alt={label} title={`${image.author}, ${image.license}`} />}</span>
+      <span className="t-12px">{label}</span>
+    </div>
+  );
+}
 
 export default function PreciseEditingPanel({ vm }) {
   return (
@@ -76,6 +89,27 @@ export default function PreciseEditingPanel({ vm }) {
                               <span className="w-px-40px t-11px c-muted">After</span>
                               <span className="t-22px" style={{ fontFamily: `'${cmt.aFont}', sans-serif`, letterSpacing: cmt.aTrack }}>{vm.wordUpper}</span>
                             </div>
+                          </div>
+                        )}
+                        {cmt.isImages && (
+                          <div className="flex col gap-12px">
+                            {cmt.swaps.map(([before, after]) => (
+                              <div key={before} className="swap-images">
+                                <SwapImage state="Before" label={before} />
+                                <SwapImage state="After" label={after} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {cmt.isType && (
+                          <div className="flex col gap-12px">
+                            {cmt.typeRows.map(([state, [display, body]]) => (
+                              <div key={state} className="flex col gap-4px">
+                                <span className="t-11px c-muted">{state}: {display} with {body}</span>
+                                <span className="t-20px w-600 lh-1_2" style={{ fontFamily: `'${display}', sans-serif` }}>{cmt.sample[0]}</span>
+                                <span className="t-14px lh-1_45" style={{ fontFamily: `'${body}', sans-serif` }}>{cmt.sample[1]}</span>
+                              </div>
+                            ))}
                           </div>
                         )}
                         <div className="flex gap-8px">
