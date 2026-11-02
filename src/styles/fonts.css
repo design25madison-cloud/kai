@@ -1,0 +1,18 @@
+/* Allowlisted brand fonts, bundled so demos work offline. */
+@import "@fontsource/instrument-sans/400.css";
+@import "@fontsource/instrument-sans/500.css";
+@import "@fontsource/instrument-sans/600.css";
+@import "@fontsource/anta/400.css";
+@import "@fontsource/archivo/400.css";
+@import "@fontsource/archivo/600.css";
+@import "@fontsource/archivo-black/400.css";
+@import "@fontsource/barlow/400.css";
+@import "@fontsource/barlow/600.css";
+@import "@fontsource/chakra-petch/400.css";
+@import "@fontsource/chakra-petch/600.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/oxanium/400.css";
+@import "@fontsource/oxanium/600.css";
+@import "@fontsource/work-sans/400.css";
+@import "@fontsource/work-sans/600.css";

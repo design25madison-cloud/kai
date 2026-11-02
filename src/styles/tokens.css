@@ -1,0 +1,53 @@
+:root {
+  /* Color */
+  --color-bg: #FFFFFF;
+  --color-ink: #1E1E1E;
+  --color-ink-2: #3E3E3E;
+  --color-muted: #5E5E5E;
+  --color-faint: #9A9A9A;
+  --color-line-strong: #BDBDBD;
+  --color-line: #CFCFCF;
+  --color-track: #D9D9D9;
+  --color-divider: #E4E4E4;
+  --color-fill: #EDEDED;
+  --color-fill-subtle: #F4F4F4;
+  --color-danger: #C42121;
+  --color-black: #000000;
+  --color-faint-2: #8A8A8A;
+
+  /* Type */
+  --font-ui: 'Instrument Sans', system-ui, sans-serif;
+  --text-9: 9px;
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-20: 20px;
+  --text-22: 22px;
+  --text-24: 24px;
+  --text-26: 26px;
+  --text-28: 28px;
+  --text-30: 30px;
+  --text-32: 32px;
+  --text-34: 34px;
+  --text-52: 52px;
+  --text-64: 64px;
+
+  /* Radius */
+  --radius-2: 2px;
+  --radius-3: 3px;
+  --radius-4: 4px;
+  --radius-5: 5px;
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-9: 9px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-full: 50%;
+}
