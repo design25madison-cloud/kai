@@ -4,7 +4,7 @@ export default function CompareView({ vm }) {
   return (
     <div className="maxw-1200px m-0-auto p-28px-24px-120px flex col gap-20px">
       <div className="flex col gap-6px">
-        <h1 className="m-0 t-28px w-600">Compare the three directions</h1>
+        <h1 className="m-0 t-28px">Compare the three directions</h1>
       </div>
       <div className="overfl-auto bd-1px-solid-line r-12px">
         <div className="minw-960px grid cols-150px-repeat-3-minmax-0-1fr">
@@ -17,7 +17,7 @@ export default function CompareView({ vm }) {
                 {col.rec && (
                   <span className="t-11px p-2px-8px r-9px bg-ink c-bg">Recommended</span>
                 )}
-                <button className="mt-4px p-6px-12px r-6px bd-1px-solid-ink bg-bg t-12px" type="button" onClick={col.open}>Open this direction</button>
+                <button className="mt-4px p-6px-12px r-pill bd-1px-solid-grey-2 bg-bg t-12px" type="button" onClick={col.open}>Open this direction</button>
               </div>
             </Fragment>
           ))}
@@ -29,7 +29,7 @@ export default function CompareView({ vm }) {
                   <span className="t-30px" style={{ fontFamily: `'${col.wordFont}', sans-serif`, letterSpacing: col.trackPx, color: col.primary }}>{vm.wordUpper}</span>
                 </div>
                 <span className="t-12px c-ink-2">{col.wordFont}, {col.trackPx} spacing</span>
-                <button className="self-flex-start p-6px-12px r-6px bd-1px-solid-ink t-12px" type="button" onClick={col.pk.word.pick} aria-pressed={col.pk.word.on} style={{ background: col.pk.word.bg, color: col.pk.word.fg }}>{col.pk.word.label}</button>
+                <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={col.pk.word.pick} aria-pressed={col.pk.word.on} style={{ background: col.pk.word.bg, color: col.pk.word.fg }}>{col.pk.word.label}</button>
               </div>
             </Fragment>
           ))}
@@ -45,7 +45,7 @@ export default function CompareView({ vm }) {
                   ))}
                 </div>
                 <span className="t-12px c-ink-2">{col.palNames}</span>
-                <button className="self-flex-start p-6px-12px r-6px bd-1px-solid-ink t-12px" type="button" onClick={col.pk.palette.pick} aria-pressed={col.pk.palette.on} style={{ background: col.pk.palette.bg, color: col.pk.palette.fg }}>{col.pk.palette.label}</button>
+                <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={col.pk.palette.pick} aria-pressed={col.pk.palette.on} style={{ background: col.pk.palette.bg, color: col.pk.palette.fg }}>{col.pk.palette.label}</button>
               </div>
             </Fragment>
           ))}
@@ -64,7 +64,7 @@ export default function CompareView({ vm }) {
               <div className="p-16px bd-t-1px-solid-divider bd-l-1px-solid-divider flex col gap-10px minw-0">
                 <span className="t-22px w-600" style={{ fontFamily: `'${col.display}', sans-serif` }}>{col.display}</span>
                 <span className="t-14px" style={{ fontFamily: `'${col.body}', sans-serif` }}>{col.body} for body text</span>
-                <button className="self-flex-start p-6px-12px r-6px bd-1px-solid-ink t-12px" type="button" onClick={col.pk.type.pick} aria-pressed={col.pk.type.on} style={{ background: col.pk.type.bg, color: col.pk.type.fg }}>{col.pk.type.label}</button>
+                <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={col.pk.type.pick} aria-pressed={col.pk.type.on} style={{ background: col.pk.type.bg, color: col.pk.type.fg }}>{col.pk.type.label}</button>
               </div>
             </Fragment>
           ))}
@@ -79,7 +79,7 @@ export default function CompareView({ vm }) {
                     </Fragment>
                   ))}
                 </div>
-                <button className="self-flex-start p-6px-12px r-6px bd-1px-solid-ink t-12px" type="button" onClick={col.pk.refs.pick} aria-pressed={col.pk.refs.on} style={{ background: col.pk.refs.bg, color: col.pk.refs.fg }}>{col.pk.refs.label}</button>
+                <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={col.pk.refs.pick} aria-pressed={col.pk.refs.on} style={{ background: col.pk.refs.bg, color: col.pk.refs.fg }}>{col.pk.refs.label}</button>
               </div>
             </Fragment>
           ))}
@@ -93,7 +93,7 @@ export default function CompareView({ vm }) {
                   </Fragment>
                 ))}
                 <span className="t-15px w-600" style={{ fontFamily: `'${col.display}', sans-serif` }}>{col.headline}</span>
-                <button className="self-flex-start p-6px-12px r-6px bd-1px-solid-ink t-12px" type="button" onClick={col.pk.voice.pick} aria-pressed={col.pk.voice.on} style={{ background: col.pk.voice.bg, color: col.pk.voice.fg }}>{col.pk.voice.label}</button>
+                <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={col.pk.voice.pick} aria-pressed={col.pk.voice.on} style={{ background: col.pk.voice.bg, color: col.pk.voice.fg }}>{col.pk.voice.label}</button>
               </div>
             </Fragment>
           ))}
@@ -116,7 +116,7 @@ export default function CompareView({ vm }) {
       </div>
       <div className="sticky bottom-16px p-16px-18px r-12px bg-ink c-bg flex gap-16px items-center wrap">
         <span className="flex-1 minw-240px t-14px lh-1_5"><strong>Your mix:</strong> {vm.mixSummary}</span>
-        <button className="p-10px-16px r-8px bd-0 bg-bg c-ink t-14px w-600" type="button" onClick={vm.createMix}>{vm.mixBtn}</button>
+        <button className="p-10px-16px r-pill bd-0 bg-bg c-ink t-14px w-600" type="button" onClick={vm.createMix}>{vm.mixBtn}</button>
       </div>
     </div>
   );

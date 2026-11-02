@@ -7,7 +7,7 @@ export default class BrandApp extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      screen: 'start', path: 'brief', step: 1, imported: false, confirmed: false,
+      screen: 'splash', path: 'brief', step: 1, imported: false, confirmed: false,
       f: this.blankF(), tone: [], looks: {}, sl: { warmth: 50, energy: 50, serious: 50 },
       avoidC: [], avoidT: [], brandsA: [], brandsX: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
       refs: false, refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
@@ -306,7 +306,7 @@ export default class BrandApp extends Component {
   optionData(i) {
     const s = this.state, O = this.opts(), base = O[i], ov = s.ov[i] || {}, lock = ov.lock || {}, dk = !!s.darkPrev;
     const SHUT = 'M8 11V7a4 4 0 0 1 8 0v4', OPEN = 'M8 11V7a4 4 0 0 1 7.6-1.6';
-    const lk = (on, what) => ({ locked: !!on, lockBg: on ? '#1E1E1E' : '#FFFFFF', lockFg: on ? '#FFFFFF' : '#1E1E1E', shackle: on ? SHUT : OPEN, lockAria: (on ? 'Unlock ' : 'Lock ') + what });
+    const lk = (on, what) => ({ locked: !!on, lockBg: on ? 'var(--color-action)' : '#FFFFFF', lockFg: on ? '#FFFFFF' : '#1E1E1E', shackle: on ? SHUT : OPEN, lockAria: (on ? 'Unlock ' : 'Lock ') + what });
     const pal = base.palettes[(ov.palV || 0) % base.palettes.length], swLock = ov.swLock || [];
     const hexes = pal.map((c, k) => (ov.hex && ov.hex[k] != null) ? ov.hex[k] : c[1]);
     const shown = pal.map((c, k) => this.hexOk(hexes[k]) ? hexes[k].toUpperCase() : c[1]);
@@ -339,7 +339,7 @@ export default class BrandApp extends Component {
     }));
     const imgs = ov.images || base.images.map(x => [x[0], x[1], false]);
     const imageCards = imgs.map((im, k) => ({
-      label: im[0], source: im[1], locked: !!im[2], pinBd: im[2] ? '#1E1E1E' : '#D9D9D9',
+      label: im[0], source: im[1], locked: !!im[2], pinBd: im[2] ? 'var(--color-action)' : '#D9D9D9',
       pinC: pin('refs', k, im[0]), pinAria: 'Add ' + im[0] + ' to precise editing', picked: this.isPicked('refs', k),
       swap: () => {
         const pool = base.imgPool.concat(base.images); let n = ov.imgN || 0, p = pool[n % pool.length], g = 0;
@@ -473,21 +473,19 @@ export default class BrandApp extends Component {
     const s = this.state, f = s.f;
     const set = (patch) => this.setState(patch);
     const toggleIn = (key, v) => () => { const a = s[key]; set({ [key]: a.includes(v) ? a.filter(x => x !== v) : a.concat([v]) }); };
-    const on = (b) => b ? { bg: '#1E1E1E', fg: '#FFFFFF' } : { bg: '#FFFFFF', fg: '#1E1E1E' };
+    const on = (b) => b ? { bg: 'var(--color-action)', fg: '#FFFFFF' } : { bg: '#FFFFFF', fg: '#1E1E1E' };
 
-    const paths = [['brief', 'From what I have', 'We read your uploads and fill in what we can. You review it.'], ['scratch', 'Talk or type it', 'A short guided brief, one section at a time, with voice.']]
-      .map(([id, label, sub]) => ({ label, sub, on: s.path === id, bd: s.path === id ? '#1E1E1E' : '#EDEDED', dot: s.path === id ? '#1E1E1E' : '#FFFFFF', pick: () => set({ path: id }) }));
 
     const stepNames = ['General', 'Branding', 'Customer', 'Extra info', 'Review'];
     const steps = stepNames.map((label, k) => {
       const n = k + 1, cur = s.step === n, done = n < s.step;
-      return { num: n, label, current: cur ? 'step' : 'false', bg: cur ? '#1E1E1E' : (done ? '#9A9A9A' : '#D9D9D9'), fg: cur || done ? '#FFFFFF' : '#1E1E1E', weight: cur ? 600 : 400, pick: () => set({ step: n }) };
+      return { num: n, label, current: cur ? 'step' : 'false', bg: cur ? 'var(--color-action)' : (done ? '#9A9A9A' : '#D9D9D9'), fg: cur || done ? '#FFFFFF' : '#1E1E1E', weight: cur ? 600 : 400, pick: () => set({ step: n }) };
     });
 
     const toneChips = (s.tone.filter(t => !['Sturdy', 'Industrial', 'Precise', 'Warm', 'Playful', 'Calm', 'Bold', 'Minimal'].includes(t))).concat(['Sturdy', 'Industrial', 'Precise', 'Warm', 'Playful', 'Calm', 'Bold', 'Minimal']).map(label => Object.assign({ label, on: s.tone.includes(label), toggle: toggleIn('tone', label) }, on(s.tone.includes(label))));
     const treatChips = ['Gradients', 'Neon', 'All caps', 'Drop shadows', 'Pill buttons'].map(label => Object.assign({ label, on: s.avoidT.includes(label), toggle: toggleIn('avoidT', label) }, on(s.avoidT.includes(label))));
     const lookPairs = [['Warm', 'Cool'], ['Serif', 'Sans'], ['Ornate', 'Minimal'], ['Soft', 'Geometric']].map(([a, b], k) => ({
-      a, b, onA: s.looks[k] === 'a', onB: s.looks[k] === 'b', bdA: s.looks[k] === 'a' ? '#1E1E1E' : '#D9D9D9', bdB: s.looks[k] === 'b' ? '#1E1E1E' : '#D9D9D9',
+      a, b, onA: s.looks[k] === 'a', onB: s.looks[k] === 'b', bdA: s.looks[k] === 'a' ? 'var(--color-action)' : '#D9D9D9', bdB: s.looks[k] === 'b' ? 'var(--color-action)' : '#D9D9D9',
       pickA: () => set({ looks: Object.assign({}, s.looks, { [k]: 'a' }) }), pickB: () => set({ looks: Object.assign({}, s.looks, { [k]: 'b' }) })
     }));
     const sliders = [['warmth', 'Warm', 'Professional'], ['energy', 'Calm', 'Energetic'], ['serious', 'Playful', 'Serious']].map(([key, l, r]) => ({ key, l, r, val: s.sl[key], aria: l + ' to ' + r }));
@@ -530,11 +528,11 @@ export default class BrandApp extends Component {
     const coreChecks = core.map(([label, ok, st]) => ({ label, status: ok ? 'Answered' : 'Missing', bg: ok ? '#E4E4E4' : '#1E1E1E', fg: ok ? '#1E1E1E' : '#FFFFFF', go: () => set({ step: st }) }));
 
     const genLabels = ['Reading your answers', 'Locking what is decided', 'Generating three directions', 'Checking contrast and fonts', 'Pulling reference images'];
-    const genSteps = genLabels.map((label, k) => ({ label, dot: k < s.genStep ? '#1E1E1E' : (k === s.genStep ? '#9A9A9A' : '#E4E4E4'), fg: k <= s.genStep ? '#1E1E1E' : '#8A8A8A' }));
+    const genSteps = genLabels.map((label, k) => ({ label, dot: k < s.genStep ? 'var(--color-action)' : (k === s.genStep ? '#9A9A9A' : '#E4E4E4'), fg: k <= s.genStep ? '#1E1E1E' : '#8A8A8A' }));
 
     const cur = this.current();
     const OPT = this.opts();
-    const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: k === 0, on: s.option === k, bd: s.option === k ? '#1E1E1E' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? '#1E1E1E' : '#5E5E5E', pick: () => set({ option: k, edit: null, draft: null, view: 'dir' }) }));
+    const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: k === 0, on: s.option === k, bd: s.option === k ? 'var(--color-action)' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? '#1E1E1E' : '#5E5E5E', pick: () => set({ option: k, edit: null, draft: null, view: 'dir' }) }));
 
     const SECTION_IDS = ['word', 'palette', 'ui', 'type', 'refs', 'preview', 'voice'];
     const secNames = { word: 'Wordmark', palette: 'Palette', ui: 'UI primary', type: 'Typography', refs: 'Reference imagery', preview: 'UI preview', voice: 'Voice and tone' };
@@ -542,7 +540,7 @@ export default class BrandApp extends Component {
     SECTION_IDS.forEach(id => {
       const editing = s.edit === id;
       sec[id] = {
-        editing, editLabel: editing ? 'Done' : 'Edit', editBg: editing ? '#1E1E1E' : '#FFFFFF', editFg: editing ? '#FFFFFF' : '#1E1E1E',
+        editing, editLabel: editing ? 'Done' : 'Edit', editBg: editing ? 'var(--color-action)' : '#FFFFFF', editFg: editing ? '#FFFFFF' : '#1E1E1E',
         toggleEdit: () => set({ edit: editing ? null : id })
       };
     });
@@ -580,7 +578,7 @@ export default class BrandApp extends Component {
     Object.keys(sec).forEach(id => {
       const locked = !!cur.locks[id];
       Object.assign(sec[id], cur.lk(locked, secNames[id].toLowerCase()), {
-        regenFg: locked ? '#9A9A9A' : '#1E1E1E', regenBd: locked ? '#CFCFCF' : '#1E1E1E',
+        regenFg: locked ? '#9A9A9A' : '#1E1E1E', regenBd: locked ? '#CFCFCF' : '#B0B0B0',
         regen: () => locked ? this.showToast(secNames[id] + ' is locked. Unlock it to regenerate.') : this.doRegen([id]),
         toggleLock: () => {
           const o = this.state.ov[oi] || {};
@@ -627,7 +625,7 @@ export default class BrandApp extends Component {
     const openN = myC.filter(c => c.status !== 'applied').length;
 
     const mp = s.mixPick, ROWS = [['word', 'Wordmark'], ['palette', 'Palette'], ['type', 'Type'], ['refs', 'Imagery'], ['voice', 'Voice']];
-    const pickCell = (row, k) => { const onn = mp[row] === k; return { on: onn, label: onn ? 'Picked' : 'Use this', bg: onn ? '#1E1E1E' : '#FFFFFF', fg: onn ? '#FFFFFF' : '#1E1E1E', pick: () => set({ mixPick: Object.assign({}, mp, { [row]: k }) }) }; };
+    const pickCell = (row, k) => { const onn = mp[row] === k; return { on: onn, label: onn ? 'Picked' : 'Use this', bg: onn ? 'var(--color-action)' : '#FFFFFF', fg: onn ? '#FFFFFF' : '#1E1E1E', pick: () => set({ mixPick: Object.assign({}, mp, { [row]: k }) }) }; };
     const cols = [0, 1, 2].map(k => {
       const d = this.optionData(k), pk = {}; ROWS.forEach(r => { pk[r[0]] = pickCell(r[0], k); });
       return Object.assign({}, d, { rec: k === 0, imgTop: d.imageCards.slice(0, 3), open: () => set({ option: k, view: 'dir' }), pk });
@@ -650,12 +648,12 @@ export default class BrandApp extends Component {
     const arts = s.arts.map(a => {
       const d = AD[a.id], fo = a.role === 'follow';
       return { name: d.name, kind: d.kind, detail: d.detail, swatches: (d.swatches || []).map(hex => ({ hex })),
-        isF: fo, isC: !fo, fBg: fo ? '#1E1E1E' : 'transparent', fFg: fo ? '#FFFFFF' : '#1E1E1E', cBg: !fo ? '#1E1E1E' : 'transparent', cFg: !fo ? '#FFFFFF' : '#1E1E1E',
+        isF: fo, isC: !fo, fBg: fo ? 'var(--color-action)' : 'transparent', fFg: fo ? '#FFFFFF' : '#1E1E1E', cBg: !fo ? 'var(--color-action)' : 'transparent', cFg: !fo ? '#FFFFFF' : '#1E1E1E',
         effect: fo ? d.fol : d.ctx, roleAria: 'How to use ' + d.name, removeAria: 'Remove ' + d.name,
         aspects: (ASP[a.id] || []).map(x => {
           const cur = (a.asp || {})[x[0]] || 'neutral';
           return { label: x[1], hint: x[2], aria: x[1] + ' from ' + d.name,
-            choices: [['like', 'Like'], ['neutral', 'Neutral'], ['avoid', 'Avoid']].map(c => ({ label: c[1], on: cur === c[0], bg: cur === c[0] ? '#1E1E1E' : 'transparent', fg: cur === c[0] ? '#FFFFFF' : '#1E1E1E',
+            choices: [['like', 'Like'], ['neutral', 'Neutral'], ['avoid', 'Avoid']].map(c => ({ label: c[1], on: cur === c[0], bg: cur === c[0] ? 'var(--color-action)' : 'transparent', fg: cur === c[0] ? '#FFFFFF' : '#1E1E1E',
               pick: () => updArt(a.id, { asp: Object.assign({}, a.asp, { [x[0]]: c[0] }) }) })) };
         }),
         noteId: 'note-' + a.id, note: a.note || '', placeholder: PH[a.id] || '',
@@ -692,11 +690,11 @@ export default class BrandApp extends Component {
       ...flowVals(this),
       voice, startVoice, stopVoice, cancelVoice, undoVoice, toggleT,
       isStart: s.screen === 'start', isBrief: s.screen === 'brief', isGen: s.screen === 'gen', isOut: s.screen === 'out',
-      paths, toStart: () => set({ screen: 'start' }),
+      toStart: () => set({ screen: s.path === 'scratch' ? 'welcome' : 'start' }),
       toBrief,
       pathLabel: s.path === 'brief' ? 'Starting from a brief' : 'Starting from scratch',
       steps, isS1: s.step === 1, isS2: s.step === 2, isS3: s.step === 3, isS4: s.step === 4, isS5: s.step === 5, notLast: s.step < 5,
-      prevStep: () => s.step > 1 ? set({ step: s.step - 1 }) : set({ screen: 'start' }), nextStep: () => set({ step: Math.min(5, s.step + 1) }),
+      prevStep: () => s.step > 1 ? set({ step: s.step - 1 }) : set({ screen: s.path === 'scratch' ? 'welcome' : 'start' }), nextStep: () => set({ step: Math.min(5, s.step + 1) }),
       showUpload: s.path === 'brief' && !s.imported, imported: s.imported, badge: s.imported && !s.confirmed,
       doImport: () => set(Object.assign({ imported: true, arts: s.arts.some(a => a.id === 'brief') ? s.arts : [{ id: 'brief', role: 'follow' }].concat(s.arts) }, this.sampleState())),
       confirmAll: () => set({ confirmed: true }), confirmLabel: s.confirmed ? 'Confirmed' : 'Confirm all',
@@ -708,7 +706,7 @@ export default class BrandApp extends Component {
       mic: () => this.showToast('Listening… your answer is transcribed into this field (prototype)'),
       addTone: fromField('toneIn', 'tone'), taglines, addTagline: () => set({ taglines: s.taglines.concat(['']) }),
       brandGroups, careChips, comps, addComp: () => set({ comps: s.comps.concat([{ name: '', url: '' }]) }), alts, altKey: onEnter(fromField('altIn', 'alts')),
-      endOn: s.endOn, endOff: !s.endOn, toggleEnd: () => set({ endOn: !s.endOn }), endLabel: s.endOn ? 'Included' : 'Add end user', endBg: s.endOn ? '#1E1E1E' : '#FFFFFF', endFg: s.endOn ? '#FFFFFF' : '#1E1E1E',
+      endOn: s.endOn, endOff: !s.endOn, toggleEnd: () => set({ endOn: !s.endOn }), endLabel: s.endOn ? 'Included' : 'Add end user', endBg: s.endOn ? 'var(--color-action)' : '#FFFFFF', endFg: s.endOn ? '#FFFFFF' : '#1E1E1E',
       sigOpen: s.sigOpen, toggleSig: () => set({ sigOpen: !s.sigOpen }), sigLabel: s.sigOpen ? 'Hide early signals' : 'Add early signals of success (optional)',
       domainShown: s.domains[0] || 'yourname.com',
       toneChips, treatChips, lookPairs, sliders, avoidColors, pk,
@@ -723,7 +721,7 @@ export default class BrandApp extends Component {
       setPickHex: (e) => { const v = e.target.value; if (this.hexOk(v)) { const hsl = this.hex2hsl(v); setPk({ h: hsl[0], s: hsl[1], l: hsl[2], text: v }); } else { setPk({ text: v }); } },
       addPicked: () => { const h = (p.text && this.hexOk(p.text)) ? p.text.toUpperCase() : pHex; set({ avoidC: s.avoidC.includes(h) ? s.avoidC : s.avoidC.concat([h]), pk: Object.assign({}, s.pk, { open: false, text: null }) }); },
       refsAdded: s.refs, addRefs: () => set({ refs: true }), refCards,
-      coreChecks, hasMissing: missing > 0, genBg: missing > 0 ? '#9A9A9A' : '#1E1E1E',
+      coreChecks, hasMissing: missing > 0, genBg: missing > 0 ? '#9A9A9A' : 'var(--color-action)',
       readyText: missing > 0 ? missing + ' Core answers are missing. Generation unlocks when every Core answer has something, even rough.' : 'Every Core answer is filled. You are ready to generate.',
       fillSample: () => { const smp = this.sampleState(); const nf = Object.assign({}, smp.f); Object.keys(s.f).forEach(k => { if (s.f[k]) nf[k] = s.f[k]; }); const patch = { f: nf }; Object.keys(smp).forEach(k => { if (k === 'f') return; const cur = s[k]; const empty = Array.isArray(cur) ? cur.length === 0 : (cur && typeof cur === 'object' ? Object.keys(cur).length === 0 : !cur); if (empty) patch[k] = smp[k]; }); set(patch); },
       generate: () => {
@@ -733,7 +731,7 @@ export default class BrandApp extends Component {
       },
       genSteps,
       backToBrief: () => set({ screen: 'brief', step: 5 }),
-      startOver: () => { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); this.setState(JSON.parse(JSON.stringify(this._init))); },
+      startOver: () => { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); this.setState(Object.assign(JSON.parse(JSON.stringify(this._init)), { screen: 'welcome' })); },
       optTabs, allMenu: s.allMenu, toggleAll: () => set({ allMenu: !s.allMenu }),
       cur, wordUpper: (f.name || 'Name').toUpperCase(),
       whyTitle: s.option === 0 ? 'Why we recommend Option 1' : (s.option === 3 ? 'About your custom mix' : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
@@ -761,28 +759,28 @@ export default class BrandApp extends Component {
       contextNote: HD.said.length ? 'From your notes: ' + HD.said.join(', ') + '.' : ((s.opinion || '').trim() ? 'Your note: "' + s.opinion.trim() + '"' : ''),
       opinion: s.opinion || '', setOpinion: (e) => set({ opinion: e.target.value }), oRec: !!s.oRec, oIdle: !s.oRec,
       oLive: s.oRec ? (oWords.slice(0, s.oRec.shown).join(' ') || 'Listening…') : '', toggleOpinionVoice,
-      oMicBg: s.oRec ? '#C42121' : '#1E1E1E', oMicAria: s.oRec ? 'Stop and add what you said' : 'Talk about what you uploaded',
+      oMicBg: s.oRec ? '#C42121' : 'var(--color-action)', oMicAria: s.oRec ? 'Stop and add what you said' : 'Talk about what you uploaded',
       oMicText: s.oRec ? 'Listening… tap to stop' : 'Talk instead of typing',
       oStarters: [['I like the', 'I like the '], ["I don't want the", "I don't want the "]].map(t => ({ label: t[0], add: () => { const n = (s.opinion || '').trim(); set({ opinion: (n ? n + (/[.!?]$/.test(n) ? ' ' : ', ') + t[1].toLowerCase() : t[1]) }); } })),
       hasHeard: HD.said.length > 0, heardText: HD.said.join(', ') + '.',
       keep: s.keep, keepPct: s.keep + '%', setKeep: (e) => set({ keep: Number(e.target.value) }),
       keepName: BANDS[band][0], keepDesc: BANDS[band][2],
-      keepStops: BANDS.map((bd, k) => ({ label: bd[0], on: band === k, bg: band === k ? '#1E1E1E' : '#FFFFFF', fg: band === k ? '#FFFFFF' : '#1E1E1E', bd: band === k ? '#1E1E1E' : '#CFCFCF', pick: () => set({ keep: bd[1] }) })),
+      keepStops: BANDS.map((bd, k) => ({ label: bd[0], on: band === k, bg: band === k ? 'var(--color-action)' : '#FFFFFF', fg: band === k ? '#FFFFFF' : '#1E1E1E', bd: band === k ? 'var(--color-action)' : '#CFCFCF', pick: () => set({ keep: bd[1] }) })),
       isDir: s.view !== 'cmp', isCmp: s.view === 'cmp',
       viewDir: () => set({ view: 'dir' }), viewCmp: () => set({ view: 'cmp', edit: null, draft: null }),
-      vDirBg: s.view !== 'cmp' ? '#1E1E1E' : 'transparent', vDirFg: s.view !== 'cmp' ? '#FFFFFF' : '#1E1E1E',
-      vCmpBg: s.view === 'cmp' ? '#1E1E1E' : 'transparent', vCmpFg: s.view === 'cmp' ? '#FFFFFF' : '#1E1E1E',
+      vDirBg: s.view !== 'cmp' ? 'var(--color-action)' : 'transparent', vDirFg: s.view !== 'cmp' ? '#FFFFFF' : '#1E1E1E',
+      vCmpBg: s.view === 'cmp' ? 'var(--color-action)' : 'transparent', vCmpFg: s.view === 'cmp' ? '#FFFFFF' : '#1E1E1E',
       darkPrev: s.darkPrev, toggleDark: () => set({ darkPrev: !s.darkPrev }),
-      darkBg: s.darkPrev ? '#1E1E1E' : '#EDEDED', darkFg: s.darkPrev ? '#FFFFFF' : '#1E1E1E',
+      darkBg: s.darkPrev ? 'var(--color-action)' : '#EDEDED', darkFg: s.darkPrev ? '#FFFFFF' : '#1E1E1E',
       bentoBg: s.darkPrev ? cur.light : 'transparent', bentoPad: s.darkPrev ? '14px' : '0',
       cmode: s.cmode, toggleCmode: () => set({ cmode: !s.cmode, draft: null }),
-      cmBg: s.cmode ? '#1E1E1E' : '#EDEDED', cmFg: s.cmode ? '#FFFFFF' : '#1E1E1E',
+      cmBg: s.cmode ? 'var(--color-action)' : '#EDEDED', cmFg: s.cmode ? '#FFFFFF' : '#1E1E1E',
       cmodeLabel: 'Precise editing' + (openN ? ' · ' + openN : ''),
       regenAll: () => this.doRegen(['word', 'palette', 'type', 'refs', 'voice']),
       cm, pins, pinSel, pieces, allCm, draftItems, hasDraftItems: dItems.length > 0, noDraftItems: dItems.length === 0,
       panelPad: s.cmode ? '380px' : '0', cmCount: myC.length === 1 ? '1 edit' : myC.length + ' edits',
       draft: s.draft || { items: [], text: '' },
-      sendBg: dItems.length && s.draft && s.draft.text.trim() ? '#1E1E1E' : '#9A9A9A',
+      sendBg: dItems.length && s.draft && s.draft.text.trim() ? 'var(--color-action)' : '#9A9A9A',
       setDraft: (e) => set({ draft: Object.assign({ items: [] }, s.draft, { text: e.target.value }) }),
       cancelDraft: () => set({ draft: { items: [], text: '' } }),
       postComment: () => {

@@ -100,7 +100,7 @@ export default function StepExtraInfo({ vm }) {
               <Fragment key={i_}>
                 <div className="flex col gap-6px">
                   <div className="ar-1 r-8px bg-track flex items-flex-end p-8px t-12px c-ink-2">{r.label}</div>
-                  <button className="p-6px r-6px bd-1px-solid-ink t-12px" type="button" onClick={r.toggle} style={{ background: r.bg, color: r.fg }}>{r.tag}</button>
+                  <button className="p-6px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={r.toggle} style={{ background: r.bg, color: r.fg }}>{r.tag}</button>
                 </div>
               </Fragment>
             ))}

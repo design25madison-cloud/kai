@@ -7,13 +7,13 @@ export default function UiPrimarySection({ vm }) {
       <div className="flex justify-space-between items-center gap-12px wrap bd-t-1px-solid-line pt-16px">
         <h2 className="m-0 t-20px w-600 flex gap-10px items-center" id="h-ui">3. UI primary{vm.sec.ui.locked && (<span className="t-12px w-500 p-2px-10px r-9px bg-ink c-bg">Locked</span>)}</h2>
         <div className="flex gap-8px relative wrap">
-          <button className="w-px-36px h-36px r-8px bd-1px-solid-ink p-0 flex items-center justify-center" type="button" onClick={vm.sec.ui.toggleLock} aria-pressed={vm.sec.ui.locked} aria-label={vm.sec.ui.lockAria} style={{ background: vm.sec.ui.lockBg }}>
+          <button className="w-px-36px h-36px r-50pct bd-1px-solid-grey-2 p-0 flex items-center justify-center" type="button" onClick={vm.sec.ui.toggleLock} aria-pressed={vm.sec.ui.locked} aria-label={vm.sec.ui.lockAria} style={{ background: vm.sec.ui.lockBg }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={vm.sec.ui.lockFg} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="5" y="11" width="14" height="10" rx="2" />
               <path d={vm.sec.ui.shackle} />
             </svg>
           </button>
-          <button className="p-8px-14px r-8px bd-1px-solid-ink t-13px" type="button" onClick={vm.sec.ui.toggleEdit} aria-pressed={vm.sec.ui.editing} style={{ background: vm.sec.ui.editBg, color: vm.sec.ui.editFg }}>{vm.sec.ui.editLabel}</button>
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-2 t-13px" type="button" onClick={vm.sec.ui.toggleEdit} aria-pressed={vm.sec.ui.editing} style={{ background: vm.sec.ui.editBg, color: vm.sec.ui.editFg }}>{vm.sec.ui.editLabel}</button>
         </div>
       </div>
       {vm.sec.ui.editing && (

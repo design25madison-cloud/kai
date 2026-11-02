@@ -1,4 +1,10 @@
 :root {
+  /* Brand */
+  --color-brand: #D95D43; /* Logo only. White text on it is 3.75:1, which fails AA. */
+  --color-action: #C3543C; /* Buttons and selected states. White text is 4.51:1. */
+  --color-action-hover: #AE4A36;
+  --color-grey-2: #B0B0B0;
+
   /* Color */
   --color-bg: #FFFFFF;
   --color-ink: #1E1E1E;
@@ -17,6 +23,8 @@
 
   /* Type */
   --font-ui: 'Instrument Sans', system-ui, sans-serif;
+  --font-heading: 'Geist', system-ui, sans-serif;
+  --font-logo: 'KoHo', system-ui, sans-serif;
   --text-9: 9px;
   --text-10: 10px;
   --text-11: 11px;
@@ -50,4 +58,5 @@
   --radius-12: 12px;
   --radius-14: 14px;
   --radius-full: 50%;
+  --radius-pill: 120px;
 }

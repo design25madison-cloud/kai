@@ -1,3 +1,4 @@
+import KaiLogo from "./KaiLogo.jsx";
 import Moodboard from "./Moodboard.jsx";
 
 export default function MeetingScreen({ vm }) {
@@ -6,7 +7,7 @@ export default function MeetingScreen({ vm }) {
     <div className="meet">
       <header className="flow-bar">
         <div className="flow-bar__title">
-          <span className="w-600">LightBrand</span>
+          <KaiLogo size="sm" />
           <span className="c-muted t-14px">/ {vm.f.name} · Alignment meeting · Round {meet.round}</span>
         </div>
         <button className="link-btn" type="button" onClick={meet.leave}>Leave meeting</button>

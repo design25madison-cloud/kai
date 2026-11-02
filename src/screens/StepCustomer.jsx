@@ -16,7 +16,7 @@ export default function StepCustomer({ vm }) {
           <div className="flex gap-6px wrap">
             {vm.careChips.map((c, i_) => (
               <Fragment key={i_}>
-                <button className="p-5px-10px r-6px bd-1px-solid-ink t-12px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
+                <button className="p-5px-10px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
               </Fragment>
             ))}
           </div>
@@ -37,7 +37,7 @@ export default function StepCustomer({ vm }) {
         <div className="p-16px r-10px bd-1px-dashed-faint flex col gap-8px">
           <div className="flex justify-space-between items-center gap-8px">
             <span className="t-14px w-600">End user</span>
-            <button className="p-6px-10px r-6px bd-1px-solid-ink t-12px" type="button" onClick={vm.toggleEnd} aria-pressed={vm.endOn} style={{ background: vm.endBg, color: vm.endFg }}>{vm.endLabel}</button>
+            <button className="p-6px-10px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={vm.toggleEnd} aria-pressed={vm.endOn} style={{ background: vm.endBg, color: vm.endFg }}>{vm.endLabel}</button>
           </div>
           {vm.endOn && (
             <>
@@ -87,7 +87,7 @@ export default function StepCustomer({ vm }) {
             <div className="flex gap-8px">
               <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" value={c.name} onChange={c.setName} aria-label="Competitor name" placeholder="Name" />
               <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" value={c.url} onChange={c.setUrl} aria-label="Competitor site" placeholder="competitor.com" />
-              <button className="w-px-40px h-40px r-8px bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label="Remove competitor">
+              <button className="w-px-40px h-40px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label="Remove competitor">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
@@ -95,7 +95,7 @@ export default function StepCustomer({ vm }) {
             </div>
           </Fragment>
         ))}
-        <button className="self-flex-start p-8px-12px r-8px bd-1px-dashed-muted bg-bg t-14px" type="button" onClick={vm.addComp}>Add competitor</button>
+        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-muted bg-bg t-14px" type="button" onClick={vm.addComp}>Add competitor</button>
         <label className="t-13px mt-8px" htmlFor="f-altIn">Alternatives and current workarounds</label>
         <div className="flex gap-8px wrap items-center">
           {vm.alts.map((c, i_) => (

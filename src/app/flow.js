@@ -126,6 +126,14 @@ export function flowVals(app) {
     leaveTop();
   };
   const base = {
+    isSplash: s.screen === "splash",
+    isWelcome: s.screen === "welcome",
+    leaveSplash: () => {
+      if (app.state.screen === "splash") set({ screen: "welcome" });
+    },
+    chooseMaterials: () => set({ path: "brief", screen: "start" }),
+    chooseScratch: () => set({ path: "scratch", screen: "brief", step: 1 }),
+    backToWelcome: () => set({ screen: "welcome" }),
     isMeet,
     isHandoff,
     showPrint: isOut || isHandoff,

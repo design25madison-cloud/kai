@@ -95,7 +95,7 @@
 }
 .export-menu__option input {
   margin: 0;
-  accent-color: var(--color-ink);
+  accent-color: var(--color-action);
 }
 .export-menu__option[data-disabled] {
   color: var(--color-faint);
@@ -120,8 +120,8 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid var(--color-black);
-  border-radius: var(--radius-8);
+  border: 1px solid var(--color-grey-2);
+  border-radius: var(--radius-pill);
   background: var(--color-bg);
 }
 
@@ -129,14 +129,14 @@
   display: grid;
   grid-template-columns: repeat(2, 84px);
   padding: 3px;
-  border-radius: var(--radius-8);
+  border-radius: var(--radius-pill);
   background: var(--color-fill);
 }
 .view-toggle__btn {
   height: 30px;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-pill);
   font-size: var(--text-13);
 }
 
@@ -147,7 +147,7 @@
   gap: 6px;
   padding: 0 15px;
   border: 0;
-  border-radius: var(--radius-8);
+  border-radius: var(--radius-pill);
   font-size: var(--text-13);
 }
 
@@ -199,7 +199,7 @@
 .progress-rail__fill {
   display: block;
   width: 100%;
-  background: var(--color-ink);
+  background: var(--color-action);
 }
 .progress-rail__list {
   list-style: none;
@@ -258,7 +258,7 @@
   gap: 2px;
   padding: 3px;
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-8);
+  border-radius: var(--radius-pill);
   background: var(--color-bg);
   opacity: 0;
   pointer-events: none;
@@ -271,7 +271,7 @@
   gap: 4px;
   padding: 0 8px;
   border: 0;
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--color-ink);
   font-size: var(--text-12);
@@ -281,7 +281,7 @@
   background: var(--color-fill);
 }
 .piece-action[aria-pressed="true"] {
-  background: var(--color-ink);
+  background: var(--color-action);
   color: var(--color-bg);
 }
 :has(> .piece-actions):hover > .piece-actions,
@@ -294,7 +294,7 @@
   opacity: 0;
 }
 :has(> .piece-actions):hover {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid var(--color-action);
   outline-offset: 2px;
 }
 /* No hover on touch screens, so the controls stay visible there. */

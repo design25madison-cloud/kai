@@ -21,13 +21,13 @@ export default function StepBranding({ vm }) {
         <div className="flex gap-8px wrap">
           {vm.toneChips.map((c, i_) => (
             <Fragment key={i_}>
-              <button className="p-8px-14px r-8px bd-1px-solid-ink t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
+              <button className="p-8px-14px r-pill bd-1px-solid-grey-2 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
             </Fragment>
           ))}
         </div>
         <div className="flex gap-8px maxw-420px">
           <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
-          <button className="p-8px-14px r-8px bd-1px-solid-ink bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
         </div>
       </div>
       <div className="flex col gap-8px">
@@ -36,7 +36,7 @@ export default function StepBranding({ vm }) {
           <Fragment key={i_}>
             <div className="flex gap-8px">
               <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" value={t.text} onChange={t.set} aria-label="Tagline" />
-              <button className="w-px-40px h-40px r-8px bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={t.remove} aria-label="Remove tagline">
+              <button className="w-px-40px h-40px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={t.remove} aria-label="Remove tagline">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
@@ -44,7 +44,7 @@ export default function StepBranding({ vm }) {
             </div>
           </Fragment>
         ))}
-        <button className="self-flex-start p-8px-12px r-8px bd-1px-dashed-muted bg-bg t-14px" type="button" onClick={vm.addTagline}>Add tagline</button>
+        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-muted bg-bg t-14px" type="button" onClick={vm.addTagline}>Add tagline</button>
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Desired look and feel: pick one from each pair</span>
@@ -114,8 +114,8 @@ export default function StepBranding({ vm }) {
                 <input className="accent-ink" id="pk-l" type="range" min="5" max="95" value={vm.pk.l} onChange={vm.setPickL} />
               </div>
               <div className="flex gap-8px">
-                <button className="p-10px-16px r-8px bd-0 bg-ink c-bg t-14px w-600" type="button" onClick={vm.addPicked}>Add to avoid list</button>
-                <button className="p-10px-16px r-8px bd-1px-solid-ink bg-bg t-14px" type="button" onClick={vm.closePicker}>Cancel</button>
+                <button className="p-10px-16px r-pill bd-0 bg-action c-bg t-14px w-600" type="button" onClick={vm.addPicked}>Add to avoid list</button>
+                <button className="p-10px-16px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={vm.closePicker}>Cancel</button>
               </div>
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function StepBranding({ vm }) {
         <div className="flex gap-8px wrap">
           {vm.treatChips.map((c, i_) => (
             <Fragment key={i_}>
-              <button className="p-8px-14px r-8px bd-1px-solid-ink t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
+              <button className="p-8px-14px r-pill bd-1px-solid-grey-2 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
             </Fragment>
           ))}
         </div>
@@ -136,13 +136,13 @@ export default function StepBranding({ vm }) {
               <label className="t-13px" htmlFor={bg.inputId}>{bg.title}</label>
               <div className="flex gap-8px">
                 <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" id={bg.inputId} name={bg.field} value={bg.value} onChange={vm.onField} placeholder="Search for a brand" />
-                <button className="p-8px-14px r-8px bd-1px-solid-ink bg-bg t-14px" type="button" onClick={bg.add}>Add</button>
+                <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={bg.add}>Add</button>
               </div>
               {bg.hasSugg && (
                 <div className="flex gap-6px wrap">
                   {bg.sugg.map((sg, i_) => (
                     <Fragment key={i_}>
-                      <button className="p-6px-10px r-6px bd-1px-solid-faint bg-bg t-13px" type="button" onClick={sg.pick}>{sg.label}</button>
+                      <button className="p-6px-10px r-pill bd-1px-solid-faint bg-bg t-13px" type="button" onClick={sg.pick}>{sg.label}</button>
                     </Fragment>
                   ))}
                 </div>

@@ -42,7 +42,7 @@ export function tokensCss(d, sections = ALL_SECTIONS) {
   if (has("word")) fonts.push(`  --font-wordmark: ${stack(d.wordFont)};`);
   if (has("type")) fonts.push(`  --font-display: ${stack(d.display)};`, `  --font-body: ${stack(d.body)};`);
   if (fonts.length) blocks.push(fonts.join("\n"));
-  return `/* ${d.name}: direction tokens from LightBrand */\n:root {\n${blocks.join("\n\n")}\n}\n`;
+  return `/* ${d.name}: direction tokens from KAI */\n:root {\n${blocks.join("\n\n")}\n}\n`;
 }
 
 export function tokensJson(d, sections = ALL_SECTIONS) {
@@ -77,7 +77,7 @@ export function fontsGuide(d, sections = ALL_SECTIONS) {
   const rows = list.map((n) => `| ${n} | \`${pkg(n)}\` | ${weights(n).join(", ")} | \`${stack(n)}\` |`);
   return `# Fonts: ${d.name}
 
-All of these are open-license families from the LightBrand allowlist.
+All of these are open-license families from the KAI allowlist.
 
 | Family | Install name | Weights | CSS stack |
 |---|---|---|---|

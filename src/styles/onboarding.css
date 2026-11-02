@@ -1,0 +1,124 @@
+/* KAI logo and the first two screens. */
+
+.kai-logo {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-logo);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-black);
+}
+.kai-logo img {
+  display: block;
+}
+.kai-logo--lg {
+  gap: 18px;
+  font-size: 65.143px;
+}
+.kai-logo--md {
+  gap: 9px;
+  font-size: 32.571px;
+}
+.kai-logo--sm {
+  gap: 6px;
+  font-size: 22px;
+}
+.page-logo {
+  position: absolute;
+  top: 31px;
+  left: 38px;
+}
+
+/* The brief's column reaches the logo on narrower screens, so the logo joins the flow. */
+@media (max-width: 1000px) {
+  .page-logo--flow {
+    position: static;
+    align-self: flex-start;
+  }
+}
+
+.splash {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: var(--color-bg);
+  cursor: default;
+}
+
+.welcome {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 33px;
+  padding: clamp(112px, 30vh, 261px) 24px 80px;
+}
+.welcome__title {
+  margin: 0;
+  font-size: var(--text-32);
+  line-height: 38.4px;
+  text-align: center;
+}
+.welcome__options {
+  width: min(632px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.start-option {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 32px 12px 20px;
+  border: 1px solid var(--color-grey-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+.start-option:hover {
+  border-color: var(--color-action);
+}
+.start-option__radio {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: 2px solid var(--color-grey-2);
+  border-radius: var(--radius-full);
+}
+.start-option:hover .start-option__radio {
+  border: 5px solid var(--color-action);
+}
+.start-option__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.start-option__title {
+  font-size: var(--text-16);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.start-option__sub {
+  font-size: var(--text-14);
+  color: var(--color-muted);
+}
+
+.bg-action {
+  background: var(--color-action);
+}
+button.bg-action:hover {
+  background: var(--color-action-hover);
+}
+.r-pill {
+  border-radius: var(--radius-pill);
+}
+.bd-1px-solid-grey-2 {
+  border: 1px solid var(--color-grey-2);
+}

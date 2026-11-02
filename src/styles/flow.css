@@ -27,17 +27,21 @@
 
 .btn {
   padding: 10px 16px;
-  border-radius: var(--radius-8);
-  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-grey-2);
   background: var(--color-bg);
   font-size: var(--text-14);
   flex: none;
 }
 .btn--primary {
-  border-color: var(--color-ink);
-  background: var(--color-ink);
+  border-color: var(--color-action);
+  background: var(--color-action);
   color: var(--color-bg);
   font-weight: 600;
+}
+.btn--primary:hover:not(:disabled) {
+  border-color: var(--color-action-hover);
+  background: var(--color-action-hover);
 }
 .btn--primary:disabled {
   border-color: var(--color-line);
@@ -72,7 +76,7 @@
   flex: none;
 }
 .direction-tab[aria-selected="true"] {
-  border-bottom-color: var(--color-ink);
+  border-bottom-color: var(--color-action);
   color: var(--color-ink);
 }
 
@@ -140,7 +144,7 @@
   font-size: var(--text-13);
 }
 .seg__btn[aria-pressed="true"] {
-  background: var(--color-ink);
+  background: var(--color-action);
   color: var(--color-bg);
   font-weight: 600;
 }

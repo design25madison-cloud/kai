@@ -2,6 +2,7 @@ import { useState } from "react";
 import CompareView from "./CompareView.jsx";
 import ExportMenu from "./ExportMenu.jsx";
 import ImagerySection from "./ImagerySection.jsx";
+import KaiLogo from "./KaiLogo.jsx";
 import Moodboard from "./Moodboard.jsx";
 import PaletteSection from "./PaletteSection.jsx";
 import ProgressRail from "./ProgressRail.jsx";
@@ -21,7 +22,7 @@ export default function OutputScreen({ vm }) {
         <div className="results-header__inner">
           <div className="results-header__row">
             <div className="results-header__crumb">
-              <span className="w-600">LightBrand</span>
+              <KaiLogo size="sm" />
               <span className="c-muted t-14px">/</span>
               <div className="relative">
                 <button className="crumb-btn" type="button" onClick={() => setProjectMenu(!projectMenu)} aria-expanded={projectMenu} aria-haspopup="menu">{vm.f.name}</button>

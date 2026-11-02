@@ -1,11 +1,13 @@
 import { Fragment } from "react";
+import KaiLogo from "./KaiLogo.jsx";
 
 export default function StartScreen({ vm }) {
   return (
     <div className="maxw-680px m-0-auto p-96px-24px-80px flex col gap-28px">
+      <KaiLogo className="page-logo" />
+      <button className="link-btn self-flex-start" type="button" onClick={vm.backToWelcome}>Back</button>
       <div className="flex col gap-8px">
-        <div className="t-13px c-muted">LightBrand</div>
-        <h1 className="m-0 t-32px w-600 lh-1_2">Start a brand direction</h1>
+        <h1 className="m-0 t-32px lh-1_2">Start a brand direction</h1>
         <p className="m-0 c-muted t-16px lh-1_5">Add anything you already have. None of it is required.</p>
       </div>
       <div className="flex col gap-10px">
@@ -73,13 +75,13 @@ export default function StartScreen({ vm }) {
               </div>
               <div className="relative h-28px flex items-center">
                 <div className="absolute left-0 right-0 h-8px r-4px bg-track" />
-                <div className="absolute left-0 h-8px r-4px bg-ink" style={{ width: vm.keepPct }} />
+                <div className="absolute left-0 h-8px r-4px bg-action" style={{ width: vm.keepPct }} />
                 <input className="dial relative w-px-100pct m-0" type="range" min="0" max="100" value={vm.keep} onChange={vm.setKeep} aria-label="How much to keep, from keep what I have to start fresh" aria-valuetext={vm.keepName} />
               </div>
               <div className="grid cols-repeat-4-minmax-0-1fr gap-6px" role="group" aria-label="Stops">
                 {vm.keepStops.map((ks, i_) => (
                   <Fragment key={i_}>
-                    <button className="p-7px-6px r-6px t-12px" type="button" onClick={ks.pick} aria-pressed={ks.on} style={{ border: `1px solid ${ks.bd}`, background: ks.bg, color: ks.fg }}>{ks.label}</button>
+                    <button className="p-7px-6px r-pill t-12px" type="button" onClick={ks.pick} aria-pressed={ks.on} style={{ border: `1px solid ${ks.bd}`, background: ks.bg, color: ks.fg }}>{ks.label}</button>
                   </Fragment>
                 ))}
               </div>
@@ -88,22 +90,8 @@ export default function StartScreen({ vm }) {
           </section>
         </>
       )}
-      <div className="flex col gap-10px">
-        <h2 className="m-0 t-18px w-600">How do you want to fill in the rest?</h2>
-        {vm.paths.map((p, i_) => (
-          <Fragment key={i_}>
-            <button className="flex items-center gap-16px p-16px-20px r-10px bg-fill ta-left" type="button" onClick={p.pick} aria-pressed={p.on} style={{ border: `2px solid ${p.bd}` }}>
-              <span className="w-px-18px h-18px r-50pct bd-2px-solid-ink flex-none" style={{ background: p.dot }} />
-              <span className="flex col gap-2px">
-                <span className="t-16px w-600">{p.label}</span>
-                <span className="t-14px c-muted">{p.sub}</span>
-              </span>
-            </button>
-          </Fragment>
-        ))}
-      </div>
       <div className="flex justify-flex-end">
-        <button className="p-12px-22px r-8px bd-0 bg-ink c-bg w-600" type="button" onClick={vm.toBrief}>Continue</button>
+        <button className="p-12px-22px r-pill bd-0 bg-action c-bg w-600" type="button" onClick={vm.toBrief}>Continue</button>
       </div>
     </div>
   );

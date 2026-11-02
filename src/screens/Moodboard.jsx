@@ -7,7 +7,7 @@ export default function Moodboard({ vm }) {
       <div className="flex justify-space-between items-flex-end gap-12px wrap">
         <div className="flex col gap-2px">
           <span className="t-12px c-muted">{vm.f.name} · Moodboard · Direction, not final</span>
-          <h1 className="m-0 t-28px w-600" id="mb-h">{vm.cur.label}: {vm.cur.name}</h1>
+          <h1 className="m-0 t-28px" id="mb-h">{vm.cur.label}: {vm.cur.name}</h1>
         </div>
       </div>
       <div className="bento r-14px" style={{ padding: vm.bentoPad, background: vm.bentoBg }}>

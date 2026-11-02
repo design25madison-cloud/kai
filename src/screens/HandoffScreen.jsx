@@ -1,10 +1,12 @@
+import KaiLogo from "./KaiLogo.jsx";
+
 export default function HandoffScreen({ vm }) {
   const { handoff: h } = vm;
   return (
     <div className="handoff">
       <header className="flow-bar">
         <div className="flow-bar__title">
-          <span className="w-600">LightBrand</span>
+          <KaiLogo size="sm" />
           <span className="c-muted t-14px">/ {h.name} · Handoff</span>
         </div>
         <button className="link-btn" type="button" onClick={h.reopen}>Reopen the meeting</button>
@@ -12,7 +14,7 @@ export default function HandoffScreen({ vm }) {
 
       <div className="handoff__body">
         <div className="handoff__head">
-          <h1 className="m-0 t-28px w-600">{h.direction} is ready for the designer</h1>
+          <h1 className="m-0 t-28px">{h.direction} is ready for the designer</h1>
           <p className="m-0 t-14px c-muted">{h.agreedText} This is a starting direction, not the final brand.</p>
         </div>
 

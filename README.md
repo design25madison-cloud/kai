@@ -1,6 +1,6 @@
-# LightBrand prototype
+# KAI prototype
 
-Interactive prototype of the LightBrand happy path: start → brief → generate → review → alignment meeting → handoff.
+Interactive prototype of the KAI happy path: onboarding → brief → generate → review → alignment meeting → handoff.
 Generation is simulated, so no backend or API key is needed.
 
 ```bash
