@@ -437,6 +437,7 @@ select:not([multiple]) {
 }
 .ref-card {
   position: relative;
+  overflow: hidden;
   aspect-ratio: 1;
   display: flex;
   align-items: flex-end;
@@ -446,6 +447,7 @@ select:not([multiple]) {
   font-size: var(--text-12);
 }
 .ref-card__remove {
+  z-index: 1;
   position: absolute;
   top: 12px;
   right: 12px;

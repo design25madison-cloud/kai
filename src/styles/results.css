@@ -1,15 +1,14 @@
 /* Direction page: header, toolbar, section progress rail. */
 
+/* Two widths: global nav at the page margin, tabs on the same column as the content below. */
 .results-header {
-  padding: 16px 24px 0;
   border-bottom: 1px solid var(--color-divider);
 }
 .results-header__inner {
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 16px 38px 10px;
 }
 .results-header__row {
   display: flex;
@@ -153,6 +152,9 @@
 }
 
 .results-tabs {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
   display: flex;
   overflow-x: auto;
 }
@@ -163,13 +165,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px 18px 10px;
+  padding: 12px 18px 10px 0;
   border: 0;
   text-align: left;
 }
 
-/* Rail sits in the left gutter. The body keeps clear of it below 1440px, and at 1440px this
-   still resolves to the design's 144px content edge. */
+/* Rail sits in the left gutter. Below 1420px the body keeps clear of it; from there up the
+   content sits on the design's centered 1200px column. */
 .results-body {
   max-width: 1200px;
   margin: 0 auto;
@@ -179,12 +181,12 @@
   padding: 20px 24px 120px;
 }
 .results-body-wrap--rail {
-  padding-inline: 96px;
+  padding-inline: 110px;
 }
 
 .progress-rail {
   position: fixed;
-  left: 16px;
+  left: 38px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;
@@ -329,4 +331,134 @@
   border-radius: var(--radius-pill);
   background: var(--color-tint);
   font-size: var(--text-13);
+}
+
+@media (max-width: 760px) {
+  .results-header__inner {
+    padding-inline: 24px;
+  }
+}
+
+/* Moodboard palette: each color has its own controls. Swatches can be narrower than the
+   controls, so the panel overflows the swatch and sits above its neighbors. */
+.swatches {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  overflow: visible;
+}
+.swatch {
+  position: relative;
+  min-width: 62px;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px 8px;
+  border-radius: var(--radius-min);
+  font-size: var(--text-11);
+}
+.swatch:hover,
+.swatch:focus-within {
+  z-index: 5;
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
+.swatch__hex {
+  white-space: nowrap;
+}
+.swatch__panel {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: max-content;
+  max-width: 290px;
+  padding: 3px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-min);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-size: var(--text-12);
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+/* The outer two stay inside the tile rather than centering past its edge. */
+.swatch:first-child .swatch__panel {
+  left: 8px;
+  transform: none;
+}
+.swatch:last-child .swatch__panel,
+.swatch:nth-last-child(2) .swatch__panel {
+  left: auto;
+  right: 8px;
+  transform: none;
+}
+.swatch:hover .swatch__panel,
+.swatch:focus-within .swatch__panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+.swatch:hover .piece-badge,
+.swatch:focus-within .piece-badge {
+  opacity: 0;
+}
+.swatch__panel input {
+  width: 84px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--color-grey-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  font-size: var(--text-12);
+}
+.swatch__warn {
+  width: 100%;
+  padding: 2px 10px 4px;
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .swatch__panel {
+    transition: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .swatch {
+    min-width: 0;
+  }
+  .swatch__hex {
+    display: none;
+  }
+}
+
+.full-row {
+  grid-column: 1 / -1;
+}
+
+/* Reference photos */
+.ref-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ref-caption {
+  position: relative;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+.ref-credit {
+  font-size: var(--text-11);
+}
+.ref-credit a {
+  color: inherit;
 }

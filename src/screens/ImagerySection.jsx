@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import PieceActions from "./PieceActions.jsx";
+import RefImage, { RefCredit } from "./RefImage.jsx";
 
 export default function ImagerySection({ vm }) {
   return (
@@ -21,12 +22,13 @@ export default function ImagerySection({ vm }) {
         {vm.cur.imageCards.map((im, i_) => (
           <Fragment key={i_}>
             <div className="flex col gap-6px">
-              <div className="relative ar-4-3 r-10px bg-track flex items-flex-end justify-space-between p-16px t-13px c-ink-2" style={{ border: `2px solid ${im.pinBd}` }}>
+              <div className="relative ar-4-3 r-10px bg-track flex items-flex-end justify-space-between p-16px t-13px c-ink-2 of-hidden" style={{ border: `2px solid ${im.pinBd}` }}>
                 {vm.cmode && (
                   <button className="pick" type="button" onClick={im.pinC} aria-pressed={im.picked} aria-label={im.pinAria} />
                 )}<PieceActions vm={vm} piece={{ label: im.label, locked: im.locked, toggleLock: im.pin, comment: im.pinC }} />
-                <span>{im.label}</span>
+                <RefImage label={im.label} />
               </div>
+              <RefCredit label={im.label} />
               {vm.sec.refs.editing && (
                 <button className="p-7px r-pill bd-1px-solid-grey-1 bg-bg t-12px" type="button" onClick={im.swap}>Swap</button>
               )}

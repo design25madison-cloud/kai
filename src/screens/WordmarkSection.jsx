@@ -49,19 +49,10 @@ export default function WordmarkSection({ vm }) {
           )}<PieceActions vm={vm} piece={vm.pieces.wordDark} />
           <span className="t-64px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.onDeep }}>{vm.wordUpper}</span>
         </div>
-        <div className="h-120px r-10px bd-1px-solid-line flex items-center justify-center gap-24px" style={{ background: vm.cur.card }}>
+        <div className="full-row h-120px r-10px bd-1px-solid-line flex items-center justify-center gap-24px" style={{ background: vm.cur.card }}>
           <span className="t-22px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>
           <span className="t-14px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>
           <span className="t-12px" style={{ color: vm.cur.ink }}>small sizes</span>
-        </div>
-        <div className="h-120px r-10px bd-1px-solid-line of-hidden flex col">
-          <div className="bg-fill p-8px-12px flex gap-10px items-center">
-            <span className="w-px-10px h-10px r-50pct bg-line-strong" />
-            <span className="flex-1 bg-bg r-6px p-5px-10px t-12px c-ink-2">{vm.domainShown}</span>
-          </div>
-          <div className="flex-1 flex items-center p-0-16px" style={{ background: vm.cur.light }}>
-            <span className="t-22px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>
-          </div>
         </div>
       </div>
     </section>

@@ -146,8 +146,8 @@ export default class BrandApp extends Component {
         tone: [['Sturdy', 'heavy'], ['Direct', 'blunt'], ['Precise', 'cold']], headline: 'Built for the load you carry.', micro: 'Saved. Your changes are live.',
         voices: [{ tone: [['Steady', 'slow'], ['Plain-spoken', 'curt'], ['Exact', 'fussy']], headline: 'Strength you can count on.', micro: 'Done. Everything held.' },
           { tone: [['Grounded', 'stiff'], ['Confident', 'loud'], ['Clear', 'cold']], headline: 'Made to hold.', micro: 'Saved. Nothing lost.' }],
-        images: [['Rusted metal', 'Unsplash'], ['Sand ripples', 'Are.na'], ['Steel lattice', 'Unsplash'], ['Container yard', 'Are.na'], ['Desert texture', 'Unsplash'], ['Rowing crew', 'Unsplash']],
-        imgPool: [['Forged steel', 'Unsplash'], ['Cast iron', 'Are.na'], ['Dune shadows', 'Unsplash'], ['Weld seam', 'Are.na'], ['Ochre wall', 'Unsplash'], ['Quarry', 'Unsplash']],
+        images: [['Rusted metal', 'Wikimedia Commons'], ['Sand ripples', 'Wikimedia Commons'], ['Steel lattice', 'Wikimedia Commons'], ['Container yard', 'Wikimedia Commons'], ['Desert texture', 'Wikimedia Commons'], ['Rowing crew', 'Wikimedia Commons']],
+        imgPool: [['Forged steel', 'Wikimedia Commons'], ['Cast iron', 'Wikimedia Commons'], ['Dune shadows', 'Wikimedia Commons'], ['Weld seam', 'Wikimedia Commons'], ['Ochre wall', 'Wikimedia Commons'], ['Quarry', 'Wikimedia Commons']],
         reason: 'This is the closest match to your brief. The iron brown and the squared Anta wordmark carry "sturdy" and "industrial," the sand surface keeps the warmth your tone sliders leaned toward, and nothing in it uses the gradients or neon on your avoid list. The amber accent is tuned down to a UI primary that passes AA contrast for button text.',
         match: ['Sturdy', 'Industrial', 'Precise', 'Leans warm', 'No gradients or neon'],
         tradeoff: 'Signal amber is loud at full strength, so keep it to accents and use the tuned shade for buttons and links.' },
@@ -159,8 +159,8 @@ export default class BrandApp extends Component {
         tone: [['Calm', 'passive'], ['Clear', 'clinical'], ['Exact', 'rigid']], headline: 'Clarity at every step.', micro: 'All set. Nothing else needed.',
         voices: [{ tone: [['Measured', 'dull'], ['Lucid', 'sterile'], ['Calm', 'distant']], headline: 'See every step clearly.', micro: 'Up to date. Nothing needs you.' },
           { tone: [['Precise', 'rigid'], ['Quiet', 'passive'], ['Direct', 'abrupt']], headline: 'Less noise. More signal.', micro: 'All clear.' }],
-        images: [['Brushed steel', 'Unsplash'], ['Turbine blades', 'Unsplash'], ['Concrete wall', 'Are.na'], ['Wire mesh', 'Are.na'], ['Fog over water', 'Unsplash'], ['Machined parts', 'Unsplash']],
-        imgPool: [['Aluminum panel', 'Unsplash'], ['Glass facade', 'Are.na'], ['Overcast harbor', 'Unsplash'], ['Blueprint', 'Are.na'], ['Server aisle', 'Unsplash'], ['Steel cable', 'Unsplash']],
+        images: [['Brushed steel', 'Wikimedia Commons'], ['Turbine blades', 'Wikimedia Commons'], ['Concrete wall', 'Wikimedia Commons'], ['Wire mesh', 'Wikimedia Commons'], ['Fog over water', 'Wikimedia Commons'], ['Machined parts', 'Wikimedia Commons']],
+        imgPool: [['Aluminum panel', 'Wikimedia Commons'], ['Glass facade', 'Wikimedia Commons'], ['Overcast harbor', 'Wikimedia Commons'], ['Blueprint', 'Wikimedia Commons'], ['Server aisle', 'Wikimedia Commons'], ['Steel cable', 'Wikimedia Commons']],
         reason: 'This option matches "precise" best and reads the clearest of the three. It ranks second because it is cooler than the warmth your sliders asked for, and slate and steel are the most expected colors for an industrial brand, so it does less to stand apart.',
         match: ['Precise', 'Industrial', 'No gradients or neon'],
         tradeoff: 'Strong for product UI, weaker as a memorable brand. Warming the surface toward sand would close the gap with your brief.' },
@@ -172,8 +172,8 @@ export default class BrandApp extends Component {
         tone: [['Grounded', 'rough'], ['Honest', 'plain'], ['Bold', 'loud']], headline: 'Made from the ground up.', micro: 'Done. On to the next one.',
         voices: [{ tone: [['Earthy', 'rustic'], ['Warm', 'soft'], ['Bold', 'brash']], headline: 'Rooted in the real.', micro: 'Nice work. That is done.' },
           { tone: [['Honest', 'blunt'], ['Hands-on', 'messy'], ['Solid', 'heavy']], headline: 'Built by hand, built to last.', micro: 'Done and dusted.' }],
-        images: [['Raw clay', 'Are.na'], ['Weathered wood', 'Unsplash'], ['Stone slab', 'Unsplash'], ['Rust bloom', 'Are.na'], ['Dry riverbed', 'Unsplash'], ['Hand tools', 'Unsplash']],
-        imgPool: [['Sun-dried brick', 'Unsplash'], ['Linen weave', 'Are.na'], ['Clay pots', 'Unsplash'], ['Olive grove', 'Unsplash'], ['Sandstone', 'Are.na'], ['Wood grain', 'Unsplash']],
+        images: [['Raw clay', 'Wikimedia Commons'], ['Weathered wood', 'Wikimedia Commons'], ['Stone slab', 'Wikimedia Commons'], ['Rust bloom', 'Wikimedia Commons'], ['Dry riverbed', 'Wikimedia Commons'], ['Hand tools', 'Wikimedia Commons']],
+        imgPool: [['Sun-dried brick', 'Wikimedia Commons'], ['Linen weave', 'Wikimedia Commons'], ['Clay pots', 'Wikimedia Commons'], ['Olive grove', 'Wikimedia Commons'], ['Sandstone', 'Wikimedia Commons'], ['Wood grain', 'Wikimedia Commons']],
         reason: 'This is the most distinctive and earthy option, with the heaviest wordmark. It ranks third because it fits "sturdy" but not "precise," and the weight leans toward a lifestyle brand more than an industrial one.',
         match: ['Sturdy', 'Leans warm', 'No gradients or neon'],
         tradeoff: 'Memorable, but the furthest from "precise." Pairing it with a lighter wordmark would bring it closer to the brief.' }
@@ -547,7 +547,7 @@ export default class BrandApp extends Component {
     const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: k === 0, on: s.option === k, bd: s.option === k ? 'var(--color-action)' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? 'var(--color-ink)' : 'var(--color-ink)', pick: () => set({ option: k, edit: null, draft: null, view: 'dir' }) }));
 
     const SECTION_IDS = ['word', 'palette', 'ui', 'type', 'refs', 'preview', 'voice'];
-    const secNames = { word: 'Wordmark', palette: 'Palette', ui: 'UI primary', type: 'Typography', refs: 'Reference imagery', preview: 'UI preview', voice: 'Voice and tone' };
+    const secNames = { word: 'Wordmark', palette: 'Palette', ui: 'UI primary', type: 'Typography', refs: 'Reference imagery', preview: 'Visualization', voice: 'Voice and tone' };
     const sec = {};
     SECTION_IDS.forEach(id => {
       const editing = s.edit === id;

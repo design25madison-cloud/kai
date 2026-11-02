@@ -2,8 +2,8 @@ import ImagerySection from "./ImagerySection.jsx";
 import Moodboard from "./Moodboard.jsx";
 import PaletteSection from "./PaletteSection.jsx";
 import TypographySection from "./TypographySection.jsx";
-import UiPreviewSection from "./UiPreviewSection.jsx";
 import UiPrimarySection from "./UiPrimarySection.jsx";
+import VisualizationSection from "./VisualizationSection.jsx";
 import VoiceSection from "./VoiceSection.jsx";
 import WordmarkSection from "./WordmarkSection.jsx";
 
@@ -19,7 +19,7 @@ export default function PrintView({ vm }) {
       {on("ui") && <UiPrimarySection vm={print} />}
       {on("type") && <TypographySection vm={print} />}
       {on("refs") && <ImagerySection vm={print} />}
-      {on("preview") && <UiPreviewSection vm={print} />}
+      {on("preview") && <VisualizationSection vm={print} />}
       {on("voice") && <VoiceSection vm={print} />}
     </div>
   );

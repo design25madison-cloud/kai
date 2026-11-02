@@ -81,7 +81,7 @@ const EXPORT_SECTIONS = [
   ["ui", "UI primary"],
   ["type", "Typography"],
   ["refs", "Imagery"],
-  ["preview", "UI preview"],
+  ["preview", "Visualization"],
   ["voice", "Voice"],
 ];
 

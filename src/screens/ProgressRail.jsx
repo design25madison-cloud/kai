@@ -7,7 +7,7 @@ const SECTIONS = [
   ["sec-ui", "UI primary"],
   ["sec-type", "Typography"],
   ["sec-refs", "Imagery"],
-  ["sec-preview", "UI preview"],
+  ["sec-preview", "Visualization"],
   ["sec-voice", "Voice"],
 ];
 const ROW_HEIGHT = 28;

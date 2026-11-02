@@ -7,8 +7,8 @@ import Moodboard from "./Moodboard.jsx";
 import PaletteSection from "./PaletteSection.jsx";
 import ProgressRail from "./ProgressRail.jsx";
 import TypographySection from "./TypographySection.jsx";
-import UiPreviewSection from "./UiPreviewSection.jsx";
 import UiPrimarySection from "./UiPrimarySection.jsx";
+import VisualizationSection from "./VisualizationSection.jsx";
 import VoiceSection from "./VoiceSection.jsx";
 import WordmarkSection from "./WordmarkSection.jsx";
 
@@ -54,7 +54,9 @@ export default function OutputScreen({ vm }) {
               )}
             </div>
           </div>
+        </div>
           {vm.isDir && (
+          <div className={showRail ? "results-body-wrap--rail" : undefined}>
             <div className="results-tabs" role="tablist" aria-label="Directions">
               {vm.optTabs.map((t) => (
                 <button key={t.label} className="results-tab" type="button" role="tab" onClick={t.pick} aria-selected={t.on} style={{ borderBottom: `2px solid ${t.bd}`, background: t.bg, color: t.fg }}>
@@ -68,8 +70,8 @@ export default function OutputScreen({ vm }) {
                 </button>
               ))}
             </div>
+          </div>
           )}
-        </div>
       </header>
       {vm.roundNotice && (
         <div className="round-notice" role="status">
@@ -92,7 +94,7 @@ export default function OutputScreen({ vm }) {
           <UiPrimarySection vm={vm} />
           <TypographySection vm={vm} />
           <ImagerySection vm={vm} />
-          <UiPreviewSection vm={vm} />
+          <VisualizationSection vm={vm} />
           <VoiceSection vm={vm} />
         </div>
         </div>

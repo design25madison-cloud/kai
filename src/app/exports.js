@@ -1,5 +1,6 @@
 // Builds export files from a direction, limited to the chosen sections.
 // Pure functions apart from downloadFile: no app state.
+import { referenceImage } from "./referenceImages.js";
 
 export const ALL_SECTIONS = ["mood", "word", "palette", "ui", "type", "refs", "preview", "voice"];
 
@@ -151,7 +152,7 @@ export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRou
   if (has("palette") && (f.avoidOther || "").trim()) avoid.push("Avoid these visuals: " + f.avoidOther.trim());
   if (avoid.length) blocks.push("## Avoid\n\n" + avoid.map((a) => "- " + a).join("\n"));
   if (has("refs")) {
-    blocks.push(`## Imagery\n\nReference images set direction only. They aren't licensed for use, so don't ship them.\n\n${d.imgs.map((im) => `- ${im[0]} (${im[1]})`).join("\n")}`);
+    blocks.push(`## Imagery\n\nReference images set direction only, so don't ship them.\n\n${d.imgs.map((im) => { const r = referenceImage(im[0]); return r ? `- ${im[0]}: ${r.author}, ${r.license}, ${r.page}` : `- ${im[0]}`; }).join("\n")}`);
   }
   return blocks.join("\n\n") + "\n";
 }

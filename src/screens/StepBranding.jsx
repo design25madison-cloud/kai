@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import RefImage from "./RefImage.jsx";
 
 export default function StepBranding({ vm }) {
   return (
@@ -153,7 +154,7 @@ export default function StepBranding({ vm }) {
             {vm.refCards.map((r) => (
               <div key={r.label} className="flex col gap-6px">
                 <div className="ref-card">
-                  {r.label}
+                  <RefImage label={r.label} />
                   <button className="ref-card__remove" type="button" onClick={r.remove} aria-label={r.removeAria}>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
                       <path d="M6 6l12 12M18 6L6 18" />
