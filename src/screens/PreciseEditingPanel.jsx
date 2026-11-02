@@ -17,7 +17,6 @@ export default function PreciseEditingPanel({ vm }) {
             </button>
           </div>
           <div className="flex-1 overfl-auto-v2 p-16px-18px flex col gap-14px" role="log" aria-live="polite">
-            <div className="p-12px-14px r-10px bg-fill-subtle t-13px lh-1_5 c-ink-2">Click any piece of the moodboard to add it to this chat, then say what to change. You can add several pieces at once. Nothing changes until you accept a suggestion.</div>
             {vm.allCm.map((cmt, i_) => (
               <Fragment key={i_}>
                 <div className="flex col gap-8px">
@@ -103,7 +102,7 @@ export default function PreciseEditingPanel({ vm }) {
             {vm.noDraftItems && (
               <span className="t-12px c-muted">No pieces added yet. Click something on the moodboard.</span>
             )}
-            <textarea className="p-10px r-8px bd-1px-solid-line bg-bg resize-vertical" value={vm.draft.text} onChange={vm.setDraft} rows="3" aria-label="Describe the edit" placeholder="Describe the edit, for example: make this warmer" />
+            <textarea autoFocus className="p-10px r-8px bd-1px-solid-line bg-bg resize-vertical" value={vm.draft.text} onChange={vm.setDraft} rows="3" aria-label="Describe the edit" placeholder="Describe the edit, for example: make this warmer" />
             <div className="flex gap-8px justify-flex-end">
               <button className="p-8px-14px r-8px bd-1px-solid-ink bg-bg t-13px" type="button" onClick={vm.cancelDraft}>Clear</button>
               <button className="p-8px-16px r-8px bd-0 c-bg t-13px w-600" type="button" onClick={vm.postComment} style={{ background: vm.sendBg }}>Send</button>

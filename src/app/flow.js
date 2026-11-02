@@ -3,7 +3,7 @@
 // The model: a direction is reviewed in rounds. In each round the group marks every module
 // Agreed or Needs work. Not agreed means back to picks: agreed modules lock, so regenerating
 // only touches what is still open, and the round count goes up. Agreed means handoff.
-import { downloadFile, fontsCss, handoffFiles, imageCsv, tokensCss, tokensJson, voiceMd } from "./exports.js";
+import { ALL_SECTIONS, claudeMd, downloadFile, fontsGuide, handoffFiles, tokensCss, tokensJson } from "./exports.js";
 
 export const MODULES = [
   ["word", "Wordmark"],
@@ -64,6 +64,54 @@ function describeOpen(open) {
   return open.map((o) => (o.note ? `${o.label} ("${o.note}")` : o.label)).join(", ");
 }
 
+const EXPORT_SECTIONS = [
+  ["mood", "Moodboard"],
+  ["word", "Wordmark"],
+  ["palette", "Palette"],
+  ["ui", "UI primary"],
+  ["type", "Typography"],
+  ["refs", "Imagery"],
+  ["preview", "UI preview"],
+  ["voice", "Voice"],
+];
+
+// Each format, the sections that have something to put in it, and how to build the file.
+const EXPORT_FORMATS = [
+  { id: "pdf", label: "PDF", uses: ALL_SECTIONS },
+  { id: "claude", label: "CLAUDE.md", uses: ["word", "palette", "ui", "type", "refs", "voice"], name: "CLAUDE.md", mime: "text/markdown", build: (i) => claudeMd(i) },
+  { id: "css", label: "CSS tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.css", mime: "text/css", build: (i) => tokensCss(i.d, i.sections) },
+  { id: "json", label: "JSON tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.json", mime: "application/json", build: (i) => tokensJson(i.d, i.sections) },
+  { id: "fonts", label: "Font guide", uses: ["word", "type"], name: "fonts.md", mime: "text/markdown", build: (i) => fontsGuide(i.d, i.sections) },
+];
+
+function exportVals(app) {
+  const s = app.state;
+  const sel = s.exportSel;
+  const usable = (f) => f.uses.some((id) => sel.includes(id));
+  const current = EXPORT_FORMATS.find((f) => f.id === s.exportFormat);
+  const set = (patch) => app.setState(patch);
+  return {
+    allOn: sel.length === ALL_SECTIONS.length,
+    toggleAll: () => set({ exportSel: sel.length === ALL_SECTIONS.length ? [] : ALL_SECTIONS }),
+    sections: EXPORT_SECTIONS.map(([id, label]) => ({
+      id,
+      label,
+      on: sel.includes(id),
+      toggle: () => set({ exportSel: ALL_SECTIONS.filter((x) => (x === id ? !sel.includes(id) : sel.includes(x))) }),
+    })),
+    formats: EXPORT_FORMATS.map((f) => ({ id: f.id, label: f.label, on: f === current, disabled: !usable(f), pick: () => set({ exportFormat: f.id }) })),
+    canRun: usable(current),
+    run: () => {
+      if (!usable(current)) return;
+      if (current.id === "pdf") return app.printDirection(sel);
+      const content = current.build({ d: app.current(), f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, domains: s.domains, agreedRound: s.meeting.agreedRound, sections: sel });
+      downloadFile(current.name, content, current.mime);
+      set({ allMenu: false });
+      app.showToast(current.name + " downloaded.");
+    },
+  };
+}
+
 export function flowVals(app) {
   const s = app.state;
   const { meeting } = s;
@@ -74,17 +122,18 @@ export function flowVals(app) {
   const leaveTop = () => window.scrollTo(0, 0);
 
   const openMeeting = () => {
-    set({ screen: "meet", view: "dir", edit: null, draft: null, cmode: false, darkPrev: false, exMenu: null, allMenu: false });
+    set({ screen: "meet", view: "dir", edit: null, draft: null, cmode: false, darkPrev: false, allMenu: false });
     leaveTop();
   };
   const base = {
     isMeet,
     isHandoff,
     showPrint: isOut || isHandoff,
-    printAll: s.printScope === "all",
+    printSel: s.printSel,
     openMeeting,
     meetingLabel: meeting.log.length ? `Back to meeting · Round ${meeting.round}` : "Take to meeting",
     roundNotice: isOut ? meeting.notice : null,
+    exportMenu: exportVals(app),
     dismissNotice: () => set({ meeting: Object.assign({}, meeting, { notice: null }) }),
   };
   if (!isMeet && !isHandoff) return base;
@@ -202,49 +251,9 @@ export function flowVals(app) {
           app.showToast("Couldn't copy. Use Download instead.");
         }
       },
-      printPdf: () => app.printDirection("all"),
+      printPdf: () => app.printDirection(ALL_SECTIONS),
       reopen,
     };
   }
   return vals;
-}
-
-// Export menus on the direction page. Formats with no file behind them stay labeled as prototype.
-export function exportSection(app, sectionId, format, sectionName) {
-  const d = app.current();
-  const file = (name, content, mime) => {
-    downloadFile(name, content, mime);
-    app.showToast(name + " downloaded.");
-  };
-  const key = sectionId + "/" + format;
-  if (key === "palette/CSS tokens" || key === "ui/CSS tokens") return file("tokens.css", tokensCss(d), "text/css");
-  if (key === "palette/JSON tokens") return file("tokens.json", tokensJson(d), "application/json");
-  if (key === "type/CSS font stack") return file("fonts.css", fontsCss(d), "text/css");
-  if (key === "refs/Image links (.csv)") return file("reference-images.csv", imageCsv(d), "text/csv");
-  if (key === "voice/Markdown") return file("voice.md", voiceMd(d), "text/markdown");
-  if (key === "preview/PDF") return app.printDirection("board");
-  if (key === "voice/Copy to clipboard") {
-    return navigator.clipboard.writeText(voiceMd(d)).then(
-      () => app.showToast("Voice copied."),
-      () => app.showToast("Couldn't copy. Use Markdown instead."),
-    );
-  }
-  return app.showToast(`${sectionName} as ${format} isn't built yet (prototype).`);
-}
-
-export function exportPage(app, format) {
-  const s = app.state;
-  const d = app.current();
-  const file = (name, content, mime) => {
-    downloadFile(name, content, mime);
-    app.showToast(name + " downloaded.");
-  };
-  if (format === "Whole page (PDF)") return app.printDirection("all");
-  if (format === "Moodboard only (PDF)") return app.printDirection("board");
-  if (format === "Color tokens (CSS)") return file("tokens.css", tokensCss(d), "text/css");
-  if (format === "CLAUDE.md brand rules") {
-    const claude = handoffFiles({ d, f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, domains: s.domains, agreedRound: s.meeting.agreedRound })[0];
-    return file(claude.name, claude.content, claude.mime);
-  }
-  return app.showToast(`${format} isn't built yet (prototype).`);
 }

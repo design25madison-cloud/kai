@@ -1,4 +1,7 @@
-// Builds the handoff files from a direction. Pure functions: no app state, no DOM.
+// Builds export files from a direction, limited to the chosen sections.
+// Pure functions apart from downloadFile: no app state.
+
+export const ALL_SECTIONS = ["mood", "word", "palette", "ui", "type", "refs", "preview", "voice"];
 
 const SINGLE_WEIGHT = new Set(["Anta", "Archivo Black"]);
 const TYPE_SCALE = [
@@ -19,67 +22,56 @@ const isPlaceholder = (s) => !s || /^\[.*\]$/.test(s.trim());
 const pkg = (name) => "@fontsource/" + slug(name);
 const weights = (name) => (SINGLE_WEIGHT.has(name) ? [400] : [400, 600]);
 const stack = (name) => `'${name}', system-ui, sans-serif`;
-const families = (d) => [...new Set([d.wordFont, d.display, d.body])];
+function families(d, sections) {
+  const list = [];
+  if (sections.includes("word")) list.push(d.wordFont);
+  if (sections.includes("type")) list.push(d.display, d.body);
+  return [...new Set(list)];
+}
 
 function colorTokens(d) {
   return d.colors.map((c) => ({ token: "--brand-" + slug(c.role), name: c.name, role: c.role, hex: c.show, usage: c.ratio }));
 }
 
-export function tokensCss(d) {
-  const colors = colorTokens(d).map((c) => `  ${c.token}: ${c.hex}; /* ${c.name}, ${c.usage}% of the layout */`);
-  return `/* ${d.name}: direction tokens from LightBrand */
-:root {
-${colors.join("\n")}
-
-  /* Buttons and links. White text: ${d.uiRatio}:1 */
-  --ui-primary: ${d.ui};
-  --ui-primary-hover: ${d.uiHover};
-
-  --font-wordmark: ${stack(d.wordFont)};
-  --font-display: ${stack(d.display)};
-  --font-body: ${stack(d.body)};
-}
-`;
+export function tokensCss(d, sections = ALL_SECTIONS) {
+  const has = (id) => sections.includes(id);
+  const blocks = [];
+  if (has("palette")) blocks.push(colorTokens(d).map((c) => `  ${c.token}: ${c.hex}; /* ${c.name}, ${c.usage}% of the layout */`).join("\n"));
+  if (has("ui")) blocks.push(`  /* Buttons and links. White text: ${d.uiRatio}:1 */\n  --ui-primary: ${d.ui};\n  --ui-primary-hover: ${d.uiHover};`);
+  const fonts = [];
+  if (has("word")) fonts.push(`  --font-wordmark: ${stack(d.wordFont)};`);
+  if (has("type")) fonts.push(`  --font-display: ${stack(d.display)};`, `  --font-body: ${stack(d.body)};`);
+  if (fonts.length) blocks.push(fonts.join("\n"));
+  return `/* ${d.name}: direction tokens from LightBrand */\n:root {\n${blocks.join("\n\n")}\n}\n`;
 }
 
-export function fontsCss(d) {
-  return `:root {
-  --font-wordmark: ${stack(d.wordFont)};
-  --font-display: ${stack(d.display)};
-  --font-body: ${stack(d.body)};
-}
-`;
-}
-
-export function tokensJson(d) {
-  const color = {};
-  colorTokens(d).forEach((c) => {
-    color[slug(c.role)] = { $value: c.hex, $type: "color", name: c.name, usagePercent: c.usage };
-  });
-  return (
-    JSON.stringify(
-      {
-        direction: d.name,
-        color,
-        ui: {
-          primary: { $value: d.ui, $type: "color", contrastOnWhite: Number(d.uiRatio) },
-          primaryHover: { $value: d.uiHover, $type: "color" },
-        },
-        font: {
-          wordmark: { $value: d.wordFont, package: pkg(d.wordFont), trackingPx: d.track },
-          display: { $value: d.display, package: pkg(d.display) },
-          body: { $value: d.body, package: pkg(d.body) },
-        },
-        typeScale: typeScaleOf(d).map((t) => ({ level: t.level, font: t.face, sizePx: t.px, lineHeight: t.lh })),
-      },
-      null,
-      2,
-    ) + "\n"
-  );
+export function tokensJson(d, sections = ALL_SECTIONS) {
+  const has = (id) => sections.includes(id);
+  const out = { direction: d.name };
+  if (has("palette")) {
+    out.color = {};
+    colorTokens(d).forEach((c) => {
+      out.color[slug(c.role)] = { $value: c.hex, $type: "color", name: c.name, usagePercent: c.usage };
+    });
+  }
+  if (has("ui")) {
+    out.ui = {
+      primary: { $value: d.ui, $type: "color", contrastOnWhite: Number(d.uiRatio) },
+      primaryHover: { $value: d.uiHover, $type: "color" },
+    };
+  }
+  if (has("word") || has("type")) out.font = {};
+  if (has("word")) out.font.wordmark = { $value: d.wordFont, package: pkg(d.wordFont), trackingPx: d.track };
+  if (has("type")) {
+    out.font.display = { $value: d.display, package: pkg(d.display) };
+    out.font.body = { $value: d.body, package: pkg(d.body) };
+    out.typeScale = typeScaleOf(d).map((t) => ({ level: t.level, font: t.face, sizePx: t.px, lineHeight: t.lh }));
+  }
+  return JSON.stringify(out, null, 2) + "\n";
 }
 
-export function fontsGuide(d) {
-  const list = families(d);
+export function fontsGuide(d, sections = ALL_SECTIONS) {
+  const list = families(d, sections);
   const embed = list.map((n) => `family=${n.replace(/ /g, "+")}:wght@${weights(n).join(";")}`).join("&");
   const imports = list.flatMap((n) => weights(n).map((w) => `import "${pkg(n)}/${w}.css";`));
   const rows = list.map((n) => `| ${n} | \`${pkg(n)}\` | ${weights(n).join(", ")} | \`${stack(n)}\` |`);
@@ -109,23 +101,8 @@ ${imports.join("\n")}
 `;
 }
 
-export function voiceMd(d) {
-  return `## Voice
-
-${d.tone.map((t) => `- ${t.yes}, not ${t.no}`).join("\n")}
-
-Sample headline: "${d.headline}"
-Sample interface line: "${d.micro}"
-`;
-}
-
-export function imageCsv(d) {
-  const esc = (s) => `"${String(s).replace(/"/g, '""')}"`;
-  const rows = d.imgs.map((im) => [im[0], im[1], "Moodboard only, not licensed for use"].map(esc).join(","));
-  return ["image,source,license", ...rows].join("\n") + "\n";
-}
-
-export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound }) {
+export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound, sections = ALL_SECTIONS }) {
+  const has = (id) => sections.includes(id);
   const name = f.name || "Brand";
   const about = [];
   if (!isPlaceholder(f.desc)) about.push(f.desc);
@@ -135,52 +112,45 @@ export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound }) {
     Number(d.uiRatio) >= 4.5
       ? `White text on it is ${d.uiRatio}:1, which passes AA.`
       : `White text on it is only ${d.uiRatio}:1, which fails AA. Fix this before shipping.`;
-  const avoid = [...(avoidT || []).map((t) => "Don't use " + t.toLowerCase() + "."), ...(avoidC || []).map((h) => `Don't use ${h}.`)];
   const status = agreedRound ? `Agreed in alignment round ${agreedRound}.` : "Not yet agreed in an alignment meeting.";
+  const blocks = [`# ${name} brand rules\n\nDirection: ${d.name}. ${status} This is a starting direction, not a finished brand. The designer owns the final system.`];
+  if (about.length) blocks.push(about.join("\n"));
 
-  return `# ${name} brand rules
+  const color = [];
+  if (has("palette")) {
+    color.push(`| Token | Name | Role | Hex | Usage |\n|---|---|---|---|---|\n${colorTokens(d).map((c) => `| \`${c.token}\` | ${c.name} | ${c.role} | ${c.hex} | ${c.usage}% |`).join("\n")}`);
+  }
+  const rules = [];
+  if (has("ui")) rules.push(`Use the UI primary (\`--ui-primary\`, ${d.ui}) for buttons and links. ${contrast}`, `Use ${d.uiHover} for the hover state of the UI primary.`);
+  if (has("palette")) {
+    rules.push(`Keep ${d.accentName} (${d.accent}) to accents. Don't use it for buttons or links.`);
+    rules.push("Don't use brand colors for status. Success, warning, and error colors aren't part of this direction, so ask the designer before adding them.");
+  }
+  if (rules.length) color.push(rules.map((r) => "- " + r).join("\n"));
+  if (color.length) blocks.push("## Color\n\n" + color.join("\n\n"));
 
-Direction: ${d.name}. ${status} This is a starting direction, not a finished brand. The designer owns the final system.
-${about.length ? "\n" + about.join("\n") + "\n" : ""}
-## Color
+  const type = [];
+  if (has("word")) type.push(`- Wordmark: ${d.wordFont}, uppercase, ${d.track}px letter spacing. Install \`${pkg(d.wordFont)}\`.`);
+  if (has("type")) type.push(`- Headings: ${d.display}. Install \`${pkg(d.display)}\`.`, `- Body and interface text: ${d.body}. Install \`${pkg(d.body)}\`.`);
+  if (type.length) {
+    let text = "## Type\n\n" + type.join("\n");
+    if (has("type")) {
+      text += `\n\n| Level | Font | Size | Line height |\n|---|---|---|---|\n${typeScaleOf(d).map((t) => `| ${t.level} | ${t.face} | ${t.size} | ${t.lh} |`).join("\n")}\n\nUse only these families. Don't substitute another font.`;
+    }
+    blocks.push(text);
+  }
 
-| Token | Name | Role | Hex | Usage |
-|---|---|---|---|---|
-${colorTokens(d)
-  .map((c) => `| \`${c.token}\` | ${c.name} | ${c.role} | ${c.hex} | ${c.usage}% |`)
-  .join("\n")}
-| \`--ui-primary\` | UI primary | Buttons and links | ${d.ui} | As needed |
-
-- Use the UI primary (${d.ui}) for buttons and links. ${contrast}
-- Use ${d.uiHover} for the hover state of the UI primary.
-- Keep ${d.accentName} (${d.accent}) to accents. Don't use it for buttons or links.
-- Don't use brand colors for status. Success, warning, and error colors aren't part of this direction, so ask the designer before adding them.
-
-## Type
-
-- Wordmark: ${d.wordFont}, uppercase, ${d.track}px letter spacing. Install \`${pkg(d.wordFont)}\`.
-- Headings: ${d.display}. Install \`${pkg(d.display)}\`.
-- Body and interface text: ${d.body}. Install \`${pkg(d.body)}\`.
-
-| Level | Font | Size | Line height |
-|---|---|---|---|
-${typeScaleOf(d)
-  .map((t) => `| ${t.level} | ${t.face} | ${t.size} | ${t.lh} |`)
-  .join("\n")}
-
-Use only these families. Don't substitute another font.
-
-## Voice
-
-${d.tone.map((t) => `- Be ${t.yes.toLowerCase()}, not ${t.no.toLowerCase()}.`).join("\n")}
-
-- Sample headline: "${d.headline}"
-- Sample interface line: "${d.micro}"
-${avoid.length ? "\n## Avoid\n\n" + avoid.map((a) => "- " + a).join("\n") + "\n" : ""}
-## Imagery
-
-Reference images set direction only. They aren't licensed for use, so don't ship them.
-`;
+  if (has("voice")) {
+    blocks.push(`## Voice\n\n${d.tone.map((t) => `- Be ${t.yes.toLowerCase()}, not ${t.no.toLowerCase()}.`).join("\n")}\n\n- Sample headline: "${d.headline}"\n- Sample interface line: "${d.micro}"`);
+  }
+  if (has("palette")) {
+    const avoid = [...(avoidT || []).map((t) => "Don't use " + t.toLowerCase() + "."), ...(avoidC || []).map((h) => `Don't use ${h}.`)];
+    if (avoid.length) blocks.push("## Avoid\n\n" + avoid.map((a) => "- " + a).join("\n"));
+  }
+  if (has("refs")) {
+    blocks.push(`## Imagery\n\nReference images set direction only. They aren't licensed for use, so don't ship them.\n\n${d.imgs.map((im) => `- ${im[0]} (${im[1]})`).join("\n")}`);
+  }
+  return blocks.join("\n\n") + "\n";
 }
 
 export function handoffFiles(input) {

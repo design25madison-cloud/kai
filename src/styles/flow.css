@@ -87,9 +87,6 @@
   min-width: 0;
   overflow-y: auto;
 }
-.meet__board a.tile {
-  pointer-events: none;
-}
 .meet__rail {
   min-height: 0;
   overflow-y: auto;

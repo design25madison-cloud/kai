@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import PieceActions from "./PieceActions.jsx";
 
 export default function TypographySection({ vm }) {
   return (
@@ -14,16 +15,6 @@ export default function TypographySection({ vm }) {
           </button>
           <button className="p-8px-14px r-8px bg-bg t-13px flex gap-6px items-center" type="button" onClick={vm.sec.type.regen} aria-disabled={vm.sec.type.locked} style={{ border: `1px solid ${vm.sec.type.regenBd}`, color: vm.sec.type.regenFg }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={vm.sec.type.regenFg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Regenerate</button>
           <button className="p-8px-14px r-8px bd-1px-solid-ink t-13px" type="button" onClick={vm.sec.type.toggleEdit} aria-pressed={vm.sec.type.editing} style={{ background: vm.sec.type.editBg, color: vm.sec.type.editFg }}>{vm.sec.type.editLabel}</button>
-          <button className="p-8px-14px r-8px bd-1px-solid-ink bg-bg t-13px" type="button" onClick={vm.sec.type.toggleExport} aria-expanded={vm.sec.type.exportOpen}>Export</button>
-          {vm.sec.type.exportOpen && (
-            <div className="absolute right-0 top-42px z-4 w-px-220px bg-bg bd-1px-solid-line r-10px p-6px flex col">
-              {vm.sec.type.formats.map((x, i_) => (
-                <Fragment key={i_}>
-                  <button className="ta-left p-9px-10px bd-0 r-6px bg-bg t-13px" type="button" onClick={x.pick}>{x.label}</button>
-                </Fragment>
-              ))}
-            </div>
-          )}
         </div>
       </div>
       {vm.sec.type.editing && (
@@ -48,14 +39,13 @@ export default function TypographySection({ vm }) {
               ))}
             </select>
           </div>
-          <span className="self-flex-end t-12px c-muted">Only allowlisted Google Fonts and Fontsource families, so every pairing installs. Edits lock this section.</span>
         </div>
       )}
       <div className="two">
         <div className="relative r-10px p-22px flex col gap-8px" style={{ background: vm.cur.deep, color: vm.cur.accentText }}>
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.typeDisplay} aria-pressed={vm.pinSel.typeDisplay} aria-label="Comment on the header typeface" />
-          )}
+          )}<PieceActions vm={vm} piece={vm.pieces.typeDisplay} />
           <span className="t-11px ls-0_06em">HEADER · {vm.cur.displayPkg}</span>
           <span className="t-34px w-600" style={{ fontFamily: `'${vm.cur.display}', sans-serif` }}>{vm.cur.display}</span>
           <span className="t-18px" style={{ fontFamily: `'${vm.cur.display}', sans-serif` }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</span>
@@ -63,7 +53,7 @@ export default function TypographySection({ vm }) {
         <div className="relative r-10px p-22px flex col gap-8px" style={{ background: vm.cur.deep, color: vm.cur.accentText }}>
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.typeBody} aria-pressed={vm.pinSel.typeBody} aria-label="Comment on the body typeface" />
-          )}
+          )}<PieceActions vm={vm} piece={vm.pieces.typeBody} />
           <span className="t-11px ls-0_06em">BODY · {vm.cur.bodyPkg}</span>
           <span className="t-34px" style={{ fontFamily: `'${vm.cur.body}', sans-serif` }}>{vm.cur.body}</span>
           <span className="t-18px" style={{ fontFamily: `'${vm.cur.body}', sans-serif` }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</span>

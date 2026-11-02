@@ -62,6 +62,45 @@
   right: 0;
   width: 280px;
 }
+.export-menu {
+  gap: 12px;
+  padding: 14px;
+}
+.export-menu__group {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.export-menu__legend {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 6px;
+  font-size: var(--text-13);
+  font-weight: 600;
+}
+.export-menu__legend .link-btn {
+  font-weight: 400;
+}
+.export-menu__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: var(--text-14);
+  cursor: pointer;
+}
+.export-menu__option input {
+  margin: 0;
+  accent-color: var(--color-ink);
+}
+.export-menu__option[data-disabled] {
+  color: var(--color-faint);
+  cursor: not-allowed;
+}
 .menu__item {
   padding: 10px 12px;
   border: 0;
@@ -193,5 +232,83 @@
   }
   .results-body-wrap--rail {
     padding-inline: 0;
+  }
+}
+
+/* Lock and comment on any piece of a direction */
+.piece-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-ink);
+  color: var(--color-bg);
+}
+.piece-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 4;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  background: var(--color-bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+.piece-action {
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-6);
+  background: transparent;
+  color: var(--color-ink);
+  font-size: var(--text-12);
+  white-space: nowrap;
+}
+.piece-action:hover {
+  background: var(--color-fill);
+}
+.piece-action[aria-pressed="true"] {
+  background: var(--color-ink);
+  color: var(--color-bg);
+}
+:has(> .piece-actions):hover > .piece-actions,
+:has(> .piece-actions):focus-within > .piece-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+:has(> .piece-actions):hover > .piece-badge,
+:has(> .piece-actions):focus-within > .piece-badge {
+  opacity: 0;
+}
+:has(> .piece-actions):hover {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+/* No hover on touch screens, so the controls stay visible there. */
+@media (hover: none) {
+  .piece-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .piece-badge {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .piece-actions {
+    transition: none;
   }
 }

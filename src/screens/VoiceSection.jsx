@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import PieceActions from "./PieceActions.jsx";
 
 export default function VoiceSection({ vm }) {
   return (
@@ -14,16 +15,6 @@ export default function VoiceSection({ vm }) {
           </button>
           <button className="p-8px-14px r-8px bg-bg t-13px flex gap-6px items-center" type="button" onClick={vm.sec.voice.regen} aria-disabled={vm.sec.voice.locked} style={{ border: `1px solid ${vm.sec.voice.regenBd}`, color: vm.sec.voice.regenFg }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={vm.sec.voice.regenFg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Regenerate</button>
           <button className="p-8px-14px r-8px bd-1px-solid-ink t-13px" type="button" onClick={vm.sec.voice.toggleEdit} aria-pressed={vm.sec.voice.editing} style={{ background: vm.sec.voice.editBg, color: vm.sec.voice.editFg }}>{vm.sec.voice.editLabel}</button>
-          <button className="p-8px-14px r-8px bd-1px-solid-ink bg-bg t-13px" type="button" onClick={vm.sec.voice.toggleExport} aria-expanded={vm.sec.voice.exportOpen}>Export</button>
-          {vm.sec.voice.exportOpen && (
-            <div className="absolute right-0 top-42px z-4 w-px-220px bg-bg bd-1px-solid-line r-10px p-6px flex col">
-              {vm.sec.voice.formats.map((x, i_) => (
-                <Fragment key={i_}>
-                  <button className="ta-left p-9px-10px bd-0 r-6px bg-bg t-13px" type="button" onClick={x.pick}>{x.label}</button>
-                </Fragment>
-              ))}
-            </div>
-          )}
         </div>
       </div>
       <div className="three">
@@ -46,14 +37,14 @@ export default function VoiceSection({ vm }) {
         <div className="relative p-18px r-10px bd-1px-solid-line flex col gap-6px">
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.voiceHead} aria-pressed={vm.pinSel.voiceHead} aria-label="Comment on the sample headline" />
-          )}
+          )}<PieceActions vm={vm} piece={vm.pieces.voiceHead} />
           <span className="t-12px c-muted">Sample headline</span>
           <span className="t-24px w-600 pr-36px" style={{ fontFamily: `'${vm.cur.display}', sans-serif` }}>{vm.cur.headline}</span>
         </div>
         <div className="relative p-18px r-10px bd-1px-solid-line flex col gap-6px">
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.voiceTone} aria-pressed={vm.pinSel.voiceTone} aria-label="Comment on the tone" />
-          )}
+          )}<PieceActions vm={vm} piece={vm.pieces.voiceTone} />
           <span className="t-12px c-muted">Sample interface line</span>
           <span className="t-18px pr-36px" style={{ fontFamily: `'${vm.cur.body}', sans-serif` }}>{vm.cur.micro}</span>
         </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CompareView from "./CompareView.jsx";
+import ExportMenu from "./ExportMenu.jsx";
 import ImagerySection from "./ImagerySection.jsx";
 import Moodboard from "./Moodboard.jsx";
 import PaletteSection from "./PaletteSection.jsx";
@@ -33,16 +34,9 @@ export default function OutputScreen({ vm }) {
               </div>
             </div>
             <div className="results-header__actions">
-              <button className="btn btn--primary" type="button" onClick={vm.openMeeting}>{vm.meetingLabel}</button>
               <div className="relative">
                 <button className="icon-btn" type="button" onClick={vm.toggleAll} aria-expanded={vm.allMenu} aria-label="Export page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4" /><path d="M7 9l5-5 5 5" /><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" /></svg></button>
-                {vm.allMenu && (
-                  <div className="menu menu--end">
-                    {vm.allFormats.map((x) => (
-                      <button key={x.label} className="menu__item" type="button" onClick={x.pick}>{x.label}</button>
-                    ))}
-                  </div>
-                )}
+                {vm.allMenu && <ExportMenu menu={vm.exportMenu} />}
               </div>
             </div>
           </div>
@@ -91,9 +85,6 @@ export default function OutputScreen({ vm }) {
       {vm.isDir && (
         <div className={showRail ? "results-body-wrap--rail" : undefined}>
         <div className="results-body">
-          {vm.darkPrev && (
-            <div className="p-12px-16px r-10px bg-ink c-bg t-14px">Previewing {vm.cur.label} in dark mode. Brand pieces sit on {vm.cur.darkName}. The palette colors themselves don't change.</div>
-          )}
           <Moodboard vm={vm} />
           <WordmarkSection vm={vm} />
           <PaletteSection vm={vm} />

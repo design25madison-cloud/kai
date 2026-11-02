@@ -5,7 +5,6 @@ export default function CompareView({ vm }) {
     <div className="maxw-1200px m-0-auto p-28px-24px-120px flex col gap-20px">
       <div className="flex col gap-6px">
         <h1 className="m-0 t-28px w-600">Compare the three directions</h1>
-        <p className="m-0 t-15px c-ink-2 maxw-72ch">Each row lines up the same piece across the options. Pick one per row to build your own direction.</p>
       </div>
       <div className="overfl-auto bd-1px-solid-line r-12px">
         <div className="minw-960px grid cols-150px-repeat-3-minmax-0-1fr">

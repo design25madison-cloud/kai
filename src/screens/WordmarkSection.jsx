@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import PieceActions from "./PieceActions.jsx";
 
 export default function WordmarkSection({ vm }) {
   return (
@@ -14,16 +15,6 @@ export default function WordmarkSection({ vm }) {
           </button>
           <button className="p-8px-14px r-8px bg-bg t-13px flex gap-6px items-center" type="button" onClick={vm.sec.word.regen} aria-disabled={vm.sec.word.locked} style={{ border: `1px solid ${vm.sec.word.regenBd}`, color: vm.sec.word.regenFg }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={vm.sec.word.regenFg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Regenerate</button>
           <button className="p-8px-14px r-8px bd-1px-solid-ink t-13px" type="button" onClick={vm.sec.word.toggleEdit} aria-pressed={vm.sec.word.editing} style={{ background: vm.sec.word.editBg, color: vm.sec.word.editFg }}>{vm.sec.word.editLabel}</button>
-          <button className="p-8px-14px r-8px bd-1px-solid-ink bg-bg t-13px" type="button" onClick={vm.sec.word.toggleExport} aria-expanded={vm.sec.word.exportOpen}>Export</button>
-          {vm.sec.word.exportOpen && (
-            <div className="absolute right-0 top-42px z-4 w-px-220px bg-bg bd-1px-solid-line r-10px p-6px flex col">
-              {vm.sec.word.formats.map((x, i_) => (
-                <Fragment key={i_}>
-                  <button className="ta-left p-9px-10px bd-0 r-6px bg-bg t-13px" type="button" onClick={x.pick}>{x.label}</button>
-                </Fragment>
-              ))}
-            </div>
-          )}
         </div>
       </div>
       {vm.sec.word.editing && (
@@ -42,21 +33,20 @@ export default function WordmarkSection({ vm }) {
             <label className="t-12px" htmlFor="e-tr">Letter spacing: {vm.cur.trackPx}</label>
             <input className="accent-ink" id="e-tr" type="range" min="0" max="20" value={vm.cur.track} onChange={vm.setTrack} />
           </div>
-          <span className="t-12px c-muted">Edits lock this section, so regenerating keeps them.</span>
         </div>
       )}
       <div className="two">
         <div className="relative h-200px r-10px flex col items-center justify-center gap-6px" style={{ background: vm.cur.surface }}>
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.word} aria-pressed={vm.pinSel.word} aria-label="Comment on the wordmark" />
-          )}
+          )}<PieceActions vm={vm} piece={vm.pieces.word} />
           <span className="t-12px" style={{ color: vm.cur.primary }}>{vm.cur.wordFont}</span>
           <span className="t-64px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>
         </div>
         <div className="relative h-200px r-10px flex items-center justify-center" style={{ background: vm.cur.deep }}>
           {vm.cmode && (
             <button className="pick" type="button" onClick={vm.pins.wordDark} aria-pressed={vm.pinSel.wordDark} aria-label="Comment on the wordmark on dark" />
-          )}
+          )}<PieceActions vm={vm} piece={vm.pieces.wordDark} />
           <span className="t-64px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.onDeep }}>{vm.wordUpper}</span>
         </div>
         <div className="h-120px r-10px bd-1px-solid-line flex items-center justify-center gap-24px" style={{ background: vm.cur.card }}>

@@ -1,7 +1,7 @@
 import { Component } from "react";
 import Root from "../screens/Root.jsx";
-import { typeScaleOf } from "./exports.js";
-import { exportPage, exportSection, flowVals, newMeeting } from "./flow.js";
+import { ALL_SECTIONS, typeScaleOf } from "./exports.js";
+import { flowVals, newMeeting } from "./flow.js";
 
 export default class BrandApp extends Component {
   constructor(props) {
@@ -12,10 +12,10 @@ export default class BrandApp extends Component {
       avoidC: [], avoidT: [], brandsA: [], brandsX: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
       refs: false, refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
       pk: { open: false, h: 280, s: 70, l: 30, text: null },
-      genStep: 0, option: 0, edit: null, exMenu: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
+      genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
       arts: [], view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
       mixPick: { word: 0, palette: 0, type: 0, refs: 0, voice: 0 }, mixBase: null, keep: 40, opinion: '', oRec: null,
-      meeting: newMeeting(), handoffFile: 'claude', printScope: 'all'
+      meeting: newMeeting(), handoffFile: 'claude', printSel: ALL_SECTIONS, exportSel: ALL_SECTIONS, exportFormat: 'pdf'
     };
     this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
     this._init = JSON.parse(JSON.stringify(this.state));
@@ -259,7 +259,7 @@ export default class BrandApp extends Component {
   lockOv(mod, patch) { const ov = this.state.ov[this.state.option] || {}; this.setOv(Object.assign({}, patch, { lock: Object.assign({}, ov.lock, { [mod]: true }) })); }
   showToast(msg, undo) {
     clearTimeout(this._t);
-    this.setState({ toast: msg, undo: undo || null, exMenu: null, allMenu: false });
+    this.setState({ toast: msg, undo: undo || null, allMenu: false });
     this._t = setTimeout(() => this.setState({ toast: '', undo: null }), undo ? 6000 : 2600);
   }
 
@@ -339,7 +339,7 @@ export default class BrandApp extends Component {
     }));
     const imgs = ov.images || base.images.map(x => [x[0], x[1], false]);
     const imageCards = imgs.map((im, k) => ({
-      label: im[0], source: im[1], pinBd: im[2] ? '#1E1E1E' : '#D9D9D9', pinText: im[2] ? 'Locked' : '', pinAction: im[2] ? 'Unlock' : 'Lock',
+      label: im[0], source: im[1], locked: !!im[2], pinBd: im[2] ? '#1E1E1E' : '#D9D9D9',
       pinC: pin('refs', k, im[0]), pinAria: 'Add ' + im[0] + ' to precise editing', picked: this.isPicked('refs', k),
       swap: () => {
         const pool = base.imgPool.concat(base.images); let n = ov.imgN || 0, p = pool[n % pool.length], g = 0;
@@ -367,15 +367,15 @@ export default class BrandApp extends Component {
   }
   current() { return this.optionData(this.state.option); }
 
-  printDirection(scope) {
-    this.setState({ printScope: scope, exMenu: null, allMenu: false }, () => window.print());
+  printDirection(sections) {
+    this.setState({ printSel: sections, allMenu: false }, () => window.print());
   }
 
   startComment(sec, target, label) {
     const d = this.state.draft || { items: [], text: '' }, items0 = d.items || [];
     const has = items0.some(x => x.sec === sec && x.target === target);
     const items = has ? items0.filter(x => !(x.sec === sec && x.target === target)) : items0.concat([{ sec, target, label }]);
-    this.setState({ draft: Object.assign({}, d, { items }), cmode: true, edit: null, exMenu: null });
+    this.setState({ draft: Object.assign({}, d, { items }), cmode: true, edit: null });
   }
   isPicked(sec, target) { const d = this.state.draft; return !!(d && d.items && d.items.some(x => x.sec === sec && x.target === target)); }
   updComment(id, patch) { this.setState({ comments: this.state.comments.map(c => c.id === id ? Object.assign({}, c, patch) : c) }); }
@@ -534,25 +534,18 @@ export default class BrandApp extends Component {
 
     const cur = this.current();
     const OPT = this.opts();
-    const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: k === 0, on: s.option === k, bd: s.option === k ? '#1E1E1E' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? '#1E1E1E' : '#5E5E5E', pick: () => set({ option: k, edit: null, exMenu: null, draft: null, view: 'dir' }) }));
+    const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: k === 0, on: s.option === k, bd: s.option === k ? '#1E1E1E' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? '#1E1E1E' : '#5E5E5E', pick: () => set({ option: k, edit: null, draft: null, view: 'dir' }) }));
 
-    const fmts = {
-      word: ['PNG', 'SVG'], palette: ['PNG', 'CSS tokens', 'JSON tokens'], ui: ['PNG', 'CSS tokens'], type: ['Font package (.zip)', 'CSS font stack', 'PNG specimen'],
-      refs: ['Image links (.csv)', 'PNG contact sheet'], preview: ['PNG', 'PDF'], voice: ['Markdown', 'Copy to clipboard']
-    };
+    const SECTION_IDS = ['word', 'palette', 'ui', 'type', 'refs', 'preview', 'voice'];
     const secNames = { word: 'Wordmark', palette: 'Palette', ui: 'UI primary', type: 'Typography', refs: 'Reference imagery', preview: 'UI preview', voice: 'Voice and tone' };
     const sec = {};
-    Object.keys(fmts).forEach(id => {
+    SECTION_IDS.forEach(id => {
       const editing = s.edit === id;
       sec[id] = {
         editing, editLabel: editing ? 'Done' : 'Edit', editBg: editing ? '#1E1E1E' : '#FFFFFF', editFg: editing ? '#FFFFFF' : '#1E1E1E',
-        toggleEdit: () => set({ edit: editing ? null : id, exMenu: null }),
-        exportOpen: s.exMenu === id, toggleExport: () => set({ exMenu: s.exMenu === id ? null : id, allMenu: false }),
-        formats: fmts[id].map(x => ({ label: x, pick: () => exportSection(this, id, x, secNames[id]) }))
+        toggleEdit: () => set({ edit: editing ? null : id })
       };
     });
-    const allFormats = ['Whole page (PDF)', 'Moodboard only (PDF)', 'CLAUDE.md brand rules', 'Font package (.zip)', 'Color tokens (CSS)']
-      .map(x => ({ label: x, pick: () => exportPage(this, x) }));
 
     const heights = ['40%', '65%', '50%', '85%', '60%', '75%', '45%'];
     const bars = heights.map((h, k) => ({ h, c: k === 3 ? cur.accent : cur.primary }));
@@ -613,7 +606,7 @@ export default class BrandApp extends Component {
           isApplied: c.status === 'applied', where: secNames[c.sec] === c.label ? c.label : secNames[c.sec] + ' · ' + c.label, href: '#sec-' + c.sec
         };
     };
-    Object.keys(fmts).forEach(id => {
+    SECTION_IDS.forEach(id => {
       const list = myC.filter(c => c.sec === id).map(mkC);
       cm[id] = { composing: !!(s.draft && s.draft.sec === id), has: list.length > 0, list };
     });
@@ -623,6 +616,12 @@ export default class BrandApp extends Component {
       voiceHead: ['voice', 'headline', 'Sample headline'], voiceTone: ['voice', 'tone', 'Interface copy'] };
     [0, 1, 2, 3].forEach(k => { pinMap['img' + k] = ['refs', k, cur.imgs[k][0]]; });
     const pins = {}, pinSel = {}; Object.keys(pinMap).forEach(k => { const v = pinMap[k]; pins[k] = () => this.startComment(v[0], v[1], v[2]); pinSel[k] = this.isPicked(v[0], v[1]); });
+    const pieces = {};
+    Object.keys(pinMap).forEach(k => {
+      const v = pinMap[k], img = v[0] === 'refs' ? cur.imageCards[v[1]] : null, canLock = v[0] !== 'preview';
+      pieces[k] = { label: v[2], comment: pins[k], locked: img ? img.locked : canLock && sec[v[0]].locked,
+        toggleLock: img ? img.pin : (canLock ? sec[v[0]].toggleLock : null), lockName: img ? v[2].toLowerCase() : secNames[v[0]].toLowerCase() };
+    });
     const dItems = (s.draft && s.draft.items) || [];
     const draftItems = dItems.map(it => ({ label: secNames[it.sec] === it.label ? it.label : secNames[it.sec] + ' · ' + it.label, aria: 'Remove ' + it.label, remove: () => this.startComment(it.sec, it.target, it.label) }));
     const openN = myC.filter(c => c.status !== 'applied').length;
@@ -735,7 +734,7 @@ export default class BrandApp extends Component {
       genSteps,
       backToBrief: () => set({ screen: 'brief', step: 5 }),
       startOver: () => { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); this.setState(JSON.parse(JSON.stringify(this._init))); },
-      optTabs, allMenu: s.allMenu, toggleAll: () => set({ allMenu: !s.allMenu, exMenu: null }), allFormats,
+      optTabs, allMenu: s.allMenu, toggleAll: () => set({ allMenu: !s.allMenu }),
       cur, wordUpper: (f.name || 'Name').toUpperCase(),
       whyTitle: s.option === 0 ? 'Why we recommend Option 1' : (s.option === 3 ? 'About your custom mix' : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
       matchLabel: s.option === 3 ? 'Built from' : 'Matches your brief on',
@@ -743,7 +742,7 @@ export default class BrandApp extends Component {
       setWordFont: (e) => this.lockOv('word', { wordFont: e.target.value, track: cur.track }), setTrack: (e) => this.lockOv('word', { track: Number(e.target.value), wordFont: cur.wordFont }),
       setUiMix: (e) => { const v = Number(e.target.value); this.setOv({ uiMix: v, uiFixed: this.mix(cur.accent, v / 100) }); },
       setDisplay: (e) => this.lockOv('type', { display: e.target.value, body: cur.body }), setBody: (e) => this.lockOv('type', { body: e.target.value, display: cur.display }),
-      avoidNote: avoided.length ? 'Warning: ' + avoided.join(', ') + ' is on your avoid list.' : 'Colors on your avoid list are blocked here and flagged if you type one in.',
+      avoidNote: avoided.length ? 'Warning: ' + avoided.join(', ') + ' is on your avoid list.' : '',
       bars, typeScale, hasToast: !!s.toast, toast: s.toast,
       hasUndo: !!(s.undo && s.toast),
       doUndo: () => {
@@ -780,7 +779,7 @@ export default class BrandApp extends Component {
       cmBg: s.cmode ? '#1E1E1E' : '#EDEDED', cmFg: s.cmode ? '#FFFFFF' : '#1E1E1E',
       cmodeLabel: 'Precise editing' + (openN ? ' · ' + openN : ''),
       regenAll: () => this.doRegen(['word', 'palette', 'type', 'refs', 'voice']),
-      cm, pins, pinSel, allCm, draftItems, hasDraftItems: dItems.length > 0, noDraftItems: dItems.length === 0,
+      cm, pins, pinSel, pieces, allCm, draftItems, hasDraftItems: dItems.length > 0, noDraftItems: dItems.length === 0,
       panelPad: s.cmode ? '380px' : '0', cmCount: myC.length === 1 ? '1 edit' : myC.length + ' edits',
       draft: s.draft || { items: [], text: '' },
       sendBg: dItems.length && s.draft && s.draft.text.trim() ? '#1E1E1E' : '#9A9A9A',
