@@ -63,9 +63,6 @@
   --radius-14: var(--radius-min);
   --radius-full: 50%;
   --radius-pill: 120px;
-
-  /* Filled inputs */
-  --color-filled: #FFF0E8;
 }
 
 /* Generated brand previews show that brand's UI, so KAI's rounding doesn't apply inside them. */
