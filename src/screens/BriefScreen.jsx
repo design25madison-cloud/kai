@@ -15,15 +15,15 @@ export default function BriefScreen({ vm }) {
         <Breadcrumbs items={vm.crumbs} />
         <button className="p-8px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.startOver}>Start over</button>
       </div>
-      <nav className="flex justify-space-between gap-8px" aria-label="Brief steps">
-        {vm.steps.map((st, i_) => (
-          <Fragment key={i_}>
-            <button className="flex col items-center gap-6px bd-0 bg-none p-4px flex-1" type="button" onClick={st.pick} aria-current={st.current}>
-              <span className="w-px-34px h-34px r-50pct flex items-center justify-center t-14px" style={{ background: st.bg, color: st.fg }}>{st.num}</span>
-              <span className="t-12px c-ink" style={{ fontWeight: st.weight }}>{st.label}</span>
-            </button>
-          </Fragment>
-        ))}
+      <nav className="brief-progress" aria-label="Brief steps">
+        <div className="brief-progress__track" role="progressbar" aria-label="Brief progress" aria-valuemin={1} aria-valuemax={vm.steps.length} aria-valuenow={vm.stepNow}>
+          <div className="brief-progress__fill" style={{ width: vm.stepPct }} />
+        </div>
+        <div className="brief-progress__labels">
+          {vm.steps.map((st) => (
+            <button key={st.label} className="brief-progress__step" type="button" onClick={st.pick} aria-current={st.current}>{st.label}</button>
+          ))}
+        </div>
       </nav>
       {vm.voice.show && (
         <section className="r-12px bd-1px-solid-grey-2 p-18px flex col gap-14px" aria-label="Voice entry">

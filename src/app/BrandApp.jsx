@@ -478,8 +478,8 @@ export default class BrandApp extends Component {
 
     const stepNames = ['General', 'Branding', 'Customer', 'Extra info', 'Review'];
     const steps = stepNames.map((label, k) => {
-      const n = k + 1, cur = s.step === n, done = n < s.step;
-      return { num: n, label, current: cur ? 'step' : 'false', bg: cur ? 'var(--color-action)' : (done ? 'var(--color-grey-2)' : 'var(--color-grey-1)'), fg: cur || done ? '#FFFFFF' : 'var(--color-ink)', weight: cur ? 600 : 400, pick: () => set({ step: n }) };
+      const n = k + 1;
+      return { label, current: s.step === n ? 'step' : undefined, pick: () => set({ step: n }) };
     });
 
     const toneChips = (s.tone.filter(t => !['Sturdy', 'Industrial', 'Precise', 'Warm', 'Playful', 'Calm', 'Bold', 'Minimal'].includes(t))).concat(['Sturdy', 'Industrial', 'Precise', 'Warm', 'Playful', 'Calm', 'Bold', 'Minimal']).map(label => Object.assign({ label, on: s.tone.includes(label), toggle: toggleIn('tone', label) }, on(s.tone.includes(label))));
@@ -691,7 +691,7 @@ export default class BrandApp extends Component {
       voice, startVoice, stopVoice, cancelVoice, undoVoice, toggleT,
       isStart: s.screen === 'start', isBrief: s.screen === 'brief', isGen: s.screen === 'gen', isOut: s.screen === 'out',
       toBrief,
-      steps, isS1: s.step === 1, isS2: s.step === 2, isS3: s.step === 3, isS4: s.step === 4, isS5: s.step === 5, notLast: s.step < 5,
+      steps, stepNow: s.step, stepPct: (s.step / stepNames.length * 100) + '%', isS1: s.step === 1, isS2: s.step === 2, isS3: s.step === 3, isS4: s.step === 4, isS5: s.step === 5, notLast: s.step < 5,
       nextStep: () => set({ step: Math.min(5, s.step + 1) }),
       showUpload: s.path === 'brief' && !s.imported, imported: s.imported, badge: s.imported && !s.confirmed,
       doImport: () => set(Object.assign({ imported: true, arts: s.arts.some(a => a.id === 'brief') ? s.arts : [{ id: 'brief', role: 'follow' }].concat(s.arts) }, this.sampleState())),

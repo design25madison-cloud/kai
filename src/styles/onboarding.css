@@ -375,3 +375,44 @@ select.r-pill {
 .bd-1px-dashed-grey-2 {
   border: 1px dashed var(--color-grey-2);
 }
+
+/* Brief progress: each label sits under its fifth of the bar, and the fill ends with the current step. */
+.brief-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.brief-progress__track {
+  height: 8px;
+  border-radius: var(--radius-4);
+  background: var(--color-grey-1);
+  overflow: hidden;
+}
+.brief-progress__fill {
+  height: 100%;
+  border-radius: var(--radius-4);
+  background: var(--color-action);
+  transition: width 240ms ease-out;
+}
+.brief-progress__labels {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.brief-progress__step {
+  padding: 8px 2px;
+  border: 0;
+  background: none;
+  font-size: var(--text-13);
+}
+.brief-progress__step:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.brief-progress__step[aria-current="step"] {
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brief-progress__fill {
+    transition: none;
+  }
+}
