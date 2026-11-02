@@ -50,14 +50,14 @@ export default function OutputScreen({ vm }) {
               <button className="tool-btn" type="button" onClick={vm.toggleCmode} aria-pressed={vm.cmode} style={{ background: vm.cmBg, color: vm.cmFg }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={vm.cmFg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /></svg>{vm.cmodeLabel}</button>
               <button className="tool-btn" type="button" onClick={vm.toggleDark} aria-pressed={vm.darkPrev} style={{ background: vm.darkBg, color: vm.darkFg }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={vm.darkFg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></svg>Dark mode</button>
               {vm.isDir && (
-                <button className="tool-btn bg-fill" type="button" onClick={vm.regenAll} aria-label="Regenerate everything unlocked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Regenerate</button>
+                <button className="tool-btn bg-fill" type="button" onClick={vm.regenAll} aria-label="Regenerate everything unlocked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Regenerate</button>
               )}
             </div>
           </div>
           {vm.isDir && (
             <div className="results-tabs" role="tablist" aria-label="Directions">
               {vm.optTabs.map((t) => (
-                <button key={t.label} className="results-tab" type="button" role="tab" onClick={t.pick} aria-selected={t.on} style={{ borderBottom: `3px solid ${t.bd}`, background: t.bg, color: t.fg }}>
+                <button key={t.label} className="results-tab" type="button" role="tab" onClick={t.pick} aria-selected={t.on} style={{ borderBottom: `2px solid ${t.bd}`, background: t.bg, color: t.fg }}>
                   <span className="flex gap-8px items-center">
                     <span className="t-14px w-600">{t.label}</span>
                     {t.rec && (

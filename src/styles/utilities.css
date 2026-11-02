@@ -109,7 +109,7 @@
 .bd-b-1px-solid-line { border-bottom: 1px solid var(--color-line); }
 .bd-l-1px-solid-divider { border-left: 1px solid var(--color-divider); }
 .bd-l-1px-solid-line { border-left: 1px solid var(--color-line); }
-.bd-l-3px-solid-ink { border-left: 3px solid var(--color-ink); }
+.bd-l-2px-solid-ink { border-left: 2px solid var(--color-ink); }
 .r-10px { border-radius: var(--radius-10); }
 .r-12px { border-radius: var(--radius-12); }
 .r-12px-12px-12px-4px { border-radius: 12px 12px 12px 4px; }

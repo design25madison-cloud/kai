@@ -11,7 +11,7 @@ export default function PreciseEditingPanel({ vm }) {
               <span className="t-12px c-muted">{vm.cur.label}: {vm.cur.name} · {vm.cmCount}</span>
             </div>
             <button className="w-px-32px h-32px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={vm.toggleCmode} aria-label="Close precise editing">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
@@ -94,7 +94,7 @@ export default function PreciseEditingPanel({ vm }) {
               <div className="flex gap-6px wrap">
                 {vm.draftItems.map((di, i_) => (
                   <Fragment key={i_}>
-                    <span className="flex gap-4px items-center t-12px p-3px-4px-3px-10px r-12px bg-fill bd-1px-solid-ink">{di.label}<button className="w-px-18px h-18px r-50pct bd-0 bg-transparent p-0 flex items-center justify-center" type="button" onClick={di.remove} aria-label={di.aria}><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
+                    <span className="flex gap-4px items-center t-12px p-3px-4px-3px-10px r-12px bg-fill bd-1px-solid-ink">{di.label}<button className="w-px-18px h-18px r-50pct bd-0 bg-transparent p-0 flex items-center justify-center" type="button" onClick={di.remove} aria-label={di.aria}><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
                   </Fragment>
                 ))}
               </div>

@@ -44,9 +44,9 @@
   background: var(--color-action-hover);
 }
 .btn--primary:disabled {
-  border-color: var(--color-line);
-  background: var(--color-fill);
-  color: var(--color-muted);
+  border-color: var(--color-grey-1);
+  background: var(--color-grey-1);
+  color: var(--color-grey-2);
   cursor: not-allowed;
 }
 
@@ -121,10 +121,10 @@
   border-top: 1px solid var(--color-divider);
 }
 .module-row__note {
-  padding: 8px 10px;
-  border: 0;
-  border-radius: var(--radius-6);
-  background: var(--color-fill);
+  padding: 8px 16px;
+  border: 1px solid var(--color-grey-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
   font-size: var(--text-13);
 }
 

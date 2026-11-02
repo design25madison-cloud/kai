@@ -23,8 +23,8 @@ export default function VoiceSection({ vm }) {
             <div className="relative p-18px r-10px bg-fill flex col gap-6px">
               {tn.editing && (
                 <>
-                  <input className="p-8px r-6px bd-1px-solid-faint t-14px" value={tn.yes} onChange={tn.setYes} aria-label="Tone attribute" />
-                  <input className="p-8px r-6px bd-1px-solid-faint t-14px" value={tn.no} onChange={tn.setNo} aria-label="Not that" />
+                  <input className="p-8px r-pill bd-1px-solid-grey-2 t-14px" value={tn.yes} onChange={tn.setYes} aria-label="Tone attribute" />
+                  <input className="p-8px r-pill bd-1px-solid-grey-2 t-14px" value={tn.no} onChange={tn.setNo} aria-label="Not that" />
                 </>
               )}
               <span className="t-20px w-600">{tn.yes}</span>

@@ -21,7 +21,7 @@ export default function WordmarkSection({ vm }) {
         <div className="p-16px r-10px bd-1px-dashed-muted flex gap-20px wrap items-flex-end">
           <div className="flex col gap-6px">
             <label className="t-12px" htmlFor="e-wf">Typeface</label>
-            <select className="p-10px r-6px bd-0 bg-fill minw-180px" id="e-wf" value={vm.cur.wordFont} onChange={vm.setWordFont}>
+            <select className="p-10px r-pill bd-1px-solid-grey-2 bg-bg minw-180px" id="e-wf" value={vm.cur.wordFont} onChange={vm.setWordFont}>
               {vm.fonts.map((ft, i_) => (
                 <Fragment key={i_}>
                   <option value={ft}>{ft}</option>

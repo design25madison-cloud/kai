@@ -34,7 +34,7 @@ export default function PaletteSection({ vm }) {
                 )}<PieceActions vm={vm} piece={{ label: c.name, locked: c.locked, toggleLock: c.toggleLock, comment: c.pinC }} />
               </div>
               {vm.sec.palette.editing && (
-                <input className="p-8px r-6px bd-1px-solid-faint t-13px ff-monospace" value={c.text} onChange={c.setHex} aria-label={c.aria} />
+                <input className="p-8px r-pill bd-1px-solid-grey-2 t-13px ff-monospace" value={c.text} onChange={c.setHex} aria-label={c.aria} />
               )}
               <span className="t-14px w-600">{c.name}</span>
               <span className="t-12px c-ink-2">{c.show} · {c.role} · {c.ratio}%</span>

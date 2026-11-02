@@ -1,25 +1,27 @@
 :root {
-  /* Brand */
-  --color-brand: #D95D43; /* Logo only. White text on it is 3.75:1, which fails AA. */
-  --color-action: #C3543C; /* Buttons and selected states. White text is 4.51:1. */
-  --color-action-hover: #AE4A36;
+  /* Palette: the interface uses only these five */
+  --color-coral: #D95D43;
+  --color-ink: #1B1B1B;
+  --color-bg: #FFFFFF;
+  --color-grey-1: #E0E0E0;
   --color-grey-2: #B0B0B0;
 
-  /* Color */
-  --color-bg: #FFFFFF;
-  --color-ink: #1E1E1E;
-  --color-ink-2: #3E3E3E;
-  --color-muted: #5E5E5E;
-  --color-faint: #9A9A9A;
-  --color-line-strong: #BDBDBD;
-  --color-line: #CFCFCF;
-  --color-track: #D9D9D9;
-  --color-divider: #E4E4E4;
-  --color-fill: #EDEDED;
-  --color-fill-subtle: #F4F4F4;
-  --color-danger: #C42121;
-  --color-black: #000000;
-  --color-faint-2: #8A8A8A;
+  /* Roles */
+  --color-brand: var(--color-coral);
+  --color-action: var(--color-coral);
+  --color-action-hover: var(--color-ink);
+  --color-danger: var(--color-coral);
+  --color-black: var(--color-ink);
+  --color-ink-2: var(--color-ink);
+  --color-muted: var(--color-ink);
+  --color-faint: var(--color-grey-2);
+  --color-faint-2: var(--color-grey-2);
+  --color-line-strong: var(--color-grey-2);
+  --color-line: var(--color-grey-1);
+  --color-track: var(--color-grey-1);
+  --color-divider: var(--color-grey-1);
+  --color-fill: var(--color-grey-1);
+  --color-fill-subtle: var(--color-grey-1);
 
   /* Type */
   --font-ui: 'Geist', system-ui, sans-serif;

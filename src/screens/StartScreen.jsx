@@ -12,7 +12,7 @@ export default function StartScreen({ vm }) {
       </div>
       <div className="flex col gap-10px">
         <button className="r-10px bd-2px-dashed-faint bg-fill flex col items-center justify-center gap-6px" type="button" onClick={vm.addArts} style={{ height: vm.uploadH }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 15V4" />
             <path d="M7 9l5-5 5 5" />
             <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
@@ -24,7 +24,7 @@ export default function StartScreen({ vm }) {
           <div className="flex gap-8px wrap">
             {vm.arts.map((a, i_) => (
               <Fragment key={i_}>
-                <span className="flex gap-8px items-center p-6px-6px-6px-8px r-8px bd-1px-solid-line t-13px"><span className="t-9px w-600 p-3px-5px r-4px bg-fill">{a.kind}</span>{a.name} <button className="w-px-22px h-22px r-5px bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={a.remove} aria-label={a.removeAria}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
+                <span className="flex gap-8px items-center p-6px-6px-6px-8px r-8px bd-1px-solid-line t-13px"><span className="t-9px w-600 p-3px-5px r-4px bg-fill">{a.kind}</span>{a.name} <button className="w-px-22px h-22px r-5px bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={a.remove} aria-label={a.removeAria}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
               </Fragment>
             ))}
           </div>
@@ -60,7 +60,7 @@ export default function StartScreen({ vm }) {
               </div>
             </div>
             {vm.hasHeard && (
-              <span className="t-13px c-ink p-8px-12px r-8px bg-fill-subtle bd-l-3px-solid-ink">We heard: {vm.heardText}</span>
+              <span className="t-13px c-ink p-8px-12px r-8px bg-fill-subtle bd-l-2px-solid-ink">We heard: {vm.heardText}</span>
             )}
           </section>
           <section className="flex col gap-12px" aria-labelledby="keep-h">

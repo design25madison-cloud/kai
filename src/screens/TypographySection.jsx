@@ -21,7 +21,7 @@ export default function TypographySection({ vm }) {
         <div className="p-16px r-10px bd-1px-dashed-muted flex gap-20px wrap">
           <div className="flex col gap-6px">
             <label className="t-12px" htmlFor="e-dp">Display face</label>
-            <select className="p-10px r-6px bd-0 bg-fill minw-180px" id="e-dp" value={vm.cur.display} onChange={vm.setDisplay}>
+            <select className="p-10px r-pill bd-1px-solid-grey-2 bg-bg minw-180px" id="e-dp" value={vm.cur.display} onChange={vm.setDisplay}>
               {vm.fonts.map((ft, i_) => (
                 <Fragment key={i_}>
                   <option value={ft}>{ft}</option>
@@ -31,7 +31,7 @@ export default function TypographySection({ vm }) {
           </div>
           <div className="flex col gap-6px">
             <label className="t-12px" htmlFor="e-bd">Body face</label>
-            <select className="p-10px r-6px bd-0 bg-fill minw-180px" id="e-bd" value={vm.cur.body} onChange={vm.setBody}>
+            <select className="p-10px r-pill bd-1px-solid-grey-2 bg-bg minw-180px" id="e-bd" value={vm.cur.body} onChange={vm.setBody}>
               {vm.fonts.map((ft, i_) => (
                 <Fragment key={i_}>
                   <option value={ft}>{ft}</option>

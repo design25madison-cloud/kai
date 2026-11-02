@@ -8,13 +8,13 @@ export default function StepBranding({ vm }) {
         <div className="flex justify-space-between items-center">
           <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin{vm.badge && (<span className="t-11px p-1px-8px r-9px bd-1px-solid-muted c-ink-2">{vm.badgeText}</span>)}</label>
           <button className="w-px-32px h-32px r-50pct bd-1px-solid-faint bg-bg flex items-center justify-center p-0" type="button" onClick={vm.mic} aria-label="Answer by voice">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="9" y="3" width="6" height="11" rx="3" />
               <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
             </svg>
           </button>
         </div>
-        <textarea className="p-12px r-8px bd-0 bg-fill resize-vertical" id="f-meaning" name="meaning" value={vm.f.meaning} onChange={vm.onField} rows="2" placeholder="Where does the name come from?" />
+        <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-meaning" name="meaning" value={vm.f.meaning} onChange={vm.onField} rows="2" placeholder="Where does the name come from?" />
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Tone or qualities the name should convey</span>
@@ -26,7 +26,7 @@ export default function StepBranding({ vm }) {
           ))}
         </div>
         <div className="flex gap-8px maxw-420px">
-          <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
+          <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
           <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
         </div>
       </div>
@@ -35,9 +35,9 @@ export default function StepBranding({ vm }) {
         {vm.taglines.map((t, i_) => (
           <Fragment key={i_}>
             <div className="flex gap-8px">
-              <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" value={t.text} onChange={t.set} aria-label="Tagline" />
+              <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={t.text} onChange={t.set} aria-label="Tagline" />
               <button className="w-px-40px h-40px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={t.remove} aria-label="Remove tagline">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
               </button>
@@ -59,7 +59,7 @@ export default function StepBranding({ vm }) {
           ))}
         </div>
         <label className="t-12px c-muted" htmlFor="f-lookNote">Anything else about the look? (optional)</label>
-        <input className="p-10px-12px r-8px bd-0 bg-fill" id="f-lookNote" name="lookNote" value={vm.f.lookNote} onChange={vm.onField} />
+        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-lookNote" name="lookNote" value={vm.f.lookNote} onChange={vm.onField} />
       </div>
       <div className="flex col gap-14px">
         <span className="t-13px">Emotional tone</span>
@@ -85,7 +85,7 @@ export default function StepBranding({ vm }) {
                 <div className="flex justify-space-between items-center gap-4px">
                   <span className="t-11px ff-monospace">{ac.hex}</span>
                   <button className="w-px-22px h-22px bd-0 r-4px bg-fill flex items-center justify-center p-0" type="button" onClick={ac.remove} aria-label={ac.aria}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                       <path d="M6 6l12 12M18 6L6 18" />
                     </svg>
                   </button>
@@ -93,7 +93,7 @@ export default function StepBranding({ vm }) {
               </div>
             </Fragment>
           ))}
-          <button className="w-px-72px h-56px r-8px bd-1px-dashed-muted bg-bg t-12px flex col items-center justify-center gap-2px" type="button" onClick={vm.openPicker} aria-expanded={vm.pk.open}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add color</button>
+          <button className="w-px-72px h-56px r-8px bd-1px-dashed-muted bg-bg t-12px flex col items-center justify-center gap-2px" type="button" onClick={vm.openPicker} aria-expanded={vm.pk.open}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add color</button>
         </div>
         {vm.pk.open && (
           <div className="p-18px r-12px bd-1px-solid-line flex gap-24px wrap items-center">
@@ -106,7 +106,7 @@ export default function StepBranding({ vm }) {
                 <div className="w-px-64px h-64px r-8px bd-1px-solid-line" style={{ background: vm.pk.hex }} />
                 <div className="flex col gap-4px">
                   <label className="t-12px" htmlFor="pk-hex">Hex</label>
-                  <input className="w-px-120px p-8px r-6px bd-1px-solid-faint ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} />
+                  <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} />
                 </div>
               </div>
               <div className="flex col gap-4px">
@@ -135,7 +135,7 @@ export default function StepBranding({ vm }) {
             <div className="flex col gap-8px">
               <label className="t-13px" htmlFor={bg.inputId}>{bg.title}</label>
               <div className="flex gap-8px">
-                <input className="flex-1 p-10px-12px r-8px bd-0 bg-fill" id={bg.inputId} name={bg.field} value={bg.value} onChange={vm.onField} placeholder="Search for a brand" />
+                <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id={bg.inputId} name={bg.field} value={bg.value} onChange={vm.onField} placeholder="Search for a brand" />
                 <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={bg.add}>Add</button>
               </div>
               {bg.hasSugg && (
@@ -153,12 +153,12 @@ export default function StepBranding({ vm }) {
                     <div className="flex justify-space-between items-center">
                       <span className="t-14px w-600">{b.name}</span>
                       <button className="w-px-26px h-26px bd-0 r-4px bg-bg p-0 flex items-center justify-center" type="button" onClick={b.remove} aria-label={b.aria}>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                           <path d="M6 6l12 12M18 6L6 18" />
                         </svg>
                       </button>
                     </div>
-                    <input className="p-8px-10px r-6px bd-0 bg-bg t-13px" value={b.why} onChange={b.setWhy} aria-label={b.whyAria} placeholder="Why?" />
+                    <input className="p-8px-10px r-pill bd-1px-solid-grey-2 bg-bg t-13px" value={b.why} onChange={b.setWhy} aria-label={b.whyAria} placeholder="Why?" />
                   </div>
                 </Fragment>
               ))}
