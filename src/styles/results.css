@@ -1,0 +1,197 @@
+/* Direction page: header, toolbar, section progress rail. */
+
+.results-header {
+  padding: 16px 24px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+.results-header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.results-header__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.results-header__actions,
+.results-header__crumb,
+.results-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.results-header__crumb {
+  gap: 8px;
+}
+
+.crumb-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-14);
+  color: var(--color-muted);
+}
+.crumb-btn:hover,
+.crumb-btn[aria-expanded="true"] {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-10);
+  background: var(--color-bg);
+}
+.menu--start {
+  left: 0;
+  width: 180px;
+}
+.menu--end {
+  right: 0;
+  width: 280px;
+}
+.menu__item {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-6);
+  background: var(--color-bg);
+  font-size: var(--text-14);
+  text-align: left;
+}
+.menu__item:hover {
+  background: var(--color-fill);
+}
+
+.icon-btn {
+  width: 49px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--color-black);
+  border-radius: var(--radius-8);
+  background: var(--color-bg);
+}
+
+.view-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, 84px);
+  padding: 3px;
+  border-radius: var(--radius-8);
+  background: var(--color-fill);
+}
+.view-toggle__btn {
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-6);
+  font-size: var(--text-13);
+}
+
+.tool-btn {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: var(--radius-8);
+  font-size: var(--text-13);
+}
+
+.results-tabs {
+  display: flex;
+  overflow-x: auto;
+}
+.results-tab {
+  flex: 1;
+  min-width: 180px;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 18px 10px;
+  border: 0;
+  text-align: left;
+}
+
+/* Rail sits in the left gutter. The body keeps clear of it below 1440px, and at 1440px this
+   still resolves to the design's 144px content edge. */
+.results-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  padding: 20px 24px 120px;
+}
+.results-body-wrap--rail {
+  padding-inline: 96px;
+}
+
+.progress-rail {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  gap: 10px;
+}
+.progress-rail__track {
+  width: 2px;
+  border-radius: 1px;
+  background: var(--color-divider);
+  overflow: hidden;
+}
+.progress-rail__fill {
+  display: block;
+  width: 100%;
+  background: var(--color-ink);
+}
+.progress-rail__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.progress-rail__item {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-12);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.progress-rail__item:hover,
+.progress-rail__item[data-passed] {
+  color: var(--color-ink-2);
+}
+.progress-rail__item[aria-current="location"] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* Not enough gutter for labels: drop the rail rather than crowd the content. */
+@media (max-width: 1099px) {
+  .progress-rail {
+    display: none;
+  }
+  .results-body-wrap--rail {
+    padding-inline: 0;
+  }
+}

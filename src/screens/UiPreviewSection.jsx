@@ -6,7 +6,7 @@ export default function UiPreviewSection({ vm }) {
       <div className="flex justify-space-between items-center gap-12px wrap bd-t-1px-solid-line pt-16px">
         <h2 className="m-0 t-20px w-600 flex gap-10px items-center" id="h-preview">6. UI preview{vm.sec.preview.locked && (<span className="t-12px w-500 p-2px-10px r-9px bg-ink c-bg">Locked</span>)}</h2>
         <div className="flex gap-8px relative wrap">
-          <button className="p-8px-14px r-8px bd-1px-solid-ink bg-bg t-13px" type="button" onClick={vm.sec.preview.toggleExport} aria-expanded={vm.sec.preview.exportOpen}>Export</button>
+          <button className="h-36px p-0-14px r-8px bd-1px-solid-ink bg-bg t-13px" type="button" onClick={vm.sec.preview.toggleExport} aria-expanded={vm.sec.preview.exportOpen}>Export</button>
           {vm.sec.preview.exportOpen && (
             <div className="absolute right-0 top-42px z-4 w-px-220px bg-bg bd-1px-solid-line r-10px p-6px flex col">
               {vm.sec.preview.formats.map((x, i_) => (

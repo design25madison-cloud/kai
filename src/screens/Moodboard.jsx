@@ -2,7 +2,7 @@ import { Fragment } from "react";
 
 export default function Moodboard({ vm }) {
   return (
-    <section aria-labelledby="mb-h" className="flex col gap-12px">
+    <section id="sec-mood" aria-labelledby="mb-h" className="flex col gap-12px smt-16px">
       <div className="flex justify-space-between items-flex-end gap-12px wrap">
         <div className="flex col gap-2px">
           <span className="t-12px c-muted">{vm.f.name} · Moodboard · Direction, not final</span>
@@ -126,10 +126,10 @@ export default function Moodboard({ vm }) {
             </Fragment>
           ))}
         </a>
-        <a className="tile relative gr-span-2 bg-line p-10px flex items-flex-end t-12px c-ink-2" href="#sec-refs">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img2} aria-pressed={vm.pinSel.img2} aria-label="Add to precise editing" />)}{vm.cur.img2}</a>
-        <a className="tile relative gr-span-2 bg-track p-10px flex items-flex-end t-12px c-ink-2" href="#sec-refs">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img3} aria-pressed={vm.pinSel.img3} aria-label="Add to precise editing" />)}{vm.cur.img3}</a>
+        <a className={`tile relative gr-span-2 bg-line p-10px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`} href="#sec-refs">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img2} aria-pressed={vm.pinSel.img2} aria-label="Add to precise editing" />)}{vm.cur.img2}</a>
+        <a className={`tile relative gr-span-2 bg-track p-10px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`} href="#sec-refs">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img3} aria-pressed={vm.pinSel.img3} aria-label="Add to precise editing" />)}{vm.cur.img3}</a>
         {!vm.presenting && (
-        <section className="rec gc-span-2 gr-span-2 r-10px bg-fill-subtle bd-1px-solid-line p-18px-20px flex col gap-10px of-auto" aria-labelledby="why-h">
+        <section className="rec gc-span-2 gr-span-2 r-10px bg-fill-subtle bd-1px-solid-line p-18px-20px flex col gap-10px" aria-labelledby="why-h">
           <span className="flex gap-6px items-center t-12px c-ink-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z" /><path d="M18 15l.8 2 2 .8-2 .8L18 21l-.8-2.4-2-.8 2-.8z" /></svg>AI recommendation</span>
           <h2 className="m-0 t-18px w-600" id="why-h">{vm.whyTitle}</h2>
           <p className="m-0 t-14px lh-1_55">{vm.cur.reason}</p>
