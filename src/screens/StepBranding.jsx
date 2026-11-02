@@ -6,13 +6,7 @@ export default function StepBranding({ vm }) {
       <h2 className="m-0 t-22px w-600">Branding</h2>
       <div className="flex col gap-6px">
         <div className="flex justify-space-between items-center">
-          <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin{vm.badge && (<span className="t-11px p-1px-8px r-9px bd-1px-solid-muted c-ink-2">{vm.badgeText}</span>)}</label>
-          <button className="w-px-32px h-32px r-50pct bd-1px-solid-faint bg-bg flex items-center justify-center p-0" type="button" onClick={vm.mic} aria-label="Answer by voice">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="9" y="3" width="6" height="11" rx="3" />
-              <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-            </svg>
-          </button>
+          <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         </div>
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-meaning" name="meaning" value={vm.f.meaning} onChange={vm.onField} rows="2" placeholder="Where does the name come from?" />
       </div>
@@ -46,6 +40,10 @@ export default function StepBranding({ vm }) {
         </div>
         <label className="t-12px c-muted" htmlFor="f-lookNote">Anything else about the look? (optional)</label>
         <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-lookNote" name="lookNote" value={vm.f.lookNote} onChange={vm.onField} placeholder=" " />
+      </div>
+      <div className="flex col gap-8px">
+        <label className="t-13px" htmlFor="f-colorDir">Color direction</label>
+        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-colorDir" name="colorDir" value={vm.f.colorDir} onChange={vm.onField} placeholder="For example: warm earth tones with one bright accent" />
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Colors to avoid</span>

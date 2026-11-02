@@ -21,7 +21,7 @@ export default class BrandApp extends Component {
     this._init = JSON.parse(JSON.stringify(this.state));
   }
   blankF() {
-    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'avoidOther', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
+    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
       'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];
     const o = { who: 'operator' }; keys.forEach(k => { o[k] = ''; }); return o;
   }
@@ -702,7 +702,6 @@ export default class BrandApp extends Component {
       deliv, addDeliv: () => set({ deliv: s.deliv.concat([{ type: 'Logo' }]) }),
       domains, domainKey: onEnter(addDomain), votes, addVote: fromField('voteIn', 'votes'),
       legalOpen: s.legalOpen, toggleLegal: () => set({ legalOpen: !s.legalOpen }), legalLabel: s.legalOpen ? 'Hide legal name' : 'Different legal name?',
-      mic: () => this.showToast('Listening… your answer is transcribed into this field (prototype)'),
       addTone: fromField('toneIn', 'tone'), taglines, addTagline: () => set({ taglines: s.taglines.concat(['']) }),
       brandGroups, careChips, comps, addComp: () => set({ comps: s.comps.concat([{ name: '', url: '' }]) }), alts, altKey: onEnter(fromField('altIn', 'alts')),
       endOn: s.endOn, endOff: !s.endOn, toggleEnd: () => set({ endOn: !s.endOn }), endLabel: s.endOn ? 'Included' : 'Add end user', endBg: s.endOn ? 'var(--color-action)' : '#FFFFFF', endFg: s.endOn ? '#FFFFFF' : 'var(--color-ink)',

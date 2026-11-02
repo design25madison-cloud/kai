@@ -123,6 +123,7 @@ export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound, sections 
   const rules = [];
   if (has("ui")) rules.push(`Use the UI primary (\`--ui-primary\`, ${d.ui}) for buttons and links. ${contrast}`, `Use ${d.uiHover} for the hover state of the UI primary.`);
   if (has("palette")) {
+    if ((f.colorDir || "").trim()) rules.push("Color direction from the brief: " + f.colorDir.trim());
     rules.push(`Keep ${d.accentName} (${d.accent}) to accents. Don't use it for buttons or links.`);
     rules.push("Don't use brand colors for status. Success, warning, and error colors aren't part of this direction, so ask the designer before adding them.");
   }

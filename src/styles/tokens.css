@@ -5,6 +5,7 @@
   --color-bg: #FFFFFF;
   --color-grey-1: #E0E0E0;
   --color-grey-2: #B0B0B0;
+  --color-tint: #FFF0E8; /* Light orange, for status pills only */
 
   /* Roles */
   --color-brand: var(--color-coral);

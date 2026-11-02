@@ -464,3 +464,11 @@ select:not([multiple]) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Imported or Suggested, beside a field label */
+.status-pill {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-tint);
+  font-size: var(--text-11);
+}

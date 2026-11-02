@@ -56,12 +56,6 @@ export default function StepTone({ vm }) {
         </div>
         <div className="flex justify-space-between items-center">
           <label className="t-13px" htmlFor="f-feel">What should this product feel like to use, end to end?</label>
-          <button className="w-px-32px h-32px r-50pct bd-1px-solid-faint bg-bg flex items-center justify-center p-0" type="button" onClick={vm.mic} aria-label="Answer by voice">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="9" y="3" width="6" height="11" rx="3" />
-              <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-            </svg>
-          </button>
         </div>
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-feel" name="feel" value={vm.f.feel} onChange={vm.onField} rows="2" placeholder=" " />
         <label className="t-13px" htmlFor="f-diffFeel">What should feel fundamentally different from existing solutions?</label>
