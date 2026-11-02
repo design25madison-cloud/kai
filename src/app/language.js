@@ -6,6 +6,11 @@ function matches(term, text) {
   return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}($|[^\\p{L}\\p{N}])`, "iu").test(text);
 }
 
+// Which restricted words appear in any of these lines.
+export function copyHits(terms, lines) {
+  return terms.filter((term) => term.trim() && lines.some((line) => matches(term, line)));
+}
+
 // Which restricted words appear in a direction's voice: its tone words, headline, and interface line.
 // The "not that" half of a tone pair is left out, since it names what to steer away from.
 export function restrictedHits(terms, voice) {

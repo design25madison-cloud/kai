@@ -5,6 +5,7 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/utilities.css";
 import "./styles/flow.css";
+import "./styles/mockups.css";
 import "./styles/results.css";
 import "./styles/onboarding.css";
 

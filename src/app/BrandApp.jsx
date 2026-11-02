@@ -172,7 +172,7 @@ export default class BrandApp extends Component {
         tone: [['Grounded', 'rough'], ['Honest', 'plain'], ['Bold', 'loud']], headline: 'Made from the ground up.', micro: 'Done. On to the next one.',
         voices: [{ tone: [['Earthy', 'rustic'], ['Warm', 'soft'], ['Bold', 'brash']], headline: 'Rooted in the real.', micro: 'Nice work. That is done.' },
           { tone: [['Honest', 'blunt'], ['Hands-on', 'messy'], ['Solid', 'heavy']], headline: 'Built by hand, built to last.', micro: 'Done and dusted.' }],
-        images: [['Raw clay', 'Wikimedia Commons'], ['Weathered wood', 'Wikimedia Commons'], ['Stone slab', 'Wikimedia Commons'], ['Rust bloom', 'Wikimedia Commons'], ['Dry riverbed', 'Wikimedia Commons'], ['Hand tools', 'Wikimedia Commons']],
+        images: [['Weathered wood', 'Wikimedia Commons'], ['Stone slab', 'Wikimedia Commons'], ['Raw clay', 'Wikimedia Commons'], ['Rust bloom', 'Wikimedia Commons'], ['Dry riverbed', 'Wikimedia Commons'], ['Hand tools', 'Wikimedia Commons']],
         imgPool: [['Sun-dried brick', 'Wikimedia Commons'], ['Linen weave', 'Wikimedia Commons'], ['Clay pots', 'Wikimedia Commons'], ['Olive grove', 'Wikimedia Commons'], ['Sandstone', 'Wikimedia Commons'], ['Wood grain', 'Wikimedia Commons']],
         reason: 'This is the most distinctive and earthy option, with the heaviest wordmark. It ranks third because it fits "sturdy" but not "precise," and the weight leans toward a lifestyle brand more than an industrial one.',
         match: ['Sturdy', 'Leans warm', 'No gradients or neon'],
@@ -622,7 +622,7 @@ export default class BrandApp extends Component {
     });
     const allCm = myC.map(mkC);
     const pinMap = { word: ['word', 'mark', 'Wordmark'], wordDark: ['word', 'dark', 'Wordmark on dark'], palUsage: ['palette', 'usage', 'Palette in use'], ui: ['ui', 'ui', 'UI primary'],
-      typeDisplay: ['type', 'display', 'Header typeface'], typeBody: ['type', 'body', 'Body typeface'], preview: ['preview', 'preview', 'UI preview'],
+      typeDisplay: ['type', 'display', 'Header typeface'], typeBody: ['type', 'body', 'Body typeface'], preview: ['preview', 'preview', 'Product UI'], landing: ['preview', 'landing', 'Landing page'],
       voiceHead: ['voice', 'headline', 'Sample headline'], voiceTone: ['voice', 'tone', 'Interface copy'] };
     [0, 1, 2, 3].forEach(k => { pinMap['img' + k] = ['refs', k, cur.imgs[k][0]]; });
     const pins = {}, pinSel = {}; Object.keys(pinMap).forEach(k => { const v = pinMap[k]; pins[k] = () => this.startComment(v[0], v[1], v[2]); pinSel[k] = this.isPicked(v[0], v[1]); });
@@ -708,6 +708,7 @@ export default class BrandApp extends Component {
       showUpload: s.path === 'brief' && !s.imported, imported: s.imported, badge: s.imported && !s.confirmed,
       doImport: () => set(Object.assign({ imported: true, arts: s.arts.some(a => a.id === 'brief') ? s.arts : [{ id: 'brief', role: 'follow' }].concat(s.arts) }, this.sampleState())),
       confirmAll: () => set({ confirmed: true }), confirmLabel: s.confirmed ? 'Confirmed' : 'Confirm all',
+      mockIntro: /^\[.*\]$/.test((f.desc || '').trim()) ? '' : f.desc,
       banned: s.banned, bannedChips, addBanned, bannedKey: onEnter(addBanned),
       f, onField: (e) => { const k = e.target.name; set({ f: Object.assign({}, s.f, { [k]: e.target.value }) }); },
       onSlider: (e) => { const k = e.target.name; set({ sl: Object.assign({}, s.sl, { [k]: Number(e.target.value) }) }); },
