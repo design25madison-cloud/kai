@@ -578,7 +578,7 @@ export default class BrandApp extends Component {
     Object.keys(sec).forEach(id => {
       const locked = !!cur.locks[id];
       Object.assign(sec[id], cur.lk(locked, secNames[id].toLowerCase()), {
-        regenFg: locked ? 'var(--color-grey-2)' : 'var(--color-ink)', regenBd: locked ? 'var(--color-grey-1)' : 'var(--color-grey-2)',
+        regenFg: locked ? 'var(--color-grey-2)' : 'var(--color-ink)', regenBd: 'var(--color-grey-1)',
         regen: () => locked ? this.showToast(secNames[id] + ' is locked. Unlock it to regenerate.') : this.doRegen([id]),
         toggleLock: () => {
           const o = this.state.ov[oi] || {};
@@ -767,10 +767,10 @@ export default class BrandApp extends Component {
       vDirBg: s.view !== 'cmp' ? 'var(--color-action)' : 'transparent', vDirFg: s.view !== 'cmp' ? '#FFFFFF' : 'var(--color-ink)',
       vCmpBg: s.view === 'cmp' ? 'var(--color-action)' : 'transparent', vCmpFg: s.view === 'cmp' ? '#FFFFFF' : 'var(--color-ink)',
       darkPrev: s.darkPrev, toggleDark: () => set({ darkPrev: !s.darkPrev }),
-      darkBg: s.darkPrev ? 'var(--color-action)' : 'var(--color-grey-1)', darkFg: s.darkPrev ? '#FFFFFF' : 'var(--color-ink)',
+      darkBg: s.darkPrev ? 'var(--color-action)' : '#FFFFFF', darkFg: s.darkPrev ? '#FFFFFF' : 'var(--color-ink)',
       bentoBg: s.darkPrev ? cur.light : 'transparent', bentoPad: s.darkPrev ? '14px' : '0',
       cmode: s.cmode, toggleCmode: () => set({ cmode: !s.cmode, draft: null }),
-      cmBg: s.cmode ? 'var(--color-action)' : 'var(--color-grey-1)', cmFg: s.cmode ? '#FFFFFF' : 'var(--color-ink)',
+      cmBg: s.cmode ? 'var(--color-action)' : '#FFFFFF', cmFg: s.cmode ? '#FFFFFF' : 'var(--color-ink)',
       cmodeLabel: 'Precise editing' + (openN ? ' · ' + openN : ''),
       regenAll: () => this.doRegen(['word', 'palette', 'type', 'refs', 'voice']),
       cm, pins, pinSel, pieces, allCm, draftItems, hasDraftItems: dItems.length > 0, noDraftItems: dItems.length === 0,

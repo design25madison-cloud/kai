@@ -77,7 +77,7 @@ export default function StartScreen({ vm }) {
             </div>
           </section>
           <div className="upload__actions">
-            <button className="upload__continue" type="button" onClick={vm.toBrief}>Continue</button>
+            <button className="btn-cta" type="button" onClick={vm.toBrief}>Continue</button>
           </div>
         </>
       )}

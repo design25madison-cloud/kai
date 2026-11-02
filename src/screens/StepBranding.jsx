@@ -21,13 +21,13 @@ export default function StepBranding({ vm }) {
         <div className="flex gap-8px wrap">
           {vm.toneChips.map((c, i_) => (
             <Fragment key={i_}>
-              <button className="p-8px-14px r-pill bd-1px-solid-grey-2 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
+              <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
             </Fragment>
           ))}
         </div>
         <div className="flex gap-8px maxw-420px">
           <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
-          <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
         </div>
       </div>
       <div className="flex col gap-8px">
@@ -36,7 +36,7 @@ export default function StepBranding({ vm }) {
           <Fragment key={i_}>
             <div className="flex gap-8px">
               <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={t.text} onChange={t.set} aria-label="Tagline" />
-              <button className="w-px-40px h-40px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={t.remove} aria-label="Remove tagline">
+              <button className="w-px-40px h-40px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={t.remove} aria-label="Remove tagline">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
@@ -44,7 +44,7 @@ export default function StepBranding({ vm }) {
             </div>
           </Fragment>
         ))}
-        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-muted bg-bg t-14px" type="button" onClick={vm.addTagline}>Add tagline</button>
+        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-grey-2 bg-bg t-14px" type="button" onClick={vm.addTagline}>Add tagline</button>
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Desired look and feel: pick one from each pair</span>
@@ -52,8 +52,8 @@ export default function StepBranding({ vm }) {
           {vm.lookPairs.map((lp, i_) => (
             <Fragment key={i_}>
               <div className="flex gap-8px">
-                <button className="flex-1 h-72px r-8px bg-track t-14px" type="button" onClick={lp.pickA} aria-pressed={lp.onA} style={{ border: `2px solid ${lp.bdA}` }}>{lp.a}</button>
-                <button className="flex-1 h-72px r-8px bg-track t-14px" type="button" onClick={lp.pickB} aria-pressed={lp.onB} style={{ border: `2px solid ${lp.bdB}` }}>{lp.b}</button>
+                <button className="flex-1 h-72px r-12px bg-bg t-14px" type="button" onClick={lp.pickA} aria-pressed={lp.onA} style={{ border: `2px solid ${lp.bdA}` }}>{lp.a}</button>
+                <button className="flex-1 h-72px r-12px bg-bg t-14px" type="button" onClick={lp.pickB} aria-pressed={lp.onB} style={{ border: `2px solid ${lp.bdB}` }}>{lp.b}</button>
               </div>
             </Fragment>
           ))}
@@ -84,7 +84,7 @@ export default function StepBranding({ vm }) {
                 <div className="h-56px r-8px bd-1px-solid-line" style={{ background: ac.hex }} />
                 <div className="flex justify-space-between items-center gap-4px">
                   <span className="t-11px ff-monospace">{ac.hex}</span>
-                  <button className="w-px-22px h-22px bd-0 r-4px bg-fill flex items-center justify-center p-0" type="button" onClick={ac.remove} aria-label={ac.aria}>
+                  <button className="w-px-22px h-22px bd-0 r-4px bg-none flex items-center justify-center p-0" type="button" onClick={ac.remove} aria-label={ac.aria}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                       <path d="M6 6l12 12M18 6L6 18" />
                     </svg>
@@ -93,7 +93,7 @@ export default function StepBranding({ vm }) {
               </div>
             </Fragment>
           ))}
-          <button className="w-px-72px h-56px r-8px bd-1px-dashed-muted bg-bg t-12px flex col items-center justify-center gap-2px" type="button" onClick={vm.openPicker} aria-expanded={vm.pk.open}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add color</button>
+          <button className="w-px-72px h-56px r-8px bd-1px-dashed-grey-2 bg-bg t-12px flex col items-center justify-center gap-2px" type="button" onClick={vm.openPicker} aria-expanded={vm.pk.open}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add color</button>
         </div>
         {vm.pk.open && (
           <div className="p-18px r-12px bd-1px-solid-line flex gap-24px wrap items-center">
@@ -115,7 +115,7 @@ export default function StepBranding({ vm }) {
               </div>
               <div className="flex gap-8px">
                 <button className="p-10px-16px r-pill bd-0 bg-action c-bg t-14px w-600" type="button" onClick={vm.addPicked}>Add to avoid list</button>
-                <button className="p-10px-16px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={vm.closePicker}>Cancel</button>
+                <button className="p-10px-16px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.closePicker}>Cancel</button>
               </div>
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function StepBranding({ vm }) {
         <div className="flex gap-8px wrap">
           {vm.treatChips.map((c, i_) => (
             <Fragment key={i_}>
-              <button className="p-8px-14px r-pill bd-1px-solid-grey-2 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
+              <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-14px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
             </Fragment>
           ))}
         </div>
@@ -136,7 +136,7 @@ export default function StepBranding({ vm }) {
               <label className="t-13px" htmlFor={bg.inputId}>{bg.title}</label>
               <div className="flex gap-8px">
                 <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id={bg.inputId} name={bg.field} value={bg.value} onChange={vm.onField} placeholder="Search for a brand" />
-                <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={bg.add}>Add</button>
+                <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={bg.add}>Add</button>
               </div>
               {bg.hasSugg && (
                 <div className="flex gap-6px wrap">
@@ -149,7 +149,7 @@ export default function StepBranding({ vm }) {
               )}
               {bg.cards.map((b, i_) => (
                 <Fragment key={i_}>
-                  <div className="p-10px-12px r-8px bg-fill flex col gap-6px">
+                  <div className="p-10px-12px flex col gap-6px bg-bg bd-1px-solid-grey-2 r-12px">
                     <div className="flex justify-space-between items-center">
                       <span className="t-14px w-600">{b.name}</span>
                       <button className="w-px-26px h-26px bd-0 r-4px bg-bg p-0 flex items-center justify-center" type="button" onClick={b.remove} aria-label={b.aria}>

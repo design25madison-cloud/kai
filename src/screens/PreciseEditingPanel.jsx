@@ -10,7 +10,7 @@ export default function PreciseEditingPanel({ vm }) {
               <span className="t-16px w-600">Precise editing</span>
               <span className="t-12px c-muted">{vm.cur.label}: {vm.cur.name} · {vm.cmCount}</span>
             </div>
-            <button className="w-px-32px h-32px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={vm.toggleCmode} aria-label="Close precise editing">
+            <button className="w-px-32px h-32px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={vm.toggleCmode} aria-label="Close precise editing">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
@@ -24,14 +24,14 @@ export default function PreciseEditingPanel({ vm }) {
                     <span className="t-14px lh-1_45">{cmt.text}</span>
                     <span className="self-flex-start t-11px p-2px-8px r-9px bg-ink-2">{cmt.where}</span>
                   </div>
-                  <div className="self-flex-start w-px-100pct p-12px r-12px-12px-12px-4px bg-fill-subtle flex col gap-10px">
+                  <div className="self-flex-start w-px-100pct p-12px r-12px-12px-12px-4px bg-bg bd-1px-solid-grey-2 flex col gap-10px">
                     {cmt.thinking && (
                       <span className="t-13px c-ink-2">Working on {cmt.label}…</span>
                     )}
                     {cmt.canApply && (
                       <div className="flex gap-8px items-center wrap">
                         <span className="t-13px c-ink-2 flex-1">Suggestion rejected.</span>
-                        <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-13px" type="button" onClick={cmt.apply}>Try another version</button>
+                        <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={cmt.apply}>Try another version</button>
                       </div>
                     )}
                     {cmt.isApplied && (
@@ -80,7 +80,7 @@ export default function PreciseEditingPanel({ vm }) {
                         )}
                         <div className="flex gap-8px">
                           <button className="p-8px-14px r-pill bd-0 bg-action c-bg t-13px w-600" type="button" onClick={cmt.accept}>Accept and lock</button>
-                          <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-13px" type="button" onClick={cmt.reject}>Reject</button>
+                          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={cmt.reject}>Reject</button>
                         </div>
                       </>
                     )}
@@ -94,7 +94,7 @@ export default function PreciseEditingPanel({ vm }) {
               <div className="flex gap-6px wrap">
                 {vm.draftItems.map((di, i_) => (
                   <Fragment key={i_}>
-                    <span className="flex gap-4px items-center t-12px p-3px-4px-3px-10px r-12px bg-fill bd-1px-solid-ink">{di.label}<button className="w-px-18px h-18px r-50pct bd-0 bg-transparent p-0 flex items-center justify-center" type="button" onClick={di.remove} aria-label={di.aria}><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
+                    <span className="flex gap-4px items-center t-12px p-3px-4px-3px-10px bg-bg r-pill bd-1px-solid-grey-1">{di.label}<button className="w-px-18px h-18px r-50pct bd-0 bg-transparent p-0 flex items-center justify-center" type="button" onClick={di.remove} aria-label={di.aria}><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
                   </Fragment>
                 ))}
               </div>
@@ -104,7 +104,7 @@ export default function PreciseEditingPanel({ vm }) {
             )}
             <textarea autoFocus className="p-10px r-8px bd-1px-solid-line bg-bg resize-vertical" value={vm.draft.text} onChange={vm.setDraft} rows="3" aria-label="Describe the edit" placeholder="Describe the edit, for example: make this warmer" />
             <div className="flex gap-8px justify-flex-end">
-              <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-13px" type="button" onClick={vm.cancelDraft}>Clear</button>
+              <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={vm.cancelDraft}>Clear</button>
               <button className="p-8px-16px r-pill bd-0 c-bg t-13px w-600" type="button" onClick={vm.postComment} style={{ background: vm.sendBg }}>Send</button>
             </div>
           </div>

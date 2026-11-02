@@ -120,7 +120,7 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid var(--color-grey-2);
+  border: 1px solid var(--color-grey-1);
   border-radius: var(--radius-pill);
   background: var(--color-bg);
 }
@@ -129,8 +129,9 @@
   display: grid;
   grid-template-columns: repeat(2, 84px);
   padding: 3px;
+  border: 1px solid var(--color-grey-1);
   border-radius: var(--radius-pill);
-  background: var(--color-fill);
+  background: var(--color-bg);
 }
 .view-toggle__btn {
   height: 30px;
@@ -146,7 +147,7 @@
   align-items: center;
   gap: 6px;
   padding: 0 15px;
-  border: 0;
+  border: 1px solid var(--color-grey-1);
   border-radius: var(--radius-pill);
   font-size: var(--text-13);
 }

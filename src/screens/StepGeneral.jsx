@@ -5,20 +5,19 @@ export default function StepGeneral({ vm }) {
     <div className="flex col gap-22px">
       <h2 className="m-0 t-22px w-600">General</h2>
       {vm.showUpload && (
-        <button className="h-150px r-10px bd-2px-dashed-faint bg-fill flex col items-center justify-center gap-8px" type="button" onClick={vm.doImport}>
+        <button className="h-150px r-10px bd-1px-dashed-grey-2 bg-bg flex col items-center justify-center gap-8px" type="button" onClick={vm.doImport}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 15V4" />
             <path d="M7 9l5-5 5 5" />
             <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
           </svg>
           <span className="t-15px w-600">Upload your brief</span>
-          <span className="t-13px c-muted">.docx, PDF, deck, or meeting transcript. Click to use the sample brief.</span>
         </button>
       )}
       {vm.imported && (
-        <div className="p-14px-16px r-10px bg-fill flex justify-space-between items-center gap-12px wrap">
+        <div className="p-14px-16px flex justify-space-between items-center gap-12px wrap bg-bg bd-1px-solid-grey-2 r-12px">
           <span className="t-14px"><strong>{vm.importName}</strong> · {vm.importText}</span>
-          <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-13px" type="button" onClick={vm.confirmAll}>{vm.confirmLabel}</button>
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={vm.confirmAll}>{vm.confirmLabel}</button>
         </div>
       )}
       <div className="flex col gap-6px">
@@ -57,7 +56,7 @@ export default function StepGeneral({ vm }) {
                 <option value="Other">Other</option>
               </select>
               <input className="p-10px r-pill bd-1px-solid-grey-2 bg-bg" type="date" value={d.date} onChange={d.setDate} aria-label="Deadline" />
-              <button className="w-px-40px h-40px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={d.remove} aria-label="Remove deliverable">
+              <button className="w-px-40px h-40px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={d.remove} aria-label="Remove deliverable">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
@@ -65,14 +64,14 @@ export default function StepGeneral({ vm }) {
             </div>
           </Fragment>
         ))}
-        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-muted bg-bg t-14px" type="button" onClick={vm.addDeliv}>Add deliverable</button>
+        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-grey-2 bg-bg t-14px" type="button" onClick={vm.addDeliv}>Add deliverable</button>
       </div>
       <div className="flex col gap-8px">
         <label className="t-13px" htmlFor="f-domainIn">Domains secured</label>
         <div className="flex gap-8px wrap items-center">
           {vm.domains.map((c, i_) => (
             <Fragment key={i_}>
-              <span className="flex items-center gap-6px p-6px-6px-6px-12px r-8px bg-fill t-14px">{c.label}<button className="w-px-22px h-22px bd-0 r-4px bg-bg p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label={c.aria}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
+              <span className="flex items-center gap-6px p-6px-6px-6px-12px bg-bg t-14px r-pill bd-1px-solid-grey-1">{c.label}<button className="w-px-22px h-22px bd-0 r-4px bg-bg p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label={c.aria}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
             </Fragment>
           ))}
           <input className="flex-1 minw-180px p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-domainIn" name="domainIn" value={vm.f.domainIn} onChange={vm.onField} onKeyDown={vm.domainKey} placeholder="yourname.com, then Enter" />
@@ -80,10 +79,9 @@ export default function StepGeneral({ vm }) {
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Team votes or preferences on the name</span>
-        <span className="t-12px c-muted">Rank the names or wordmarks the team likes. The top pick seeds the wordmark favorites.</span>
         {vm.votes.map((v, i_) => (
           <Fragment key={i_}>
-            <div className="flex gap-8px items-center p-8px-10px r-8px bg-fill">
+            <div className="flex gap-8px items-center p-8px-10px bg-bg bd-1px-solid-grey-2 r-12px">
               <span className="w-px-22px t-13px c-muted">{v.rank}</span>
               <span className="flex-1 t-14px">{v.label}</span>
               <button className="w-px-32px h-32px bd-0 r-50pct bg-bg p-0" type="button" onClick={v.up} aria-label={v.upAria}>
@@ -106,7 +104,7 @@ export default function StepGeneral({ vm }) {
         ))}
         <div className="flex gap-8px">
           <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" name="voteIn" value={vm.f.voteIn} onChange={vm.onField} aria-label="Add a name option" placeholder="Add a name option" />
-          <button className="p-8px-14px r-pill bd-1px-solid-grey-2 bg-bg t-14px" type="button" onClick={vm.addVote}>Add</button>
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addVote}>Add</button>
         </div>
       </div>
     </div>

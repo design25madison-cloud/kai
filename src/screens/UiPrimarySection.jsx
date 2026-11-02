@@ -7,17 +7,17 @@ export default function UiPrimarySection({ vm }) {
       <div className="flex justify-space-between items-center gap-12px wrap bd-t-1px-solid-line pt-16px">
         <h2 className="m-0 t-20px w-600 flex gap-10px items-center" id="h-ui">3. UI primary{vm.sec.ui.locked && (<span className="t-12px w-500 p-2px-10px r-9px bg-ink c-bg">Locked</span>)}</h2>
         <div className="flex gap-8px relative wrap">
-          <button className="w-px-36px h-36px r-50pct bd-1px-solid-grey-2 p-0 flex items-center justify-center" type="button" onClick={vm.sec.ui.toggleLock} aria-pressed={vm.sec.ui.locked} aria-label={vm.sec.ui.lockAria} style={{ background: vm.sec.ui.lockBg }}>
+          <button className="w-px-36px h-36px r-50pct bd-1px-solid-grey-1 p-0 flex items-center justify-center" type="button" onClick={vm.sec.ui.toggleLock} aria-pressed={vm.sec.ui.locked} aria-label={vm.sec.ui.lockAria} style={{ background: vm.sec.ui.lockBg }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={vm.sec.ui.lockFg} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="5" y="11" width="14" height="10" rx="2" />
               <path d={vm.sec.ui.shackle} />
             </svg>
           </button>
-          <button className="p-8px-14px r-pill bd-1px-solid-grey-2 t-13px" type="button" onClick={vm.sec.ui.toggleEdit} aria-pressed={vm.sec.ui.editing} style={{ background: vm.sec.ui.editBg, color: vm.sec.ui.editFg }}>{vm.sec.ui.editLabel}</button>
+          <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-13px" type="button" onClick={vm.sec.ui.toggleEdit} aria-pressed={vm.sec.ui.editing} style={{ background: vm.sec.ui.editBg, color: vm.sec.ui.editFg }}>{vm.sec.ui.editLabel}</button>
         </div>
       </div>
       {vm.sec.ui.editing && (
-        <div className="p-16px r-10px bd-1px-dashed-muted flex col gap-6px maxw-420px">
+        <div className="p-16px flex col gap-6px maxw-420px bg-bg bd-1px-solid-grey-2 r-12px">
           <label className="t-12px" htmlFor="e-ui">Shade: darken {vm.cur.accentName} by {vm.cur.uiMix}%</label>
           <input className="accent-ink" id="e-ui" type="range" min="0" max="80" value={vm.cur.uiMix} onChange={vm.setUiMix} />
         </div>

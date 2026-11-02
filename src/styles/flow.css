@@ -28,7 +28,7 @@
 .btn {
   padding: 10px 16px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-grey-2);
+  border: 1px solid var(--color-grey-1);
   background: var(--color-bg);
   font-size: var(--text-14);
   flex: none;
@@ -37,7 +37,7 @@
   border-color: var(--color-action);
   background: var(--color-action);
   color: var(--color-bg);
-  font-weight: 600;
+  font-weight: 500;
 }
 .btn--primary:hover:not(:disabled) {
   border-color: var(--color-action-hover);

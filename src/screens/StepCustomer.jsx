@@ -5,10 +5,9 @@ export default function StepCustomer({ vm }) {
     <div className="flex col gap-24px">
       <div className="flex col gap-4px">
         <h2 className="m-0 t-22px w-600">Customer and problem</h2>
-        <p className="m-0 t-14px c-muted">This product may involve several types of users. Keep answers high level.</p>
       </div>
       <div className="three">
-        <div className="p-16px r-10px bg-fill flex col gap-8px">
+        <div className="p-16px flex col gap-8px bg-bg bd-1px-solid-grey-2 r-12px">
           <span className="t-14px w-600">Economic buyer</span>
           <label className="t-12px c-ink-2" htmlFor="f-br">Role or title</label>
           <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-br" name="buyerRole" value={vm.f.buyerRole} onChange={vm.onField} />
@@ -16,7 +15,7 @@ export default function StepCustomer({ vm }) {
           <div className="flex gap-6px wrap">
             {vm.careChips.map((c, i_) => (
               <Fragment key={i_}>
-                <button className="p-5px-10px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
+                <button className="p-5px-10px r-pill bd-1px-solid-grey-1 t-12px" type="button" onClick={c.toggle} aria-pressed={c.on} style={{ background: c.bg, color: c.fg }}>{c.label}</button>
               </Fragment>
             ))}
           </div>
@@ -25,7 +24,7 @@ export default function StepCustomer({ vm }) {
           <label className="t-12px c-ink-2" htmlFor="f-succ">How they define success</label>
           <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-succ" name="success" value={vm.f.success} onChange={vm.onField} />
         </div>
-        <div className="p-16px r-10px bg-fill flex col gap-8px">
+        <div className="p-16px flex col gap-8px bg-bg bd-1px-solid-grey-2 r-12px">
           <span className="t-14px w-600">Operational user</span>
           <label className="t-12px c-ink-2" htmlFor="f-or">Role or title</label>
           <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-or" name="opRole" value={vm.f.opRole} onChange={vm.onField} />
@@ -34,10 +33,10 @@ export default function StepCustomer({ vm }) {
           <label className="t-12px c-ink-2" htmlFor="f-oc">What they ultimately care about</label>
           <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-oc" name="opCares" value={vm.f.opCares} onChange={vm.onField} />
         </div>
-        <div className="p-16px r-10px bd-1px-dashed-faint flex col gap-8px">
+        <div className="p-16px flex col gap-8px bg-bg bd-1px-solid-grey-2 r-12px">
           <div className="flex justify-space-between items-center gap-8px">
             <span className="t-14px w-600">End user</span>
-            <button className="p-6px-10px r-pill bd-1px-solid-grey-2 t-12px" type="button" onClick={vm.toggleEnd} aria-pressed={vm.endOn} style={{ background: vm.endBg, color: vm.endFg }}>{vm.endLabel}</button>
+            <button className="p-6px-10px r-pill bd-1px-solid-grey-1 t-12px" type="button" onClick={vm.toggleEnd} aria-pressed={vm.endOn} style={{ background: vm.endBg, color: vm.endFg }}>{vm.endLabel}</button>
           </div>
           {vm.endOn && (
             <>
@@ -46,9 +45,6 @@ export default function StepCustomer({ vm }) {
               <label className="t-12px c-ink-2" htmlFor="f-ec">What they ultimately care about</label>
               <input className="p-9px r-pill bd-1px-solid-grey-2 bg-bg" id="f-ec" name="endCares" value={vm.f.endCares} onChange={vm.onField} />
             </>
-          )}
-          {vm.endOff && (
-            <span className="t-13px c-muted">Only if someone other than the operator uses it.</span>
           )}
         </div>
       </div>
@@ -81,13 +77,12 @@ export default function StepCustomer({ vm }) {
       </div>
       <div className="flex col gap-8px">
         <span className="t-15px w-600">Competitors</span>
-        <span className="t-12px c-muted">Add a site for each one so the audit can compare how they look.</span>
         {vm.comps.map((c, i_) => (
           <Fragment key={i_}>
             <div className="flex gap-8px">
               <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={c.name} onChange={c.setName} aria-label="Competitor name" placeholder="Name" />
               <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={c.url} onChange={c.setUrl} aria-label="Competitor site" placeholder="competitor.com" />
-              <button className="w-px-40px h-40px r-50pct bd-0 bg-fill p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label="Remove competitor">
+              <button className="w-px-40px h-40px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label="Remove competitor">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
@@ -95,12 +90,12 @@ export default function StepCustomer({ vm }) {
             </div>
           </Fragment>
         ))}
-        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-muted bg-bg t-14px" type="button" onClick={vm.addComp}>Add competitor</button>
+        <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-grey-2 bg-bg t-14px" type="button" onClick={vm.addComp}>Add competitor</button>
         <label className="t-13px mt-8px" htmlFor="f-altIn">Alternatives and current workarounds</label>
         <div className="flex gap-8px wrap items-center">
           {vm.alts.map((c, i_) => (
             <Fragment key={i_}>
-              <span className="flex items-center gap-6px p-6px-6px-6px-12px r-8px bg-fill t-14px">{c.label}<button className="w-px-22px h-22px bd-0 r-4px bg-bg p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label={c.aria}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
+              <span className="flex items-center gap-6px p-6px-6px-6px-12px bg-bg t-14px r-pill bd-1px-solid-grey-1">{c.label}<button className="w-px-22px h-22px bd-0 r-4px bg-bg p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label={c.aria}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
             </Fragment>
           ))}
           <input className="flex-1 minw-200px p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-altIn" name="altIn" value={vm.f.altIn} onChange={vm.onField} onKeyDown={vm.altKey} placeholder="e.g. spreadsheets, then Enter" />
