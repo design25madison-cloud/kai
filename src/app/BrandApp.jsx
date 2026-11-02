@@ -737,7 +737,7 @@ export default class BrandApp extends Component {
       generate: () => {
         if (missing > 0) return;
         set({ screen: 'gen', genStep: 0 }); clearInterval(this._g);
-        this._g = setInterval(() => { const n = this.state.genStep + 1; if (n > 4) { clearInterval(this._g); this.setState({ screen: 'out', option: 0, ov: this.followOv(), mixBase: null, comments: [], view: 'choose', draft: null, darkPrev: false, cmode: false, meeting: Object.assign({}, this.state.meeting, { marks: {}, notice: null, agreedRound: null }) }); } else { this.setState({ genStep: n }); } }, 650);
+        this._g = setInterval(() => { const n = this.state.genStep + 1; if (n > 4) { clearInterval(this._g); this.setState({ screen: 'out', option: 0, ov: this.followOv(), mixBase: null, comments: [], view: 'dir', draft: null, darkPrev: false, cmode: false, meeting: Object.assign({}, this.state.meeting, { marks: {}, notice: null, agreedRound: null }) }); } else { this.setState({ genStep: n }); } }, 650);
       },
       genSteps,
       backToBrief: () => set({ screen: 'brief', step: 5 }),
@@ -774,13 +774,7 @@ export default class BrandApp extends Component {
       keep: s.keep, keepPct: s.keep + '%', setKeep: (e) => set({ keep: Number(e.target.value) }),
       keepName: BANDS[band][0],
       keepStops: BANDS.map((bd, k) => ({ label: bd[0], on: band === k, bg: band === k ? 'var(--color-action)' : '#FFFFFF', fg: band === k ? '#FFFFFF' : 'var(--color-ink)', bd: band === k ? 'var(--color-action)' : 'var(--color-grey-1)', pick: () => set({ keep: bd[1] }) })),
-      isDir: s.view === 'dir', isCmp: s.view === 'cmp', isChoose: s.view === 'choose', viewChoose: () => set({ view: 'choose', edit: null, draft: null, cmode: false }),
-      chooser: OPT.map((o, k) => {
-        const d = this.optionData(k);
-        return { label: d.label, name: k === 3 ? 'Your mix' : d.name, rec: k === 0, word: d.word, wordFont: d.wordFont, trackPx: d.trackPx, surface: d.surface, primary: d.primary,
-          colors: d.colors, display: d.display, body: d.body, words: d.toneArr.map(t => t[0]).slice(0, 4).join(' · '), hits: d.hits,
-          pick: () => { set({ option: k, view: 'dir', edit: null, draft: null, cmode: false }); window.scrollTo(0, 0); } };
-      }),
+      isDir: s.view === 'dir', isCmp: s.view === 'cmp', 
       viewDir: () => set({ view: 'dir' }), viewCmp: () => set({ view: 'cmp', edit: null, draft: null }),
       vDirBg: s.view === 'dir' ? 'var(--color-action)' : 'transparent', vDirFg: s.view === 'dir' ? '#FFFFFF' : 'var(--color-ink)',
       vCmpBg: s.view === 'cmp' ? 'var(--color-action)' : 'transparent', vCmpFg: s.view === 'cmp' ? '#FFFFFF' : 'var(--color-ink)',
