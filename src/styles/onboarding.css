@@ -139,26 +139,26 @@ select.r-pill {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 12px;
   font-size: var(--text-14);
 }
 .breadcrumbs__item {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
-.breadcrumbs__item + .breadcrumbs__item::before {
-  content: "/";
-  margin: 0 8px;
-  color: var(--color-grey-2);
+.breadcrumbs__sep {
+  display: block;
+  flex: none;
 }
 .breadcrumbs__link {
   padding: 8px 0;
   border: 0;
   background: none;
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 .breadcrumbs__link:hover {
-  color: var(--color-action);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .breadcrumbs__current {
   font-weight: 600;
