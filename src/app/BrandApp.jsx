@@ -21,6 +21,11 @@ export default class BrandApp extends Component {
     this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
     this._init = JSON.parse(JSON.stringify(this.state));
   }
+  // A new screen or step opens at its top, not wherever the last one was scrolled to.
+  componentDidUpdate(_, prev) {
+    const s = this.state;
+    if (s.screen !== prev.screen || s.step !== prev.step || s.view !== prev.view) window.scrollTo(0, 0);
+  }
   blankF() {
     const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
       'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];

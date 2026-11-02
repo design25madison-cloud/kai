@@ -230,7 +230,7 @@
 .maxw-88pct { max-width: 88%; }
 .maxw-min-640px-calc-100pct---32px { max-width: min(640px, calc(100% - 32px)); }
 .minh-48px { min-height: 48px; }
-.minh-900px { min-height: 900px; }
+.minh-screen { min-height: 100dvh; }
 .minh-96px { min-height: 96px; }
 .minw-0 { min-width: 0; }
 .minw-140px { min-width: 140px; }
