@@ -81,29 +81,9 @@ export default function StepExtraInfo({ vm }) {
         )}
       </div>
       <div className="flex col gap-10px">
-        <span className="t-15px w-600">Links and references</span>
+        <span className="t-15px w-600">Links</span>
         <label className="t-13px" htmlFor="f-site">Current website build or workspace</label>
         <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-site" name="site" value={vm.f.site} onChange={vm.onField} placeholder="https://" />
-        <span className="t-13px mt-6px">Reference images and links</span>
-        <button className="h-110px r-10px bd-1px-dashed-grey-2 bg-bg flex col items-center justify-center gap-6px" type="button" onClick={vm.addRefs}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 15V4" />
-            <path d="M7 9l5-5 5 5" />
-            <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
-          </svg>
-        </button>
-        {vm.refsAdded && (
-          <div className="grid cols-repeat-4-minmax-0-1fr gap-10px">
-            {vm.refCards.map((r, i_) => (
-              <Fragment key={i_}>
-                <div className="flex col gap-6px">
-                  <div className="ar-1 r-8px bg-track flex items-flex-end p-8px t-12px c-ink-2">{r.label}</div>
-                  <button className="p-6px r-pill bd-1px-solid-grey-1 t-12px" type="button" onClick={r.toggle} style={{ background: r.bg, color: r.fg }}>{r.tag}</button>
-                </div>
-              </Fragment>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

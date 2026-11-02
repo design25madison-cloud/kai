@@ -143,10 +143,9 @@ export function claudeMd({ d, f, avoidC, avoidT, domains, agreedRound, sections 
   if (has("voice")) {
     blocks.push(`## Voice\n\n${d.tone.map((t) => `- Be ${t.yes.toLowerCase()}, not ${t.no.toLowerCase()}.`).join("\n")}\n\n- Sample headline: "${d.headline}"\n- Sample interface line: "${d.micro}"`);
   }
-  if (has("palette")) {
-    const avoid = [...(avoidT || []).map((t) => "Don't use " + t.toLowerCase() + "."), ...(avoidC || []).map((h) => `Don't use ${h}.`)];
-    if (avoid.length) blocks.push("## Avoid\n\n" + avoid.map((a) => "- " + a).join("\n"));
-  }
+  const avoid = has("palette") ? [...(avoidT || []).map((t) => "Don't use " + t.toLowerCase() + "."), ...(avoidC || []).map((h) => `Don't use ${h}.`)] : [];
+  if ((has("palette") || has("voice")) && (f.avoidOther || "").trim()) avoid.push("Avoid these words and visuals: " + f.avoidOther.trim());
+  if (avoid.length) blocks.push("## Avoid\n\n" + avoid.map((a) => "- " + a).join("\n"));
   if (has("refs")) {
     blocks.push(`## Imagery\n\nReference images set direction only. They aren't licensed for use, so don't ship them.\n\n${d.imgs.map((im) => `- ${im[0]} (${im[1]})`).join("\n")}`);
   }

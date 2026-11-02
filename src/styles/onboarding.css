@@ -428,3 +428,39 @@ select:not([multiple]) {
 .opinion:has(textarea:not(:placeholder-shown)) {
   border-color: var(--color-ink);
 }
+
+/* Image references on the Branding step */
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.ref-card {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+  border-radius: var(--radius-min);
+  background: var(--color-grey-1);
+  font-size: var(--text-12);
+}
+.ref-card__remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+}
+@media (max-width: 560px) {
+  .ref-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

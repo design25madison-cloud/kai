@@ -128,6 +128,8 @@ export default function StepBranding({ vm }) {
             </Fragment>
           ))}
         </div>
+        <label className="t-13px mt-6px" htmlFor="f-avoidOther">Words or visuals to avoid</label>
+        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-avoidOther" name="avoidOther" value={vm.f.avoidOther} onChange={vm.onField} placeholder="For example: rugged, hard hats, handshake photos" />
       </div>
       <div className="two">
         {vm.brandGroups.map((bg, i_) => (
@@ -165,6 +167,34 @@ export default function StepBranding({ vm }) {
             </div>
           </Fragment>
         ))}
+      </div>
+      <div className="flex col gap-8px">
+        <span className="t-13px">Image references</span>
+        <button className="dropzone" type="button" onClick={vm.addRefs}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 15V4" />
+            <path d="M7 9l5-5 5 5" />
+            <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
+          </svg>
+          Add images
+        </button>
+        {vm.refsAdded && (
+          <div className="ref-grid">
+            {vm.refCards.map((r) => (
+              <div key={r.label} className="flex col gap-6px">
+                <div className="ref-card">
+                  {r.label}
+                  <button className="ref-card__remove" type="button" onClick={r.remove} aria-label={r.removeAria}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
+                <button className="p-6px r-pill bd-1px-solid-grey-1 t-12px" type="button" onClick={r.toggle} aria-pressed={r.avoid} style={{ background: r.bg, color: r.fg }}>{r.tag}</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

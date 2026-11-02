@@ -10,7 +10,7 @@ export default class BrandApp extends Component {
       screen: 'splash', path: 'brief', step: 1, imported: false, confirmed: false,
       f: this.blankF(), tone: [], looks: {}, sl: { warmth: 50, energy: 50, serious: 50 },
       avoidC: [], avoidT: [], brandsA: [], brandsX: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
-      refs: false, refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
+      refs: [], refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
       pk: { open: false, h: 280, s: 70, l: 30, text: null },
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
       arts: [], view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
@@ -21,7 +21,7 @@ export default class BrandApp extends Component {
     this._init = JSON.parse(JSON.stringify(this.state));
   }
   blankF() {
-    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
+    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'avoidOther', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
       'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'jWhen', 'jWant', 'jSo', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];
     const o = { who: 'operator' }; keys.forEach(k => { o[k] = ''; }); return o;
   }
@@ -517,7 +517,10 @@ export default class BrandApp extends Component {
         cards: s[key].map((b, i) => ({ name: b.name, why: b.why, aria: 'Remove ' + b.name, whyAria: 'Why ' + b.name, setWhy: listUpd(key, i, 'why'), remove: listRm(key, i) })) };
     };
     const brandGroups = [brandGroup('brandsA', 'brandAIn', 'Brands you admire, and why', 'f-ba'), brandGroup('brandsX', 'brandXIn', 'Brands to avoid resembling, and why', 'f-bx')];
-    const refCards = ['Corten steel', 'Sand dune', 'Industrial stair', 'Neon sign'].map((label, k) => { const avoid = s.refTags[k] === undefined ? k === 3 : s.refTags[k]; return Object.assign({ label, tag: avoid ? 'Avoid' : 'Admire', toggle: () => set({ refTags: Object.assign({}, s.refTags, { [k]: !avoid }) }) }, on(avoid)); });
+    const refCards = s.refs.map(label => {
+      const avoid = s.refTags[label] === undefined ? label === 'Neon sign' : s.refTags[label];
+      return Object.assign({ label, avoid, tag: avoid ? 'Avoid' : 'Admire', removeAria: 'Remove ' + label, toggle: () => set({ refTags: Object.assign({}, s.refTags, { [label]: !avoid }) }), remove: () => set({ refs: s.refs.filter(x => x !== label) }) }, on(avoid));
+    });
 
     const core = [
       ['Working name', !!f.name, 1], ['Company description', !!f.desc, 1], ['Domains secured', s.domains.length > 0, 1], ['Name meaning', !!f.meaning, 2], ['Tone of the name', s.tone.length > 0, 2],
@@ -718,7 +721,7 @@ export default class BrandApp extends Component {
       setPickL: (e) => setPk({ l: Number(e.target.value), text: null }),
       setPickHex: (e) => { const v = e.target.value; if (this.hexOk(v)) { const hsl = this.hex2hsl(v); setPk({ h: hsl[0], s: hsl[1], l: hsl[2], text: v }); } else { setPk({ text: v }); } },
       addPicked: () => { const h = (p.text && this.hexOk(p.text)) ? p.text.toUpperCase() : pHex; set({ avoidC: s.avoidC.includes(h) ? s.avoidC : s.avoidC.concat([h]), pk: Object.assign({}, s.pk, { open: false, text: null }) }); },
-      refsAdded: s.refs, addRefs: () => set({ refs: true }), refCards,
+      refsAdded: s.refs.length > 0, addRefs: () => set({ refs: ['Corten steel', 'Sand dune', 'Industrial stair', 'Neon sign'] }), refCards,
       coreChecks, hasMissing: missing > 0, genBg: missing > 0 ? 'var(--color-grey-2)' : 'var(--color-action)',
       readyText: missing > 0 ? missing + ' Core answers are missing. Generation unlocks when every Core answer has something, even rough.' : 'Every Core answer is filled. You are ready to generate.',
       fillSample: () => { const smp = this.sampleState(); const nf = Object.assign({}, smp.f); Object.keys(s.f).forEach(k => { if (s.f[k]) nf[k] = s.f[k]; }); const patch = { f: nf }; Object.keys(smp).forEach(k => { if (k === 'f') return; const cur = s[k]; const empty = Array.isArray(cur) ? cur.length === 0 : (cur && typeof cur === 'object' ? Object.keys(cur).length === 0 : !cur); if (empty) patch[k] = smp[k]; }); set(patch); },
