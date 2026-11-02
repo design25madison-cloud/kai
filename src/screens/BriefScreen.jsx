@@ -1,3 +1,4 @@
+import Breadcrumbs from "./Breadcrumbs.jsx";
 import KaiLogo from "./KaiLogo.jsx";
 import { Fragment } from "react";
 import StepBranding from "./StepBranding.jsx";
@@ -11,11 +12,8 @@ export default function BriefScreen({ vm }) {
     <div className="maxw-760px m-0-auto p-48px-24px-80px flex col gap-28px">
       <KaiLogo className="page-logo page-logo--flow" />
       <div className="flex justify-space-between items-center gap-12px wrap">
-        <button className="p-8px-0 bd-0 bg-none c-muted t-14px" type="button" onClick={vm.toStart}>Back to start</button>
-        <span className="flex gap-16px items-center">
-          <span className="t-13px c-muted">{vm.pathLabel}</span>
-          <button className="p-8px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.startOver}>Start over</button>
-        </span>
+        <Breadcrumbs items={vm.crumbs} />
+        <button className="p-8px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.startOver}>Start over</button>
       </div>
       <nav className="flex justify-space-between gap-8px" aria-label="Brief steps">
         {vm.steps.map((st, i_) => (
@@ -90,8 +88,7 @@ export default function BriefScreen({ vm }) {
       {vm.isS3 && <StepCustomer vm={vm} />}
       {vm.isS4 && <StepExtraInfo vm={vm} />}
       {vm.isS5 && <StepReview vm={vm} />}
-      <div className="flex justify-space-between gap-12px pt-8px bd-t-1px-solid-divider">
-        <button className="p-12px-18px r-pill bd-1px-solid-grey-2 bg-bg" type="button" onClick={vm.prevStep}>Back</button>
+      <div className="flex justify-flex-end gap-12px pt-8px bd-t-1px-solid-divider">
         {vm.notLast && (
           <button className="p-12px-22px r-pill bd-0 bg-action c-bg w-600" type="button" onClick={vm.nextStep}>Next</button>
         )}

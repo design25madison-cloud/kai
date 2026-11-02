@@ -1,11 +1,12 @@
 import { Fragment } from "react";
+import Breadcrumbs from "./Breadcrumbs.jsx";
 import KaiLogo from "./KaiLogo.jsx";
 
 export default function StartScreen({ vm }) {
   return (
     <div className="maxw-680px m-0-auto p-96px-24px-80px flex col gap-28px">
       <KaiLogo className="page-logo" />
-      <button className="link-btn self-flex-start" type="button" onClick={vm.backToWelcome}>Back</button>
+      <Breadcrumbs items={vm.crumbs} />
       <div className="flex col gap-8px">
         <h1 className="m-0 t-32px lh-1_2">Start a brand direction</h1>
         <p className="m-0 c-muted t-16px lh-1_5">Add anything you already have. None of it is required.</p>

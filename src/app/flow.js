@@ -64,6 +64,16 @@ function describeOpen(open) {
   return open.map((o) => (o.note ? `${o.label} ("${o.note}")` : o.label)).join(", ");
 }
 
+// Where you are in onboarding. The last crumb is the current screen, so it has no link.
+function onboardingCrumbs(app) {
+  const { screen, path } = app.state;
+  const go = (target) => () => app.setState({ screen: target });
+  const crumbs = [{ label: "Get started", go: go("welcome") }];
+  if (screen === "start") return crumbs.concat([{ label: "Upload" }]);
+  if (path !== "scratch") crumbs.push({ label: "Upload", go: go("start") });
+  return crumbs.concat([{ label: "Brief" }]);
+}
+
 const EXPORT_SECTIONS = [
   ["mood", "Moodboard"],
   ["word", "Wordmark"],
@@ -133,7 +143,7 @@ export function flowVals(app) {
     },
     chooseMaterials: () => set({ path: "brief", screen: "start" }),
     chooseScratch: () => set({ path: "scratch", screen: "brief", step: 1 }),
-    backToWelcome: () => set({ screen: "welcome" }),
+    crumbs: onboardingCrumbs(app),
     isMeet,
     isHandoff,
     showPrint: isOut || isHandoff,
