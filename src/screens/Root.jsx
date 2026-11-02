@@ -12,7 +12,7 @@ import WelcomeScreen from "./WelcomeScreen.jsx";
 
 export default function Root({ vm }) {
   return (
-    <div className="ff-Instrument-Sans-system-ui-sans-serif c-ink bg-bg minh-900px">
+    <div className="font-ui c-ink bg-bg minh-900px">
       <div className="screen">
         {vm.isSplash && <SplashScreen vm={vm} />}
         {vm.isWelcome && <WelcomeScreen vm={vm} />}

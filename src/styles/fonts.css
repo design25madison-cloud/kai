@@ -1,9 +1,7 @@
 /* Allowlisted brand fonts, bundled so demos work offline. */
-@import "@fontsource/instrument-sans/400.css";
-@import "@fontsource/instrument-sans/500.css";
-@import "@fontsource/instrument-sans/600.css";
 @import "@fontsource/koho/500.css";
 @import "@fontsource/geist/400.css";
+@import "@fontsource/geist/500.css";
 @import "@fontsource/geist/600.css";
 @import "@fontsource/anta/400.css";
 @import "@fontsource/archivo/400.css";

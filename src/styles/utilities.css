@@ -136,7 +136,7 @@
 .cursor-crosshair { cursor: crosshair; }
 .col { flex-direction: column; }
 .wrap { flex-wrap: wrap; }
-.ff-Instrument-Sans-system-ui-sans-serif { font-family: var(--font-ui); }
+.font-ui { font-family: var(--font-ui); }
 .ff-monospace { font-family: monospace; }
 .t-10px { font-size: var(--text-10); }
 .t-11px { font-size: var(--text-11); }
