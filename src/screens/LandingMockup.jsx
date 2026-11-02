@@ -94,7 +94,7 @@ function Photo({ label }) {
 
 const STAR = "M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z";
 
-export default function LandingMockup({ vm }) {
+export default function LandingMockup({ vm, expanded = true }) {
   const c = vm.cur;
   const copy = LANDING_COPY;
   const look = LOOKS[c.name] || DEFAULT_LOOK;
@@ -156,165 +156,169 @@ export default function LandingMockup({ vm }) {
         </div>
       </div>
 
-      <div className="mock-section mock-proof">
-        <span className="mock-proof__label">{copy.proofLabel}</span>
-        <div className="mock-proof__row">
-          {copy.proof.map((x) => <span key={x} className="mock-proof__name">{x}</span>)}
-        </div>
-      </div>
+      {expanded && (
+        <>
+          <div className="mock-section mock-proof">
+            <span className="mock-proof__label">{copy.proofLabel}</span>
+            <div className="mock-proof__row">
+              {copy.proof.map((x) => <span key={x} className="mock-proof__name">{x}</span>)}
+            </div>
+          </div>
 
-      <div className="mock-divider" />
+          <div className="mock-divider" />
 
-      <div className="mock-section mock-trio">
-        <div className="mock-trio__lead">
-          <span className="mock-featured"><Icon path={STACK} /></span>
-          <h4 className="mock-h2">{copy.featuresTitle}</h4>
-          <p className="mock-sub">{copy.featuresIntro}</p>
-        </div>
-        {[copy.features.slice(0, 3), copy.features.slice(3)].map((group) => (
-          <div key={group[0][0]} className="mock-trio__col">
-            {group.map(([title, text]) => (
-              <div key={title} className="mock-feature">
-                <span className="mock-feature__title">{title}</span>
-                <span className="mock-feature__text">{text}</span>
+          <div className="mock-section mock-trio">
+            <div className="mock-trio__lead">
+              <span className="mock-featured"><Icon path={STACK} /></span>
+              <h4 className="mock-h2">{copy.featuresTitle}</h4>
+              <p className="mock-sub">{copy.featuresIntro}</p>
+            </div>
+            {[copy.features.slice(0, 3), copy.features.slice(3)].map((group) => (
+              <div key={group[0][0]} className="mock-trio__col">
+                {group.map(([title, text]) => (
+                  <div key={title} className="mock-feature">
+                    <span className="mock-feature__title">{title}</span>
+                    <span className="mock-feature__text">{text}</span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
-        ))}
-      </div>
 
-      <div className="mock-section mock-section--tail">
-        <div className="mock-split">
-          <div className="mock-split__text">
-            <div className="mock-split__copy">
-              <h4 className="mock-h2">{copy.cta[0]}</h4>
-              <p className="mock-sub">{copy.cta[1]}</p>
-            </div>
-            <div className="mock-buttons">
-              <span className="mock-btn mock-btn--invert">{copy.cta[2]}</span>
-              <span className="mock-btn">{copy.cta[3]}</span>
+          <div className="mock-section mock-section--tail">
+            <div className="mock-split">
+              <div className="mock-split__text">
+                <div className="mock-split__copy">
+                  <h4 className="mock-h2">{copy.cta[0]}</h4>
+                  <p className="mock-sub">{copy.cta[1]}</p>
+                </div>
+                <div className="mock-buttons">
+                  <span className="mock-btn mock-btn--invert">{copy.cta[2]}</span>
+                  <span className="mock-btn">{copy.cta[3]}</span>
+                </div>
+              </div>
+              <div className="mock-split__media"><Photo label={photo(3)} /></div>
             </div>
           </div>
-          <div className="mock-split__media"><Photo label={photo(3)} /></div>
-        </div>
-      </div>
 
-      <div className="mock-divider" />
+          <div className="mock-divider" />
 
-      <div className="mock-section mock-tabs">
-        <div className="mock-heading">
-          <span className="mock-eyebrow">{copy.tabsEyebrow}</span>
-          <h4 className="mock-h2">{copy.tabsTitle}</h4>
-          <p className="mock-sub">{copy.tabsIntro}</p>
-        </div>
-        <div className="mock-tabs__row">
-          <div className="mock-tabs__list">
-            {copy.tabs.map(([title, text], k) => (
-              <div key={title} className={k === 0 ? "mock-tab mock-tab--on" : "mock-tab"}>
-                <span className="mock-feature">
-                  <span className="mock-feature__title">{title}</span>
-                  <span className="mock-feature__text">{text}</span>
+          <div className="mock-section mock-tabs">
+            <div className="mock-heading">
+              <span className="mock-eyebrow">{copy.tabsEyebrow}</span>
+              <h4 className="mock-h2">{copy.tabsTitle}</h4>
+              <p className="mock-sub">{copy.tabsIntro}</p>
+            </div>
+            <div className="mock-tabs__row">
+              <div className="mock-tabs__list">
+                {copy.tabs.map(([title, text], k) => (
+                  <div key={title} className={k === 0 ? "mock-tab mock-tab--on" : "mock-tab"}>
+                    <span className="mock-feature">
+                      <span className="mock-feature__title">{title}</span>
+                      <span className="mock-feature__text">{text}</span>
+                    </span>
+                    <span className="mock-more">{copy.learnMore}<Icon path={ARROW} /></span>
+                  </div>
+                ))}
+              </div>
+              <div className="mock-tabs__screen">
+                <div className="mock-tabs__app"><DashboardMockup vm={vm} /></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mock-section mock-section--alt mock-pricing">
+            <div className="mock-pricing__lead">
+              <span className="mock-eyebrow">{copy.pricingEyebrow}</span>
+              <h4 className="mock-h2">{copy.pricingTitle}</h4>
+              <p className="mock-sub">{copy.pricingIntro}</p>
+            </div>
+            <div className="mock-pricing__plans">
+              {copy.plans.map(([name, price, items]) => (
+                <div key={name} className="mock-plan">
+                  <div className="mock-plan__head">
+                    <span className="mock-featured mock-featured--sm"><Icon path={STACK} /></span>
+                    <span className="mock-plan__name">{name}</span>
+                    <span className="mock-plan__price">{price}</span>
+                    <span className="mock-plan__billed">{copy.billed}</span>
+                  </div>
+                  <div className="mock-plan__list">
+                    {items.map((x) => <span key={x} className="mock-plan__item"><Icon path={CHECK} />{x}</span>)}
+                  </div>
+                  <div className="mock-plan__foot"><span className="mock-btn mock-btn--block">{copy.planAction}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mock-section">
+            <div className="mock-split">
+              <div className="mock-split__text">
+                <span className="mock-stars">
+                  {[0, 1, 2, 3, 4].map((k) => (
+                    <svg key={k} width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={STAR} /></svg>
+                  ))}
                 </span>
-                <span className="mock-more">{copy.learnMore}<Icon path={ARROW} /></span>
+                <p className="mock-quote">{copy.quote}</p>
+                <span className="mock-quote__by">
+                  <span className="mock-quote__name">— {copy.quoteName}</span>
+                  <span className="mock-quote__role">{copy.quoteRole}</span>
+                </span>
+                <span className="mock-dots"><i className="mock-dots__on" /><i /><i /></span>
               </div>
-            ))}
-          </div>
-          <div className="mock-tabs__screen">
-            <div className="mock-tabs__app"><DashboardMockup vm={vm} /></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mock-section mock-section--alt mock-pricing">
-        <div className="mock-pricing__lead">
-          <span className="mock-eyebrow">{copy.pricingEyebrow}</span>
-          <h4 className="mock-h2">{copy.pricingTitle}</h4>
-          <p className="mock-sub">{copy.pricingIntro}</p>
-        </div>
-        <div className="mock-pricing__plans">
-          {copy.plans.map(([name, price, items]) => (
-            <div key={name} className="mock-plan">
-              <div className="mock-plan__head">
-                <span className="mock-featured mock-featured--sm"><Icon path={STACK} /></span>
-                <span className="mock-plan__name">{name}</span>
-                <span className="mock-plan__price">{price}</span>
-                <span className="mock-plan__billed">{copy.billed}</span>
+              <div className="mock-split__media">
+                <Photo label={photo(4)} />
+                <span className="mock-play"><Icon path={PLAY} size={28} /></span>
               </div>
-              <div className="mock-plan__list">
-                {items.map((x) => <span key={x} className="mock-plan__item"><Icon path={CHECK} />{x}</span>)}
-              </div>
-              <div className="mock-plan__foot"><span className="mock-btn mock-btn--block">{copy.planAction}</span></div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      <div className="mock-section">
-        <div className="mock-split">
-          <div className="mock-split__text">
-            <span className="mock-stars">
-              {[0, 1, 2, 3, 4].map((k) => (
-                <svg key={k} width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={STAR} /></svg>
-              ))}
-            </span>
-            <p className="mock-quote">{copy.quote}</p>
-            <span className="mock-quote__by">
-              <span className="mock-quote__name">— {copy.quoteName}</span>
-              <span className="mock-quote__role">{copy.quoteRole}</span>
-            </span>
-            <span className="mock-dots"><i className="mock-dots__on" /><i /><i /></span>
-          </div>
-          <div className="mock-split__media">
-            <Photo label={photo(4)} />
-            <span className="mock-play"><Icon path={PLAY} size={28} /></span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mock-section mock-section--alt mock-closing">
-        <div className="mock-closing__text">
-          <div className="mock-closing__copy">
-            <h4 className="mock-h1">{copy.closingTitle[0]}<br />{copy.closingTitle[1]}</h4>
-            <p className="mock-sub">{copy.closingIntro}</p>
-          </div>
-          <div className="mock-buttons">
-            <span className="mock-btn mock-btn--line">{copy.cta[2]}</span>
-            <span className="mock-btn">{copy.cta[3]}</span>
-          </div>
-        </div>
-        <div className="mock-collage" aria-hidden="true">
-          {[0, 1, 2, 3, 5].map((image, k) => (
-            <div key={image} className={`mock-collage__tile mock-collage__tile--${k + 1}`}><Photo label={photo(image)} /></div>
-          ))}
-        </div>
-      </div>
-
-      <footer className="mock-footer">
-        <div className="mock-footer__news">
-          <span className="mock-footer__news-text">
-            <span className="mock-footer__news-title">{copy.newsletterTitle}</span>
-            <span>{copy.newsletterIntro}</span>
-          </span>
-          <span className="mock-footer__capture">
-            <span className="mock-footer__input">{copy.emailPlaceholder}</span>
-            <span className="mock-btn">{copy.subscribe}</span>
-          </span>
-        </div>
-        <div className="mock-footer__cols">
-          {copy.footer.map(([heading, links]) => (
-            <div key={heading} className="mock-footer__col">
-              <span className="mock-footer__head">{heading}</span>
-              {links.map((x) => (
-                <span key={x} className="mock-footer__link">{x}{x === "Solutions" && <span className="mock-footer__badge">{copy.newBadge}</span>}</span>
+          <div className="mock-section mock-section--alt mock-closing">
+            <div className="mock-closing__text">
+              <div className="mock-closing__copy">
+                <h4 className="mock-h1">{copy.closingTitle[0]}<br />{copy.closingTitle[1]}</h4>
+                <p className="mock-sub">{copy.closingIntro}</p>
+              </div>
+              <div className="mock-buttons">
+                <span className="mock-btn mock-btn--line">{copy.cta[2]}</span>
+                <span className="mock-btn">{copy.cta[3]}</span>
+              </div>
+            </div>
+            <div className="mock-collage" aria-hidden="true">
+              {[0, 1, 2, 3, 5].map((image, k) => (
+                <div key={image} className={`mock-collage__tile mock-collage__tile--${k + 1}`}><Photo label={photo(image)} /></div>
               ))}
             </div>
-          ))}
-        </div>
-        <div className="mock-footer__base">
-          <span className="mock-wordmark">{vm.wordUpper}</span>
-          <span>© {new Date().getFullYear()} {vm.f.name || vm.wordUpper}. {copy.rights}</span>
-        </div>
-      </footer>
+          </div>
+
+          <footer className="mock-footer">
+            <div className="mock-footer__news">
+              <span className="mock-footer__news-text">
+                <span className="mock-footer__news-title">{copy.newsletterTitle}</span>
+                <span>{copy.newsletterIntro}</span>
+              </span>
+              <span className="mock-footer__capture">
+                <span className="mock-footer__input">{copy.emailPlaceholder}</span>
+                <span className="mock-btn">{copy.subscribe}</span>
+              </span>
+            </div>
+            <div className="mock-footer__cols">
+              {copy.footer.map(([heading, links]) => (
+                <div key={heading} className="mock-footer__col">
+                  <span className="mock-footer__head">{heading}</span>
+                  {links.map((x) => (
+                    <span key={x} className="mock-footer__link">{x}{x === "Solutions" && <span className="mock-footer__badge">{copy.newBadge}</span>}</span>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="mock-footer__base">
+              <span className="mock-wordmark">{vm.wordUpper}</span>
+              <span>© {new Date().getFullYear()} {vm.f.name || vm.wordUpper}. {copy.rights}</span>
+            </div>
+          </footer>
+        </>
+      )}
     </div>
   );
 }

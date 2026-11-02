@@ -721,6 +721,42 @@
   opacity: 0.85;
 }
 
+/* The landing page opens on its first screen. overflow: clip keeps the corners rounded without
+   stopping the control from sticking to the lower right of the window while expanded. */
+.mock-frame--landing {
+  overflow: clip;
+  scroll-margin-top: 16px;
+}
+.mock-expand {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  height: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding-right: 16px;
+  transform: translateY(-16px);
+}
+.mock-expand__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.mock-expand__btn:hover {
+  background: var(--color-ink);
+  color: #ffffff;
+}
+
 /* Product UI */
 .mock-app {
   display: grid;

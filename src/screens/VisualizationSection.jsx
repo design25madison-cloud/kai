@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { copyHits } from "../app/language.js";
 import DashboardMockup, { DASHBOARD_COPY } from "./DashboardMockup.jsx";
 import LandingMockup, { LANDING_COPY } from "./LandingMockup.jsx";
@@ -7,8 +8,15 @@ import PieceActions from "./PieceActions.jsx";
 const strings = (value) => (typeof value === "string" ? [value] : typeof value === "object" && value ? Object.values(value).flatMap(strings) : []);
 const MOCK_COPY = [...strings(LANDING_COPY), ...strings(DASHBOARD_COPY)];
 
-export default function VisualizationSection({ vm }) {
+export default function VisualizationSection({ vm, printing = false }) {
   const c = vm.cur;
+  const [landingOpen, setLandingOpen] = useState(false);
+  const landingFrame = useRef(null);
+  const toggleLanding = () => {
+    // Collapsing removes everything below the fold, so bring the screen that's left back into view.
+    if (landingOpen) landingFrame.current?.scrollIntoView({ block: "start" });
+    setLandingOpen(!landingOpen);
+  };
   const hits = copyHits(vm.banned, MOCK_COPY);
   // Everything inside the mockups reads from these, so each direction restyles them completely.
   const theme = {
@@ -39,12 +47,22 @@ export default function VisualizationSection({ vm }) {
       </div>
       {hits.length > 0 && <span className="language-flag">Sample copy uses a restricted word: {hits.join(", ")}</span>}
 
-      <div className="mock-frame" style={theme}>
+      <div className="mock-frame mock-frame--landing" style={theme} ref={landingFrame}>
         {vm.cmode && (
           <button className="pick" type="button" onClick={vm.pins.landing} aria-pressed={vm.pinSel.landing} aria-label="Comment on the landing page" />
         )}
         <PieceActions vm={vm} piece={vm.pieces.landing} />
-        <LandingMockup vm={vm} />
+        <LandingMockup vm={vm} expanded={printing || landingOpen} />
+        {!printing && (
+          <div className="mock-expand">
+            <button className="mock-expand__btn" type="button" onClick={toggleLanding} aria-expanded={landingOpen}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d={landingOpen ? "M6 15l6-6 6 6" : "M6 9l6 6 6-6"} />
+              </svg>
+              {landingOpen ? "Collapse" : "Expand"}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mock-frame" style={theme}>

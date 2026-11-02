@@ -19,7 +19,7 @@ export default function PrintView({ vm }) {
       {on("ui") && <UiPrimarySection vm={print} />}
       {on("type") && <TypographySection vm={print} />}
       {on("refs") && <ImagerySection vm={print} />}
-      {on("preview") && <VisualizationSection vm={print} />}
+      {on("preview") && <VisualizationSection vm={print} printing />}
       {on("voice") && <VoiceSection vm={print} />}
     </div>
   );
