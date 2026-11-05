@@ -1,10 +1,10 @@
 import Breadcrumbs from "./Breadcrumbs.jsx";
-import KaiLogo from "./KaiLogo.jsx";
+import { HomeLogo } from "./ProjectChrome.jsx";
 
 export default function StartScreen({ vm }) {
   return (
     <div className="upload flow-page">
-      <KaiLogo className="page-logo" />
+      <HomeLogo vm={vm} className="page-logo" />
       <Breadcrumbs items={vm.crumbs} />
       <div className="upload__head">
         <h1 className="upload__title">Start a brand direction</h1>

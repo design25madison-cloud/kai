@@ -1,3 +1,4 @@
+import AuthScreen from "./AuthScreen.jsx";
 import BriefScreen from "./BriefScreen.jsx";
 import GeneratingScreen from "./GeneratingScreen.jsx";
 import HandoffScreen from "./HandoffScreen.jsx";
@@ -5,6 +6,7 @@ import MeetingScreen from "./MeetingScreen.jsx";
 import OutputScreen from "./OutputScreen.jsx";
 import PreciseEditingPanel from "./PreciseEditingPanel.jsx";
 import PrintView from "./PrintView.jsx";
+import ProjectsScreen from "./ProjectsScreen.jsx";
 import SplashScreen from "./SplashScreen.jsx";
 import StartScreen from "./StartScreen.jsx";
 import Toast from "./Toast.jsx";
@@ -15,6 +17,8 @@ export default function Root({ vm }) {
     <div className="font-ui c-ink bg-bg minh-screen">
       <div className="screen">
         {vm.isSplash && <SplashScreen vm={vm} />}
+        {vm.isAuth && <AuthScreen vm={vm} />}
+        {vm.isProjects && <ProjectsScreen vm={vm} />}
         {vm.isWelcome && <WelcomeScreen vm={vm} />}
         {vm.isStart && <StartScreen vm={vm} />}
         {vm.isBrief && <BriefScreen vm={vm} />}

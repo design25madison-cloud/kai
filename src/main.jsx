@@ -8,5 +8,6 @@ import "./styles/flow.css";
 import "./styles/mockups.css";
 import "./styles/results.css";
 import "./styles/onboarding.css";
+import "./styles/account.css";
 
 createRoot(document.getElementById("root")).render(<BrandApp />);

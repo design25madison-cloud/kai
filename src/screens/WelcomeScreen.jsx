@@ -1,4 +1,4 @@
-import KaiLogo from "./KaiLogo.jsx";
+import { HomeLogo } from "./ProjectChrome.jsx";
 
 export default function WelcomeScreen({ vm }) {
   const options = [
@@ -7,7 +7,7 @@ export default function WelcomeScreen({ vm }) {
   ];
   return (
     <div className="welcome">
-      <KaiLogo className="page-logo" />
+      <HomeLogo vm={vm} className="page-logo" />
       <h1 className="welcome__title">Lets get started</h1>
       <div className="welcome__options">
         {options.map((o) => (

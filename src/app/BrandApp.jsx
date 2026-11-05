@@ -1,8 +1,10 @@
 import { Component } from "react";
 import Root from "../screens/Root.jsx";
 import { ALL_SECTIONS, typeScaleOf } from "./exports.js";
+import { currentUser } from "./accounts.js";
 import { flowVals, newMeeting } from "./flow.js";
 import { restrictedHits } from "./language.js";
+import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
 
 export default class BrandApp extends Component {
   constructor(props) {
@@ -19,12 +21,15 @@ export default class BrandApp extends Component {
       meeting: newMeeting(), handoffFile: 'claude', printSel: ALL_SECTIONS, exportSel: ALL_SECTIONS, exportFormat: 'pdf'
     };
     this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
+    Object.assign(this.state, { user: currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authMode: 'login', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
     this._init = JSON.parse(JSON.stringify(this.state));
   }
   // A new screen or step opens at its top, not wherever the last one was scrolled to.
   componentDidUpdate(_, prev) {
     const s = this.state;
     if (s.screen !== prev.screen || s.step !== prev.step || s.view !== prev.view) window.scrollTo(0, 0);
+    // Autosave: any change to the open project saves shortly after the last edit.
+    if (s.projectId && s.projectId === prev.projectId && projectChanged(prev, s)) scheduleSave(this);
   }
   blankF() {
     const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
@@ -46,7 +51,12 @@ export default class BrandApp extends Component {
       taglines: ['[Working tagline]'], buyerCares: ['ROI', 'Reliability'], comps: [{ name: '[Competitor]', url: '' }], alts: ['[Current workaround]']
     };
   }
-  componentWillUnmount() { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); clearTimeout(this._a); clearInterval(this._o); }
+  componentDidMount() {
+    // Closing the tab mid-change still saves it.
+    this._flush = () => { if (this._save) saveNow(this); };
+    window.addEventListener('beforeunload', this._flush);
+  }
+  componentWillUnmount() { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); clearTimeout(this._a); clearInterval(this._o); window.removeEventListener('beforeunload', this._flush); }
 
   voiceData(n) {
     const smp = this.sampleState(), sf = smp.f;
@@ -706,6 +716,7 @@ export default class BrandApp extends Component {
 
     return {
       ...flowVals(this),
+      ...projectVals(this),
       voice, startVoice, stopVoice, cancelVoice, undoVoice, toggleT,
       isStart: s.screen === 'start', isBrief: s.screen === 'brief', isGen: s.screen === 'gen', isOut: s.screen === 'out',
       toBrief,
@@ -748,7 +759,7 @@ export default class BrandApp extends Component {
       },
       genSteps,
       backToBrief: () => set({ screen: 'brief', step: 5 }),
-      startOver: () => { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); this.setState(Object.assign(JSON.parse(JSON.stringify(this._init)), { screen: 'welcome' })); },
+      startOver: () => { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); this.setState(Object.assign(JSON.parse(JSON.stringify(this._init)), { screen: 'welcome', user: s.user, projectId: s.projectId, projects: s.projects, saveStatus: s.saveStatus })); },
       optTabs, allMenu: s.allMenu, toggleAll: () => set({ allMenu: !s.allMenu }),
       cur, wordUpper: (f.name || 'Name').toUpperCase(),
       whyTitle: s.option === 0 ? 'Why we recommend Option 1' : (s.option === 3 ? 'About your custom mix' : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),

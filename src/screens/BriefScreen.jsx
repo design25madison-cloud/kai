@@ -1,5 +1,5 @@
 import Breadcrumbs from "./Breadcrumbs.jsx";
-import KaiLogo from "./KaiLogo.jsx";
+import { HomeLogo, SaveStatus } from "./ProjectChrome.jsx";
 import { Fragment } from "react";
 import StepBranding from "./StepBranding.jsx";
 import StepCustomer from "./StepCustomer.jsx";
@@ -10,10 +10,13 @@ import StepReview from "./StepReview.jsx";
 export default function BriefScreen({ vm }) {
   return (
     <div className="flow-page gap-28px">
-      <KaiLogo className="page-logo" />
+      <HomeLogo vm={vm} className="page-logo" />
       <div className="flex justify-space-between items-center gap-12px wrap">
         <Breadcrumbs items={vm.crumbs} />
-        <button className="p-8px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.startOver}>Start over</button>
+        <div className="flex items-center gap-16px">
+          <SaveStatus vm={vm} />
+          <button className="p-8px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.startOver}>Start over</button>
+        </div>
       </div>
       <nav className="brief-progress" aria-label="Brief steps">
         <div className="brief-progress__track" role="progressbar" aria-label="Brief progress" aria-valuemin={1} aria-valuemax={vm.steps.length} aria-valuenow={vm.stepNow}>
