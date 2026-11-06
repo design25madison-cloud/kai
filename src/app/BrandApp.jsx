@@ -12,7 +12,7 @@ export default class BrandApp extends Component {
     this.state = {
       screen: 'splash', path: 'brief', step: 1, imported: false, confirmed: false,
       f: this.blankF(), tone: [], looks: {}, sl: { warmth: 50, energy: 50, serious: 50 },
-      avoidC: [], avoidT: [], banned: [], brandsA: [], brandsX: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
+      avoidC: [], avoidT: [], banned: [], brandsA: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
       refs: [], refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
       pk: { open: false, h: 280, s: 70, l: 30, text: null },
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
@@ -32,7 +32,7 @@ export default class BrandApp extends Component {
     if (s.projectId && s.projectId === prev.projectId && projectChanged(prev, s)) scheduleSave(this);
   }
   blankF() {
-    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'brandXIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
+    const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
       'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];
     const o = { who: 'operator' }; keys.forEach(k => { o[k] = ''; }); return o;
   }
@@ -46,7 +46,7 @@ export default class BrandApp extends Component {
     return {
       f, tone: ['Sturdy', 'Industrial', 'Precise'], looks: { 0: 'a', 1: 'b', 2: 'b', 3: 'b' }, sl: { warmth: 35, energy: 45, serious: 70 },
       avoidC: ['#5A136A'], avoidT: ['Gradients', 'Neon'],
-      brandsA: [{ name: '[Brand you admire]', why: '[Why]' }], brandsX: [{ name: '[Brand to avoid resembling]', why: '' }],
+      brandsA: [{ name: '[Brand you admire]', why: '[Why]' }],
       deliv: [{ type: 'Logo' }, { type: 'Website' }], domains: ['ferra.example'], votes: ['Ferra', '[Alternate name]'],
       taglines: ['[Working tagline]'], buyerCares: ['ROI', 'Reliability'], comps: [{ name: '[Competitor]', url: '' }], alts: ['[Current workaround]']
     };
@@ -72,7 +72,7 @@ export default class BrandApp extends Component {
       transcript: 'Ferra comes from Fe, the symbol for iron, so strength that holds under load. It should look warm rather than cold, clean and minimal. We like [a brand we admire] because [why]. We do not want to look like [a brand to avoid]. No gradients, no neon, and stay away from purple. A working tagline is [working tagline].',
       items: [{ label: 'Name meaning', f: pickF(['meaning']) }, { label: 'Look and feel', x: { looks: smp.looks } },
         { label: 'Colors to avoid', x: { avoidC: smp.avoidC } }, { label: 'Treatments to avoid', x: { avoidT: smp.avoidT } },
-        { label: 'Brands admired', x: { brandsA: smp.brandsA } }, { label: 'Brands to avoid', x: { brandsX: smp.brandsX } }, { label: 'Taglines', x: { taglines: smp.taglines } }]
+        { label: 'Brands admired', x: { brandsA: smp.brandsA } }, { label: 'Taglines', x: { taglines: smp.taglines } }]
     };
     if (n === 3) return {
       section: 'your customer', prompts: ['Who buys it and who uses it', 'The problem and who feels it most', 'Competitors and workarounds', 'What makes you different'],
@@ -540,7 +540,7 @@ export default class BrandApp extends Component {
       return { title, inputId, field, value: s.f[field], sugg, hasSugg: sugg.length > 0, add: fromField(field, key, v => ({ name: v, why: '' })),
         cards: s[key].map((b, i) => ({ name: b.name, why: b.why, aria: 'Remove ' + b.name, whyAria: 'Why ' + b.name, setWhy: listUpd(key, i, 'why'), remove: listRm(key, i) })) };
     };
-    const brandGroups = [brandGroup('brandsA', 'brandAIn', 'Brands you admire, and why', 'f-ba'), brandGroup('brandsX', 'brandXIn', 'Brands to avoid resembling, and why', 'f-bx')];
+    const brandGroups = [brandGroup('brandsA', 'brandAIn', 'Brands you admire, and why', 'f-ba')];
     const refCards = s.refs.map(label => {
       const avoid = s.refTags[label] === undefined ? label === 'Neon sign' : s.refTags[label];
       return Object.assign({ label, avoid, tag: avoid ? 'Avoid' : 'Admire', removeAria: 'Remove ' + label, toggle: () => set({ refTags: Object.assign({}, s.refTags, { [label]: !avoid }) }), remove: () => set({ refs: s.refs.filter(x => x !== label) }) }, on(avoid));

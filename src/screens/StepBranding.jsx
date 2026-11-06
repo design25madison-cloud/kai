@@ -108,7 +108,7 @@ export default function StepBranding({ vm }) {
         <label className="t-13px" htmlFor="f-avoidOther">Visuals to avoid</label>
         <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-avoidOther" name="avoidOther" value={vm.f.avoidOther} onChange={vm.onField} placeholder="For example: hard hats, handshake photos" />
       </div>
-      <div className="two">
+      <div className="flex col gap-24px">
         {vm.brandGroups.map((bg, i_) => (
           <Fragment key={i_}>
             <div className="flex col gap-8px">
