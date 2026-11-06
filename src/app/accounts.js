@@ -1,6 +1,6 @@
 // Accounts and saved projects, kept in this browser's localStorage.
 //
-// PROTOTYPE ONLY. Anyone using this browser can read what's stored here, and nothing syncs
+// PROTOTYPE ONLY. There are no passwords, anyone using this browser can read what's stored here, and nothing syncs
 // between devices. Every function returns a promise and takes plain data, the way calls to a
 // real server would, so a backend can replace this file without changing the screens.
 
@@ -26,12 +26,6 @@ function write(key, value) {
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 const normalize = (email) => email.trim().toLowerCase();
 
-// Stores a salted hash, never the password itself.
-async function hash(password, salt) {
-  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + password));
-  return Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 // The signed-in user, read synchronously so the app knows where to start.
 export function currentUser() {
   const session = read(SESSION, null);
@@ -40,26 +34,17 @@ export function currentUser() {
   return user ? { id: user.id, email: user.email } : null;
 }
 
-export async function signUp(email, password) {
-  const key = normalize(email);
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(key)) throw new Error("Enter a valid email address.");
-  if (password.length < 8) throw new Error("Use at least 8 characters for your password.");
+// Fake log in: any email and password work, and the password is ignored and never stored.
+// Each email still gets its own projects. An empty email logs in as a shared guest.
+export async function logIn(email) {
+  const key = normalize(email) || "guest";
   const users = read(USERS, {});
-  if (users[key]) throw new Error("There's already an account with that email. Log in instead.");
-  const salt = newId();
-  users[key] = { id: newId(), email: key, salt, hash: await hash(password, salt), createdAt: Date.now() };
-  write(USERS, users);
+  if (!users[key]) {
+    users[key] = { id: newId(), email: key, createdAt: Date.now() };
+    write(USERS, users);
+  }
   write(SESSION, { email: key });
   return { id: users[key].id, email: key };
-}
-
-export async function logIn(email, password) {
-  const key = normalize(email);
-  const user = read(USERS, {})[key];
-  // One message for both cases, so the form doesn't reveal which emails have accounts.
-  if (!user || (await hash(password, user.salt)) !== user.hash) throw new Error("That email and password don't match.");
-  write(SESSION, { email: key });
-  return { id: user.id, email: key };
 }
 
 export async function logOut() {

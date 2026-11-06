@@ -21,7 +21,7 @@ export default class BrandApp extends Component {
       meeting: newMeeting(), handoffFile: 'claude', printSel: ALL_SECTIONS, exportSel: ALL_SECTIONS, exportFormat: 'pdf'
     };
     this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
-    Object.assign(this.state, { user: currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authMode: 'login', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
+    Object.assign(this.state, { user: currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
     this._init = JSON.parse(JSON.stringify(this.state));
   }
   // A new screen or step opens at its top, not wherever the last one was scrolled to.

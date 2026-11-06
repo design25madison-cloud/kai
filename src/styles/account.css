@@ -71,13 +71,10 @@
   color: var(--color-coral);
   font-size: var(--text-13);
 }
-.auth__switch,
 .auth__note {
   margin: 0;
   font-size: var(--text-13);
   text-align: center;
-}
-.auth__note {
   color: var(--color-ink-2);
 }
 

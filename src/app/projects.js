@@ -3,7 +3,7 @@ import * as accounts from "./accounts.js";
 
 // Interface state that belongs to this visit, not to the project, so it's never saved.
 const TRANSIENT = new Set([
-  "user", "projectId", "projects", "saveStatus", "saveError", "authMode", "authError", "authBusy",
+  "user", "projectId", "projects", "saveStatus", "saveError", "authError", "authBusy",
   "projectMenu", "renaming", "deleting", "toast", "undo", "allMenu", "edit", "cmode", "draft", "genStep", "vRec", "oRec", "pk",
 ]);
 // A project reopens on one of these. Generation is a moment, so it reopens on the brief's last step.
@@ -107,8 +107,8 @@ export function projectVals(app) {
 
   const submitAuth = (email, password) => {
     set({ authBusy: true, authError: "" });
-    const call = s.authMode === "signup" ? accounts.signUp : accounts.logIn;
-    return call(email, password)
+    return accounts
+      .logIn(email, password)
       .then((u) => accounts.listProjects(u.id).then((projects) => set({ user: u, projects, screen: "projects", authBusy: false })))
       .catch((err) => set({ authError: err.message, authBusy: false }));
   };
@@ -122,11 +122,9 @@ export function projectVals(app) {
   return {
     isAuth: s.screen === "auth",
     isProjects: s.screen === "projects",
-    isSignup: s.authMode === "signup",
     authError: s.authError,
     authBusy: s.authBusy,
     submitAuth,
-    toggleAuthMode: () => set({ authMode: s.authMode === "signup" ? "login" : "signup", authError: "" }),
     leaveSplash: () => {
       if (s.screen !== "splash") return;
       if (user) accounts.listProjects(user.id).then((projects) => set({ projects, screen: "projects" }));
@@ -144,7 +142,7 @@ export function projectVals(app) {
     logOut: () =>
       saveNow(app)
         .then(() => accounts.logOut())
-        .then(() => app.setState(fresh(app, { screen: "auth", user: null, projects: [], authMode: "login" }))),
+        .then(() => app.setState(fresh(app, { screen: "auth", user: null, projects: [] }))),
     projectName,
     saveLabel,
     saveError: s.saveStatus === "error" ? s.saveError : "",
