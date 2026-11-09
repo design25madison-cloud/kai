@@ -7,6 +7,7 @@ import { flowVals, newMeeting } from "./flow.js";
 import { contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
 import { markImagesUsed, subscribe as onImages } from "./referenceImages.js";
 import { INDUSTRIES } from "./layers.js";
+import { imageColorsVersion, subscribe as onImageColors } from "./imageColors.js";
 import { restrictedHits } from "./language.js";
 import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
 
@@ -16,9 +17,9 @@ export default class BrandApp extends Component {
     this.state = {
       screen: 'splash', path: 'brief', step: 1, imported: false, confirmed: false,
       f: this.blankF(), tone: [], looks: {}, sl: { warmth: 50, energy: 50, serious: 50 },
-      avoidC: [], avoidT: [], banned: [], brandsA: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
+      avoidC: [], keepC: [], avoidT: [], banned: [], brandsA: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
       refs: [], refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
-      pk: { open: false, h: 280, s: 70, l: 30, text: null },
+      pk: { open: false, mode: 'avoid', h: 280, s: 70, l: 30, text: null },
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
       arts: [], view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
       mixPick: { word: 0, palette: 0, type: 0, refs: 0, voice: 0 }, mixBase: null, keep: 40, opinion: '', oRec: null,
@@ -61,8 +62,9 @@ export default class BrandApp extends Component {
     window.addEventListener('beforeunload', this._flush);
     // Reference photos arrive from image search after the first render; redraw when they do.
     this._offImages = onImages(() => this.forceUpdate());
+    this._offImageColors = onImageColors(() => this.forceUpdate());
   }
-  componentWillUnmount() { if (this._offImages) this._offImages(); clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); clearTimeout(this._a); clearInterval(this._o); window.removeEventListener('beforeunload', this._flush); }
+  componentWillUnmount() { if (this._offImages) this._offImages(); if (this._offImageColors) this._offImageColors(); clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); clearTimeout(this._a); clearInterval(this._o); window.removeEventListener('beforeunload', this._flush); }
 
   voiceData(n) {
     const smp = this.sampleState(), sf = smp.f;
@@ -159,7 +161,8 @@ export default class BrandApp extends Component {
   // (see generate.js and docs/archetypes.md). Cached until the brief inputs change.
   generated() {
     const s = this.state;
-    const key = JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.avoidT, s.comps]);
+    // Photo colors arrive after the first render, so their version is part of the key.
+    const key = JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.keepC, s.avoidT, s.comps, s.refs, s.refTags, s.keep, imageColorsVersion()]);
     if (this._genKey !== key) {
       this._genKey = key;
       this._gen = generateDirections(s, (hex, t) => this.adjust(hex, t));
@@ -511,8 +514,9 @@ export default class BrandApp extends Component {
     }));
     const sliders = [['warmth', 'Warm', 'Professional'], ['energy', 'Calm', 'Energetic'], ['serious', 'Playful', 'Serious']].map(([key, l, r]) => ({ key, l, r, val: s.sl[key], aria: l + ' to ' + r }));
     const avoidColors = s.avoidC.map(hex => ({ hex, aria: 'Remove ' + hex + ' from the avoid list', remove: () => set({ avoidC: s.avoidC.filter(x => x !== hex) }) }));
+    const keepColors = (s.keepC || []).map(hex => ({ hex, aria: 'Remove ' + hex + ' from the keep list', remove: () => set({ keepC: s.keepC.filter(x => x !== hex) }) }));
     const p = s.pk, pHex = this.hsl2hex(p.h, p.s, p.l), rad = p.h * Math.PI / 180;
-    const pk = { open: p.open, l: p.l, hex: pHex, hexText: p.text !== null ? p.text : pHex,
+    const pk = { open: p.open, mode: p.mode || 'avoid', l: p.l, hex: pHex, hexText: p.text !== null ? p.text : pHex,
       x: (50 + Math.sin(rad) * p.s / 2).toFixed(1) + '%', y: (50 - Math.cos(rad) * p.s / 2).toFixed(1) + '%' };
     const setPk = (patch) => set({ pk: Object.assign({}, s.pk, patch) });
     const listUpd = (key, i, field) => (e) => { const a = s[key].map(x => (typeof x === 'object' ? Object.assign({}, x) : x)); if (field) a[i][field] = e.target.value; else a[i] = e.target.value; set({ [key]: a }); };
@@ -736,8 +740,8 @@ export default class BrandApp extends Component {
       endOn: s.endOn, endOff: !s.endOn, toggleEnd: () => set({ endOn: !s.endOn }), endLabel: s.endOn ? 'Included' : 'Add end user', endBg: s.endOn ? 'var(--color-action)' : '#FFFFFF', endFg: s.endOn ? '#FFFFFF' : 'var(--color-ink)',
       sigOpen: s.sigOpen, toggleSig: () => set({ sigOpen: !s.sigOpen }), sigLabel: s.sigOpen ? 'Hide early signals' : 'Add early signals of success (optional)',
       domainShown: s.domains[0] || 'yourname.com',
-      toneChips, treatChips, lookPairs, sliders, avoidColors, pk,
-      openPicker: () => setPk({ open: !p.open, text: null }), closePicker: () => setPk({ open: false }),
+      toneChips, treatChips, lookPairs, sliders, avoidColors, keepColors, pk,
+      openPicker: (mode = 'avoid') => setPk({ open: !(p.open && (p.mode || 'avoid') === mode), mode, text: null }), closePicker: () => setPk({ open: false }),
       pickWheel: (e) => {
         const r = e.currentTarget.getBoundingClientRect(), dx = e.clientX - r.left - r.width / 2, dy = e.clientY - r.top - r.height / 2;
         const sat = Math.min(100, Math.round(Math.sqrt(dx * dx + dy * dy) / (r.width / 2) * 100));
@@ -746,7 +750,10 @@ export default class BrandApp extends Component {
       },
       setPickL: (e) => setPk({ l: Number(e.target.value), text: null }),
       setPickHex: (e) => { const v = e.target.value; if (this.hexOk(v)) { const hsl = this.hex2hsl(v); setPk({ h: hsl[0], s: hsl[1], l: hsl[2], text: v }); } else { setPk({ text: v }); } },
-      addPicked: () => { const h = (p.text && this.hexOk(p.text)) ? p.text.toUpperCase() : pHex; set({ avoidC: s.avoidC.includes(h) ? s.avoidC : s.avoidC.concat([h]), pk: Object.assign({}, s.pk, { open: false, text: null }) }); },
+      addPicked: () => {
+        const h = (p.text && this.hexOk(p.text)) ? p.text.toUpperCase() : pHex, key = p.mode === 'keep' ? 'keepC' : 'avoidC', list = s[key] || [];
+        set({ [key]: list.includes(h) ? list : list.concat([h]), pk: Object.assign({}, s.pk, { open: false, text: null }) });
+      },
       refsAdded: s.refs.length > 0, addRefs: () => set({ refs: ['Corten steel', 'Sand dune', 'Industrial stair', 'Neon sign'] }), refCards,
       coreChecks, hasMissing: missing > 0, genBg: missing > 0 ? 'var(--color-grey-2)' : 'var(--color-action)',
       readyText: missing > 0 ? missing + ' Core answers are missing. Generation unlocks when every Core answer has something, even rough.' : 'Every Core answer is filled. You are ready to generate.',

@@ -11,7 +11,11 @@
 //
 // Everything is deterministic: the same brief always gives the same directions.
 import { ARCHETYPES, ARCHETYPE_BY_ID, TONE_CHIPS } from "./archetypes.js";
+import { hexToOklch, oklchToHex } from "./color.js";
+import { imageColors } from "./imageColors.js";
 import { curatedImage } from "./referenceImages.js";
+
+export { hexToOklch, oklchToHex };
 import { AUDIENCES, audienceOf, competitorColorsOf, industryOf, nameCuesOf, stanceOf } from "./layers.js";
 
 // ---------- Color helpers ----------
@@ -63,6 +67,13 @@ function rgbDistance(a, b) {
   const p = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
   const q = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
   return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+}
+
+// Lowers lightness, keeping hue and chroma, until white text passes the target contrast.
+function fitForWhite(c, target) {
+  let [L, C, H] = c;
+  while (L > 0.1 && contrast(oklchToHex([L, C, H]), "#FFFFFF") < target) L -= 0.01;
+  return [L, C, H];
 }
 
 // Readable names, so palettes say "Deep forest" rather than a hex.
@@ -274,59 +285,153 @@ function buildPalette(mix, v, ctx) {
     }
   });
 
+  // ---- From here the palette is built in OKLCH, around the primary, so every color relates. ----
+
   // Audience: field users get AAA contrast on the primary; everyone else AA.
   const target = L.profile ? L.profile.contrast : 4.5;
-  primary = darkenForWhite(primary, target);
+  let P = hexToOklch(hslToHex(primary));
+  const photos = ctx.imagery;
+  // Imagery: a strong photo color near the primary's hue pulls it a little closer, so the
+  // primary feels like it belongs in the same world as the photos.
+  if (photos && photos.vivid.length && P[1] > 0.04) {
+    const near = photos.vivid.find((c) => Math.abs(hueTurn(P[2], c.lch[2])) <= 60);
+    if (near) {
+      P = [P[0], P[1], (P[2] + hueTurn(P[2], near.lch[2]) * 0.3 + 360) % 360];
+      reasons.push({ layer: "Imagery", text: `The primary leans toward the ${colorName(hexToHsl(oklchToHex(near.lch))).toLowerCase()} in the "${near.label}" photo.` });
+    }
+  }
+  // Tone: temperature turns the primary toward warm or cool, loudness scales its chroma, and
+  // sharpness sets how dark (serious) or light (playful) it sits.
+  const T = ctx.toneDials;
+  const WARM_H = 55, COOL_H = 245; // OKLCH hues of a warm amber and a cool blue
+  if (P[1] > 0.04 && Math.abs(T.temperature) > 0.2) {
+    // Cooling a warm hue travels through olive and green toward teal, never back through red.
+    const anchor = T.temperature > 0 ? WARM_H : P[2] < 130 ? 190 : COOL_H;
+    P = [P[0], P[1], (P[2] + clamp(hueTurn(P[2], anchor), -1, 1) * Math.min(Math.abs(hueTurn(P[2], anchor)), 40 * Math.abs(T.temperature)) + 360) % 360];
+  }
+  P = [clamp(P[0] - 0.05 * T.sharpness, 0.2, 0.7), P[1] * (1 + 0.3 * T.loudness), P[2]];
+  const tw = toneWords(T);
+  if (tw.length) reasons.push({ layer: "Tone", text: `Your tone reads ${listOf(tw)}, so the colors are ${listOf([T.temperature > 0.2 ? "warmer" : T.temperature < -0.2 ? "cooler" : null, T.loudness > 0.2 ? "more saturated" : T.loudness < -0.2 ? "quieter" : null, T.sharpness > 0.2 ? "deeper" : T.sharpness < -0.2 ? "lighter" : null].filter(Boolean))}.` });
+
+  // Seeds: colors the founder wants to keep lead the palette. The keep dial sets how strongly:
+  // near "keep what I have" the first seed becomes the primary as is; toward "start fresh" it's
+  // only a nudge. Later seeds become accents.
+  const seeds = ctx.seeds || [];
+  if (seeds.length) {
+    const s0 = seeds[0], k = ctx.keepStrength;
+    if (k >= 0.75) P = s0.lch.slice();
+    else P = [P[0] + (s0.lch[0] - P[0]) * k, P[1] + (s0.lch[1] - P[1]) * k, (P[2] + hueTurn(P[2], s0.lch[2]) * k + 360) % 360];
+    reasons.push({ layer: "Seeds", text: k >= 0.75 ? `Your color ${s0.hex}${s0.from ? ` (from ${s0.from})` : ""} leads the palette as is.` : `The primary is steered toward your color ${s0.hex}${s0.from ? ` (from ${s0.from})` : ""}${k < 0.35 ? ", lightly, since you chose to start fresh" : ""}.` });
+  }
+  P = fitForWhite(P, target);
   if (L.profile && target > 4.5) reasons.push({ layer: "Audience", text: `For ${L.profile.label}, white text on the primary reaches AAA (7:1).` });
-  const base = [primary, tweak(pick(p.surface, v)), tweak(pick(p.dark, v)), tweak(pick(p.light, v))];
+  const hasHue = P[1] > 0.04; // Black or graphite primaries (Rebel, Visionary) have no hue to build from.
+  const Hp = P[2];
 
-  // Accent set: the weighted average of each archetype's accent count, 1–3. The lead gives the
-  // first accent; the other archetypes give the rest, so a blend shows in the accents.
-  const count = clamp(Math.round(mix.reduce((n, m) => n + ARCHETYPE_BY_ID[m.id].accentCount * m.w, 0)) + (L.profile && L.profile.extraAccent ? 1 : 0) + (cueAccent ? 1 : 0), 1, 3);
-  const sources = [lead].concat(mix.slice(1).map((m) => ARCHETYPE_BY_ID[m.id]), lead, lead);
+  // Neutrals are tinted toward the primary, so they belong to it. Archetypes whose surfaces carry
+  // their own warmth (parchment, ivory, sand) keep it.
+  const sur = hexToOklch(hslToHex(tweak(pick(p.surface, v))));
+  const ownTint = sur[1] > 0.018;
+  let surfaceH = ownTint || !hasHue ? sur[2] : Hp;
+  // Imagery: when the photos have a clear warm or cool cast, the surface picks it up.
+  if (!ownTint && photos && photos.cast != null) {
+    surfaceH = photos.cast;
+    reasons.push({ layer: "Imagery", text: `The surface picks up the ${photos.cast < 100 || photos.cast > 330 ? "warm" : "cool"} cast of the photos.` });
+  }
+  // Tone outranks imagery: a clearly warm or cool tone sets the surface's tint.
+  // A clear lean overrides even an archetype's own surface (Explorer's sand, Sage's parchment).
+  const toneSurface = Math.abs(T.temperature) > (ownTint ? 0.5 : 0.3);
+  if (toneSurface) surfaceH = T.temperature > 0 ? WARM_H + 20 : COOL_H;
+  const surface = [clamp(sur[0], 0.9, 0.965), ownTint && !toneSurface ? Math.min(sur[1], 0.035) : hasHue || photos || toneSurface ? 0.014 : 0.004, surfaceH];
+  const light = [clamp(surface[0] + 0.025, 0.975, 0.99), surface[1] * 0.5, surface[2]];
+  const drk = hexToOklch(hslToHex(tweak(pick(p.dark, v))));
+  const dark = [clamp(drk[0] - 0.03 * T.sharpness, 0.13, 0.26), hasHue ? clamp(drk[1], 0.012, 0.03) : Math.min(drk[1], 0.01), hasHue ? Hp : drk[2]];
+
+  // Accents: one dominant, a second for support. Only the loud archetypes get a third.
+  const loud = ["jester", "magician", "everyman", "creator", "transformer"].includes(lead.id);
+  let count = clamp(Math.round(mix.reduce((n, m) => n + ARCHETYPE_BY_ID[m.id].accentCount * m.w, 0)), 1, 3);
+  if (!loud) count = Math.min(count, 2);
+  count = clamp(count + (L.profile && L.profile.extraAccent ? 1 : 0) + (cueAccent ? 1 : 0) + (T.sharpness < -0.4 ? 1 : 0), 1, loud || T.sharpness < -0.4 ? 3 : 2);
+  if (T.minimal) count = 1; // Minimal: one accent, no more.
+
+  // Where each accent's hue comes from, in priority order. Each one is then snapped to a harmony
+  // with the primary (complement, split complement, triad or neighbor), so accents relate to the
+  // primary and to each other instead of arriving from unrelated sources.
+  const wanted = [];
+  // Seeds after the first become accents before anything else.
+  seeds.slice(1, 3).forEach((sd) => wanted.push({ src: hexToHsl(sd.hex), lch: sd.lch, why: "seed", label: sd.hex }));
+  // Imagery: the photos' most vivid colors come first, rotated per variant so Regenerate tries
+  // a different one. Archetype accents remain the fallback.
+  if (photos && photos.vivid.length) {
+    const n = photos.vivid.length;
+    [0, 1].forEach((k) => {
+      const c = photos.vivid[(v + k) % n];
+      if (k < n) wanted.push({ src: hexToHsl(oklchToHex(c.lch)), lch: c.lch, why: "photo", label: c.label });
+    });
+  }
+  if (ctx.categoryAccent) wanted.push({ src: ctx.categoryAccent, why: "category" });
+  wanted.push({ src: pick(p.accents, v) });
+  if (cueAccent) wanted.push({ src: cueAccent, why: "cue" });
+  if (mix[1]) wanted.push({ src: pick(ARCHETYPE_BY_ID[mix[1].id].palette.accents, v) });
+  wanted.push({ src: pick(p.accents, v + 1) }, { src: pick(p.accents, v + 2) });
+
+  // Tone-on-tone (0) and near neighbors (±25) count too, so an accent that already sits well with
+  // the primary (orange on brown) keeps its character instead of being forced across the wheel.
+  const HARMONY = [0, 25, -25, 40, -40, 120, 150, 180, 210, 240];
+  const tier = (sat) => (ctx.noNeon ? Math.min : (x) => x)(sat < 50 ? 0.09 : sat < 75 ? 0.13 : 0.17, 0.12);
+  // Yellows and oranges stay vivid when light; blues and violets wash out to pastel, so cool
+  // accents sit lower.
+  const accentL = (H, k) => (H >= 180 && H < 320 ? [0.6, 0.54, 0.48] : [0.74, 0.66, 0.6])[k];
   const accents = [];
-  for (let k = 0; accents.length < count && k < 12; k++) {
-    const src = sources[k % sources.length];
-    const offset = src === lead ? v + accents.length + Math.floor(k / sources.length) : v + Math.floor(k / sources.length);
-    let a = tweak(pick(src.palette.accents, offset), true);
-    if (ctx.noNeon) a = [a[0], Math.min(a[1], 72), a[2]];
-    const hex = hslToHex(a);
-    // Each accent has to read as its own color, distinct from the primary and the other accents.
-    if (rgbDistance(hslToHex(primary), hex) >= 90 && !accents.some((x) => rgbDistance(hslToHex(x), hex) < 60)) accents.push(a);
-  }
-
-  if (!accents.length) accents.push(tweak(pick(p.accents, v), true));
-  if (L.industry && ctx.dial >= 0.65) {
+  let skippedForCategory = false;
+  for (const w of wanted) {
+    if (accents.length >= count) break;
+    // Once the photos have given an accent, archetype accents don't add a second one: an
+    // unrelated hue does more harm than a single strong accent.
+    if (!w.why && (photos || seeds.length > 1) && accents.length >= 1) break;
+    const src = tweak(w.src, true);
+    let H = hexToOklch(hslToHex(src))[2];
+    // Photo colors keep their hue: they already sit together in the moodboard. Only colors from
+    // other sources get snapped into a harmony with the primary.
+    if (hasHue && w.why !== "photo" && w.why !== "seed") {
+      const free = HARMONY.map((o) => (Hp + o + 360) % 360).filter((h) => !accents.some((a) => Math.abs(hueTurn(a[2], h)) < 45));
+      if (!free.length) break;
+      H = free.reduce((best, h) => (Math.abs(hueTurn(H, h)) < Math.abs(hueTurn(H, best)) ? h : best));
+    }
+    if (accents.some((a) => Math.abs(hueTurn(a[2], H)) < 45)) continue;
+    // A photo color that's just a lighter primary adds nothing as an accent.
+    if (w.why === "photo" && hasHue && Math.abs(hueTurn(Hp, H)) < 30) continue;
+    // Photo colors keep their own vividness (within a sensible range); others use a tier.
+    const chroma = (w.lch ? clamp(w.lch[1], 0.08, ctx.noNeon ? 0.12 : 0.17) : tier(src[1])) * (1 + 0.25 * T.loudness);
+    // Seeds keep their own lightness; others sit at the accent level (a touch lighter when playful).
+    const acc = w.why === "seed" ? w.lch.slice() : [accentL(H, accents.length) - 0.03 * T.sharpness, chroma, H];
+    const hex = oklchToHex(acc), hslHue = hexToHsl(hex)[0];
     // Breaking from the category: no accent in its signature hues either.
-    const before = accents.length;
-    for (let k = accents.length - 1; k >= 0 && accents.length > 1; k--) {
-      if (accents[k][1] > 15 && L.industry.hues.some((h) => Math.abs(hueTurn(accents[k][0], h)) < 25)) accents.splice(k, 1);
-    }
-    if (accents.length < before) reasons.push({ layer: "Positioning", text: `No accent in ${L.industry.look.split(" and ")[0]}, to break from the category.` });
+    if (L.industry && ctx.dial >= 0.65 && w.why !== "category" && L.industry.hues.some((h) => Math.abs(hueTurn(hslHue, h)) < 25)) { skippedForCategory = true; continue; }
+    if (ctx.avoidC.some((x) => rgbDistance(hex, x) < 60)) continue;
+    accents.push(acc);
+    if (w.why === "seed") reasons.push({ layer: "Seeds", text: `Your color ${w.label} is kept as an accent.` });
+    if (w.why === "photo") reasons.push({ layer: "Imagery", text: `${accents.length === 1 ? "The main accent" : "A supporting accent"} is drawn from the "${w.label}" photo.` });
+    if (w.why === "cue") reasons.push({ layer: "Name", text: `"${L.cue.word}" in the name adds ${colorName(hexToHsl(hex)).toLowerCase()} as an accent.` });
   }
-  if (ctx.categoryAccent) {
-    const cat = tweak(ctx.categoryAccent, true);
-    if (!accents.some((x) => rgbDistance(hslToHex(x), hslToHex(cat)) < 60)) accents.splice(0, accents.length >= 3 ? 1 : 0, cat);
+  if (!accents.length) {
+    const H = hasHue ? (Hp + 180) % 360 : hexToOklch(hslToHex(pick(p.accents, v)))[2];
+    accents.push([accentL(H, 0), tier(70), H]);
   }
-  if (cueAccent) {
-    const cue = tweak(cueAccent, true);
-    if (!accents.some((x) => rgbDistance(hslToHex(x), hslToHex(cue)) < 60)) {
-      accents.splice(Math.min(1, accents.length), accents.length >= 3 ? 1 : 0, cue);
-      reasons.push({ layer: "Name", text: `"${L.cue.word}" in the name adds ${colorName(cue).toLowerCase()} as an accent.` });
-    }
-  }
-  accents.splice(3);
-  const split = accents.length === 1 ? [10] : accents.length === 2 ? [6, 4] : [5, 3, 2];
+  if (skippedForCategory) reasons.push({ layer: "Positioning", text: `No accent in ${L.industry.look.split(" and ")[0]}, to break from the category.` });
+
+  const split = accents.length === 1 ? [10] : accents.length === 2 ? [7, 3] : [6, 3, 1];
   const used = new Set();
-  const named = (hsl) => {
+  const named = (hex) => {
+    const hsl = hexToHsl(hex);
     let n = colorName(hsl);
     if (used.has(n)) n = (hsl[2] > 50 ? "Light " : "Dark ") + n.replace(/^(Deep|Pale|Bright) /, "").toLowerCase();
     if (used.has(n)) n = n + " " + (used.size + 1);
     used.add(n);
     return n;
   };
-  const rows = base.map((hsl, k) => [named(hsl), hslToHex(hsl), ROLES[k], RATIOS[k]])
-    .concat(accents.map((hsl, k) => [named(hsl), hslToHex(hsl), k === 0 ? "Accent" : `Accent ${k + 1}`, split[k]]));
+  const rows = [P, surface, dark, light].map((c, k) => { const hex = oklchToHex(c); return [named(hex), hex, ROLES[k], RATIOS[k]]; })
+    .concat(accents.map((c, k) => { const hex = oklchToHex(c); return [named(hex), hex, k === 0 ? "Accent" : `Accent ${k + 1}`, split[k]]; }));
   return { rows, reasons };
 }
 
@@ -394,33 +499,80 @@ function gradientFor(mix, ctx) {
   return best >= 3 ? "core" : best === 2 ? "subtle" : "none";
 }
 
-const pct = (w) => Math.round(w * 100) + "%";
 const listOf = (xs) => (xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1]);
-const quoted = (xs) => xs.map((x) => (x.startsWith("Your ") ? x.charAt(0).toLowerCase() + x.slice(1) : `"${x}"`));
 
-function explain(mix, rank, ctx) {
-  const names = mix.map((m) => ARCHETYPE_BY_ID[m.id].name);
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+// How the founder's sliders lean, in words ("serious and professional"). Only clear leans count.
+function sliderLean(sl = {}) {
+  const words = [];
+  if (sl.serious > 60) words.push("serious"); else if (sl.serious < 40) words.push("playful");
+  if (sl.warmth > 60) words.push("professional"); else if (sl.warmth < 40) words.push("warm");
+  if (sl.energy > 60) words.push("energetic"); else if (sl.energy < 40) words.push("calm");
+  return words;
+}
+
+// The option's name: the lead archetype's territory with the second one's twist ("Rugged
+// systems"), or the lead's own name when it stands alone ("Solid systems").
+function directionName(mix) {
   const lead = ARCHETYPE_BY_ID[mix[0].id];
-  const opening = mix.length === 1
-    ? `Your brief points to ${lead.name} (${lead.theme.toLowerCase()}) on its own.`
-    : `A blend of ${listOf(mix.map((m) => `${ARCHETYPE_BY_ID[m.id].name} (${pct(m.w)})`))}.`;
-  const reasons = mix.map((m) => {
-    const a = ARCHETYPE_BY_ID[m.id];
-    return m.why.length
-      ? `${a.name} comes from ${listOf(quoted(m.why.slice(0, 3)))}.`
-      : `${a.name} adds ${a.attributes.slice(0, 2).join(" and ").toLowerCase()}.`;
-  });
+  if (!mix[1]) return lead.soloName;
+  return cap(`${ARCHETYPE_BY_ID[mix[1].id].twist} ${lead.noun}`);
+}
+
+// The recommendation, written as a short design rationale: what the brand is, what in the brief
+// points there, and how it shows up in the design. Weights are expressed in words, never numbers.
+function explain(mix, rank, ctx, firstLead) {
+  const [lead, second, third] = mix.map((m) => ARCHETYPE_BY_ID[m.id]);
+  const evenly = second && mix[1].w >= 0.45;
+
+  // 1. What it is.
+  let opening = cap(lead.essence);
+  if (second) opening += `, ${second.flavor}`;
+  if (third) opening += `, and a ${third.twist} undertone`;
+  opening += ".";
+
+  // 2. What in the brief points here, in the founder's own words: tone words they picked are
+  // descriptions; words found in their answers are things the brief talks about.
+  const why = [...new Set(mix.flatMap((m) => m.why))].filter((x) => !/^(Your |Common in )/.test(x));
+  const described = why.filter((x) => (ctx.tone || []).includes(x)).map((x) => x.toLowerCase());
+  const mentioned = why.filter((x) => !(ctx.tone || []).includes(x)).map((x) => x.toLowerCase());
+  const lean = sliderLean(ctx.sl).filter((w) => !described.includes(w)); // Don't say "warm" twice.
+  const parts = [];
+  if (described.length) parts.push(`you described it as ${listOf(described.slice(0, 3))}`);
+  if (mentioned.length) parts.push(`your brief talks about ${listOf(mentioned.slice(0, 2).map((x) => `"${x}"`))}`);
+  if (lean.length) parts.push(`your sliders lean ${listOf(lean)}`);
+  const evidence = parts.length ? cap(listOf(parts)) + "." : "This reads closest to your answers so far.";
+
+  // 3. How it shows up.
+  let design = `That comes through in ${lead.carries}`;
+  if (second) design += evenly ? `, balanced by ${second.touch}` : `, with ${second.touch}`;
+  design += ".";
+
+  // 4. Where it sits among the three options.
   const standing = rank === 0
-    ? "This is the closest match to your brief."
-    : rank === 1 ? "It ranks second: a different lead, for contrast." : "The wildcard: a less expected combination that still fits.";
-  const match = [...new Set(mix.flatMap((m) => m.why))].filter((x) => !x.startsWith("Your ")).slice(0, 4);
+    ? "It's the closest read of your brief."
+    : lead.id === firstLead
+      ? `Same foundation as Option 1, ${second ? second.flavor : "on its own"} instead.`
+      : rank === 1 ? `A different emphasis on the same brief, with ${lead.name} leading.` : `The wildcard: ${lead.name} leading, a less expected answer to the same brief.`;
+
+  const match = [...new Set(mix.flatMap((m) => m.why))].filter((x) => !/^(Your |Common in )/.test(x)).slice(0, 4);
   if (ctx.noGradients) match.push("No gradients");
   if (ctx.noNeon) match.push("No neon");
-  const tradeoff = lead.misfire + (mix.length === 3 ? " Three archetypes can blur together, so lock the pieces you like and regenerate the rest." : "");
+  const tradeoff = lead.misfire + (third ? " With three influences it can blur, so lock the pieces you like and regenerate the rest." : "");
 
-  // One line per reasoning layer, shown with the recommendation.
+  // One line per reasoning layer, shown with the recommendation. Archetype names stay visible
+  // here so the source is legible, but in words, not percentages.
   const L = ctx.layers, layers = [];
-  layers.push({ layer: "Personality", text: `${listOf(names)}: ${listOf(mix.map((m) => ARCHETYPE_BY_ID[m.id].theme.toLowerCase()))}.` });
+  const personality = !second
+    ? `${lead.name} through and through: ${lead.attributes.slice(0, 3).join(", ").toLowerCase()}.`
+    : evenly
+      ? `${lead.name} and ${second.name} in equal measure: ${lead.twist} and ${second.twist}${third ? `, with a hint of ${third.name}` : ""}.`
+      : `${lead.name} at its core, with ${second.name}'s ${second.twist} streak${third ? ` and a hint of ${third.name}` : ""}.`;
+  layers.push({ layer: "Personality", text: personality });
+  const tw = toneWords(ctx.toneDials);
+  if (tw.length) layers.push({ layer: "Tone", text: `Reads ${listOf(tw)}: ${[ctx.toneDials.temperature > 0.2 ? "warmer hues" : ctx.toneDials.temperature < -0.2 ? "cooler hues" : null, ctx.toneDials.loudness > 0.2 ? "more saturated color" : ctx.toneDials.loudness < -0.2 ? "quieter color" : null, ctx.toneDials.sharpness > 0.2 ? "deeper, firmer contrast" : ctx.toneDials.sharpness < -0.2 ? "lighter, looser color" : null].filter(Boolean).join(", ")}.` });
+  if ((ctx.seeds || []).length) layers.push({ layer: "Seeds", text: `Built around your colors ${listOf(ctx.seeds.slice(0, 3).map((x) => x.hex))}, ${ctx.keepStrength >= 0.75 ? "kept as they are" : ctx.keepStrength >= 0.35 ? "as a strong steer" : "as a light nudge"}.` });
   if (L.industry) layers.push({ layer: "Category", text: `${L.industry.label.split(" and ")[0]} brands usually use ${L.industry.look}.` });
   else if (L.industryOther) layers.push({ layer: "Category", text: `No rules yet for ${L.industryOther}, so this leans on the other layers.` });
   const dialText = ctx.dial < 0.35 ? "Close to the category: a trusted alternative, done better." : ctx.dial < 0.65 ? "Stands apart from the category without breaking it." : "Breaks from the category: a clear challenger.";
@@ -430,7 +582,71 @@ function explain(mix, rank, ctx) {
   if (L.profile) layers.push({ layer: "Audience", text: `For ${L.profile.label}: ${L.profile.effect}.` });
   if (L.cue) layers.push({ layer: "Name", text: `"${L.cue.word}" in the name brings ${L.cue.gist} into the palette and imagery, and suggests ${L.cue.wordmark} for the wordmark.` });
   if (L.industry) match.unshift(L.industry.label.split(" and ")[0]);
-  return { name: names.join(" + "), reason: `${opening} ${reasons.join(" ")} ${standing}`, match: match.slice(0, 6), tradeoff, layers };
+  return { name: directionName(mix), reason: `${opening} ${evidence} ${design} ${standing}`, match: match.slice(0, 6), tradeoff, layers };
+}
+
+// Tone, as three color dials from the system map (each -1…1):
+//   temperature: warm (+) or cool (−)       ← the Warm–Professional slider, Warm and Industrial chips
+//   loudness:    vivid (+) or quiet (−)     ← the Calm–Energetic slider, Bold, Calm, Minimal chips
+//   sharpness:   serious (+) or playful (−) ← the Playful–Serious slider, Precise, Sturdy, Playful chips
+function toneDials(sl = {}, chips = []) {
+  const v = (k) => (sl[k] == null ? 50 : sl[k]);
+  const d = { temperature: (50 - v("warmth")) / 50, loudness: (v("energy") - 50) / 50, sharpness: (v("serious") - 50) / 50, minimal: false };
+  const nudge = { Warm: ["temperature", 0.3], Industrial: ["temperature", -0.15], Bold: ["loudness", 0.3], Calm: ["loudness", -0.3], Minimal: ["loudness", -0.15], Playful: ["sharpness", -0.3], Precise: ["sharpness", 0.2], Sturdy: ["sharpness", 0.15] };
+  chips.forEach((c) => { if (nudge[c]) d[nudge[c][0]] += nudge[c][1]; });
+  d.minimal = chips.includes("Minimal");
+  ["temperature", "loudness", "sharpness"].forEach((k) => { d[k] = clamp(d[k], -1, 1); });
+  return d;
+}
+
+// The tone in words, for the reasons ("warm, vivid and serious"). Only clear leans count.
+function toneWords(d) {
+  const w = [];
+  if (d.temperature > 0.2) w.push("warm"); else if (d.temperature < -0.2) w.push("cool");
+  if (d.loudness > 0.2) w.push("vivid"); else if (d.loudness < -0.2) w.push("quiet");
+  if (d.sharpness > 0.2) w.push("serious"); else if (d.sharpness < -0.2) w.push("playful");
+  return w;
+}
+
+// The moodboard photos' colors, merged: vivid ones become accent candidates, and the overall
+// cast (warm or cool) tints the surface. Returns null until at least one photo has been read.
+function photoPalette(labels) {
+  // The fourth slot is the name's cue photo: it counts, but at half weight, so one photo placed
+  // for the name doesn't set the color for the whole moodboard.
+  const read = labels.map((label, k) => ({ label, colors: imageColors(label), slot: k === 3 ? 0.5 : 1 })).filter((x) => x.colors && x.colors.length);
+  if (!read.length) return null;
+  const vivid = [];
+  let castA = 0, castB = 0, castW = 0;
+  read.forEach(({ label, colors, slot }) => {
+    colors.forEach((c) => {
+      const [L, C, H] = c.lch;
+      castA += Math.cos((H * Math.PI) / 180) * C * c.share;
+      castB += Math.sin((H * Math.PI) / 180) * C * c.share;
+      castW += c.share;
+      // Accent candidates: clearly colored, not near black or white, weighted by area × vividness.
+      if (C > 0.06 && L > 0.3 && L < 0.88) {
+        const same = vivid.find((v) => Math.abs(hueTurn(v.lch[2], H)) < 20);
+        const weight = c.share * C * slot;
+        if (same) { if (weight > same.weight) Object.assign(same, { lch: c.lch, label }); same.weight += weight; }
+        else vivid.push({ lch: c.lch, label, weight });
+      }
+    });
+  });
+  vivid.sort((x, y) => y.weight - x.weight);
+  const castC = Math.hypot(castA, castB) / (castW || 1);
+  const castH = ((Math.atan2(castB, castA) * 180) / Math.PI + 360) % 360;
+  return { vivid: vivid.slice(0, 4), cast: castC > 0.012 ? castH : null };
+}
+
+// Orders photos by how close their colors sit to the palette (unread photos keep their place).
+function rankByFit(list, hexes) {
+  const pal = hexes.map(hexToOklch);
+  const fit = (label) => {
+    const colors = imageColors(label);
+    if (!colors || !colors.length) return 0;
+    return colors.reduce((n, c) => n + c.share * Math.min(...pal.map((p) => Math.hypot(p[0] - c.lch[0], (p[1] - c.lch[1]) * 2) + Math.abs(hueTurn(p[2], c.lch[2])) / 360)), 0);
+  };
+  return list.map((x, i) => ({ x, i, f: fit(x[0]) })).sort((a, b) => (a.f && b.f ? a.f - b.f : a.i - b.i)).map((y) => y.x);
 }
 
 function direction(mix, rank, offset, ctx, shown) {
@@ -439,20 +655,23 @@ function direction(mix, rank, offset, ctx, shown) {
   // Three variants of every module, used by Regenerate. An option that shares its lead with an
   // earlier option starts on a later variant, so the two don't look alike.
   const vs = [0, 1, 2].map((k) => k + offset);
-  ctx = { ...ctx, dial: dialFor(mix, ctx) };
+  // Imagery first: the palette is built partly out of the photos' own colors.
+  const { images, imgPool } = buildImages(mix, offset, shown, ctx, rank);
+  ctx = { ...ctx, dial: dialFor(mix, ctx), imagery: photoPalette(images.slice(0, 4).map((x) => x[0])) };
   const built = vs.map((v) => buildPalette(mix, v, ctx));
   const palettes = built.map((b) => b.rows);
   const words = vs.map((v) => pick(lead.words, v).slice());
   const types = vs.map((v) => [pick(lead.display, v), second && mix[1].w >= 0.3 ? pick(second.body, v) : pick(lead.body, v)]);
   const voices = vs.map((v) => buildVoice(mix, v, ctx));
-  const { images, imgPool } = buildImages(mix, offset, shown, ctx, rank);
-  const text = explain(mix, rank, ctx);
+  // Photos not shown yet are ordered by how well they fit the palette, for Swap and Regenerate.
+  const pool = rankByFit(imgPool, built[0].rows.map((r) => r[1]));
+  const text = explain(mix, rank, ctx, ctx.firstLead);
   return {
     ...text,
     mix: mix.map((m) => ({ id: m.id, name: ARCHETYPE_BY_ID[m.id].name, w: m.w })),
     accentIdx: 4,
     wordFont: words[0][0], track: words[0][1], display: types[0][0], body: types[0][1],
-    palettes, words, types, voices, images, imgPool,
+    palettes, words, types, voices, images, imgPool: pool,
     look: { ...lead.look },
     gradient: gradientFor(mix, ctx),
     dial: ctx.dial,
@@ -482,7 +701,19 @@ export function generateDirections(state, adjust) {
     noGradients: (state.avoidT || []).includes("Gradients"),
     noNeon: (state.avoidT || []).includes("Neon"),
     adjust: state.f.colorDir ? (hex) => adjust(hex, state.f.colorDir) : null,
+    sl: state.sl,
+    tone: state.tone || [],
+    toneDials: toneDials(state.sl, state.tone || []),
+    keepStrength: 1 - (state.keep == null ? 40 : state.keep) / 100,
   };
+  // Seeds: colors to keep, then the vivid colors of admired references. Avoided references add
+  // their vivid colors to the avoid list.
+  const refAvoid = (label) => (state.refTags && state.refTags[label] !== undefined ? state.refTags[label] : label === "Neon sign");
+  const vividOf = (label) => (imageColors(label) || []).filter((c) => c.lch[1] > 0.06 && c.lch[0] > 0.25 && c.lch[0] < 0.9).slice(0, 1);
+  ctx.seeds = (state.keepC || []).map((hex) => ({ hex, lch: hexToOklch(hex) }))
+    .concat((state.refs || []).filter((l) => !refAvoid(l)).flatMap((l) => vividOf(l).map((c) => ({ hex: c.hex, lch: c.lch, from: `"${l}"` }))))
+    .slice(0, 3);
+  ctx.avoidC = ctx.avoidC.concat((state.refs || []).filter(refAvoid).flatMap((l) => vividOf(l).map((c) => c.hex)));
   const audience = audienceOf(state.f);
   ctx.layers = {
     industry: industryOf(state.f),
@@ -495,6 +726,7 @@ export function generateDirections(state, adjust) {
   };
   const ranked = score(state);
   const picked = blends(ranked, ctx.layers.profile ? ctx.layers.profile.noLead : []);
+  ctx.firstLead = picked[0][0].id;
   const leads = {};
   const shown = new Set(); // Photos earlier options open on, so later ones pick others.
   return {

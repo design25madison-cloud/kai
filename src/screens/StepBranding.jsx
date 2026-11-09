@@ -49,6 +49,28 @@ export default function StepBranding({ vm }) {
         <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-colorDir" name="colorDir" value={vm.f.colorDir} onChange={vm.onField} placeholder="For example: warm earth tones with one bright accent" />
       </div>
       <div className="flex col gap-8px">
+        <span className="t-13px">Colors to keep</span>
+        <div className="flex gap-10px wrap items-stretch">
+          {vm.keepColors.map((ac, i_) => (
+            <Fragment key={i_}>
+              <div className="flex col gap-4px w-px-72px">
+                <div className="h-56px r-8px bd-1px-solid-line" style={{ background: ac.hex }} />
+                <div className="flex justify-space-between items-center gap-4px">
+                  <span className="t-11px ff-monospace">{ac.hex}</span>
+                  <button className="w-px-22px h-22px bd-0 r-4px bg-none flex items-center justify-center p-0" type="button" onClick={ac.remove} aria-label={ac.aria}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </Fragment>
+          ))}
+          <button className="w-px-72px h-56px r-8px bd-1px-dashed-grey-2 bg-bg t-12px flex col items-center justify-center gap-2px" type="button" onClick={() => vm.openPicker("keep")} aria-expanded={vm.pk.open && vm.pk.mode === "keep"}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add color</button>
+        </div>
+        {vm.pk.open && vm.pk.mode === "keep" && <ColorPicker vm={vm} />}
+      </div>
+      <div className="flex col gap-8px">
         <span className="t-13px">Colors to avoid</span>
         <div className="flex gap-10px wrap items-stretch">
           {vm.avoidColors.map((ac, i_) => (
@@ -66,33 +88,9 @@ export default function StepBranding({ vm }) {
               </div>
             </Fragment>
           ))}
-          <button className="w-px-72px h-56px r-8px bd-1px-dashed-grey-2 bg-bg t-12px flex col items-center justify-center gap-2px" type="button" onClick={vm.openPicker} aria-expanded={vm.pk.open}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add color</button>
+          <button className="w-px-72px h-56px r-8px bd-1px-dashed-grey-2 bg-bg t-12px flex col items-center justify-center gap-2px" type="button" onClick={() => vm.openPicker("avoid")} aria-expanded={vm.pk.open && vm.pk.mode === "avoid"}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add color</button>
         </div>
-        {vm.pk.open && (
-          <div className="p-18px r-12px bd-1px-solid-line flex gap-24px wrap items-center">
-            <div className="relative w-px-200px h-200px flex-none">
-              <button className="w-px-200px h-200px r-50pct bd-0 p-0 bg-radial-gradient-closest-side-hsl-0-0pct-50pct-transparent-conic-gradient-from-0deg-hsl-0-100pct-50pct-hsl-60-100pct-50pct-hsl-120-100pct-50pct-hsl-180-100pct-50pct-hsl-240-100pct-50pct-hsl-300-100pct-50pct-hsl-360-100pct-50pct cursor-crosshair" type="button" onClick={vm.pickWheel} aria-label="Color wheel: click to pick a hue and saturation" />
-              <span className="absolute w-px-16px h-16px m-8px-0-0--8px r-50pct bd-2px-solid-bg shadow-0-0-0-1px-ink pointe-none" aria-hidden="true" style={{ left: vm.pk.x, top: vm.pk.y, background: vm.pk.hex }} />
-            </div>
-            <div className="flex col gap-12px minw-220px flex-1">
-              <div className="flex gap-12px items-center">
-                <div className="w-px-64px h-64px r-8px bd-1px-solid-line" style={{ background: vm.pk.hex }} />
-                <div className="flex col gap-4px">
-                  <label className="t-12px" htmlFor="pk-hex">Hex</label>
-                  <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} placeholder=" " />
-                </div>
-              </div>
-              <div className="flex col gap-4px">
-                <label className="t-12px" htmlFor="pk-l">Lightness: {vm.pk.l}%</label>
-                <input className="accent-ink" id="pk-l" type="range" min="5" max="95" value={vm.pk.l} onChange={vm.setPickL} />
-              </div>
-              <div className="flex gap-8px">
-                <button className="p-10px-16px r-pill bd-0 bg-action c-bg t-14px w-600" type="button" onClick={vm.addPicked}>Add to avoid list</button>
-                <button className="p-10px-16px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.closePicker}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {vm.pk.open && vm.pk.mode === "avoid" && <ColorPicker vm={vm} />}
       </div>
       <div className="flex col gap-8px">
         <span className="t-13px">Graphical treatments to avoid</span>
@@ -172,6 +170,36 @@ export default function StepBranding({ vm }) {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// The hue wheel and hex field, shared by Colors to keep and Colors to avoid. vm.pk.mode says
+// which list the picked color joins.
+function ColorPicker({ vm }) {
+  return (
+    <div className="p-18px r-12px bd-1px-solid-line flex gap-24px wrap items-center">
+      <div className="relative w-px-200px h-200px flex-none">
+        <button className="w-px-200px h-200px r-50pct bd-0 p-0 bg-radial-gradient-closest-side-hsl-0-0pct-50pct-transparent-conic-gradient-from-0deg-hsl-0-100pct-50pct-hsl-60-100pct-50pct-hsl-120-100pct-50pct-hsl-180-100pct-50pct-hsl-240-100pct-50pct-hsl-300-100pct-50pct-hsl-360-100pct-50pct cursor-crosshair" type="button" onClick={vm.pickWheel} aria-label="Color wheel: click to pick a hue and saturation" />
+        <span className="absolute w-px-16px h-16px m-8px-0-0--8px r-50pct bd-2px-solid-bg shadow-0-0-0-1px-ink pointe-none" aria-hidden="true" style={{ left: vm.pk.x, top: vm.pk.y, background: vm.pk.hex }} />
+      </div>
+      <div className="flex col gap-12px minw-220px flex-1">
+        <div className="flex gap-12px items-center">
+          <div className="w-px-64px h-64px r-8px bd-1px-solid-line" style={{ background: vm.pk.hex }} />
+          <div className="flex col gap-4px">
+            <label className="t-12px" htmlFor="pk-hex">Hex</label>
+            <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} placeholder=" " />
+          </div>
+        </div>
+        <div className="flex col gap-4px">
+          <label className="t-12px" htmlFor="pk-l">Lightness: {vm.pk.l}%</label>
+          <input className="accent-ink" id="pk-l" type="range" min="5" max="95" value={vm.pk.l} onChange={vm.setPickL} />
+        </div>
+        <div className="flex gap-8px">
+          <button className="p-10px-16px r-pill bd-0 bg-action c-bg t-14px w-600" type="button" onClick={vm.addPicked}>{vm.pk.mode === "keep" ? "Add to keep list" : "Add to avoid list"}</button>
+          <button className="p-10px-16px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.closePicker}>Cancel</button>
+        </div>
       </div>
     </div>
   );

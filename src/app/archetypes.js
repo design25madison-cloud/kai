@@ -10,10 +10,18 @@
 // looks: preference on the brief's four look pairs, in order Warm/Cool, Serif/Sans,
 //     Ornate/Minimal, Soft/Geometric. "a" = first, "b" = second, "?" = no preference.
 // gradient: "core", "subtle", "optional" or "none". See "Gradients" in the doc.
+// Copy for the recommendation: essence (what the brand is, when it leads), flavor (what it adds
+// when blended in), carries (how it shows up in the design), and twist + noun / soloName for the
+// option's name ("Rugged systems" is Builder led, with Explorer's twist). touch: what it
+// contributes in a single phrase when it's the second influence.
 
 export const ARCHETYPES = [
   {
     id: "protector", name: "Protector", theme: "Sanctuary", aka: ["Caregiver"],
+    essence: "a steady, caring presence people can lean on", flavor: "with a reassuring warmth",
+    carries: "soft greens and earth tones, generous space and a patient voice",
+    twist: "caring", noun: "shelter", soloName: "Quiet shelter",
+    touch: "a softer, more reassuring palette",
     attributes: ["Service", "Compassion", "Reliability", "Understanding", "Empathy", "Altruism"],
     brands: ["Volvo", "Allstate", "Dove"],
     signals: ["care", "caring", "safe", "safety", "trust", "trusted", "support", "protect", "health", "patient", "wellbeing", "reliable", "reliability", "compassion", "empathy", "service", "warm", "calm"],
@@ -39,6 +47,10 @@ export const ARCHETYPES = [
   },
   {
     id: "everyman", name: "Everyman", theme: "Community", aka: ["Regular Guy", "Everyperson"],
+    essence: "an open, down-to-earth tool for everyone", flavor: "with an easygoing friendliness",
+    carries: "friendly color, rounded shapes and plain words",
+    twist: "open", noun: "common ground", soloName: "Common ground",
+    touch: "friendlier shapes and plainer words",
     attributes: ["Accessible", "Welcoming", "Simple", "Humanist", "Advocate", "Optimistic", "Connection"],
     brands: ["Ikea", "Figma", "Levi's", "Wikipedia"],
     signals: ["everyone", "anyone", "simple", "easy", "accessible", "welcoming", "community", "together", "team", "teams", "spreadsheet", "spreadsheets", "connect", "friendly", "affordable", "warm", "playful"],
@@ -64,6 +76,10 @@ export const ARCHETYPES = [
   },
   {
     id: "sage", name: "Sage", theme: "Enlightenment", aka: [],
+    essence: "a trusted source of clarity", flavor: "with a considered, expert calm",
+    carries: "quiet tonal color, classic serifs and an editorial grid",
+    twist: "considered", noun: "clarity", soloName: "Clear thinking",
+    touch: "a calmer, more editorial structure",
     attributes: ["Quality", "Wisdom", "Tradition", "Truth", "Clarity", "Graceful", "Austere"],
     brands: ["TED", "New York Times", "Master Class", "Harvard"],
     signals: ["expert", "expertise", "knowledge", "insight", "insights", "data", "research", "accurate", "accuracy", "trusted source", "advice", "advisory", "analysis", "wisdom", "truth", "clarity", "quality", "craft", "precise", "calm", "minimal"],
@@ -89,6 +105,10 @@ export const ARCHETYPES = [
   },
   {
     id: "ruler", name: "Ruler", theme: "Power", aka: [],
+    essence: "the standard others measure themselves against", flavor: "with a polished, exacting edge",
+    carries: "deep, restrained color, refined serifs and plenty of space",
+    twist: "refined", noun: "authority", soloName: "Quiet authority",
+    touch: "a more refined, restrained finish",
     attributes: ["Status", "Exclusivity", "Quality", "Elegance", "Power", "Beauty", "Control"],
     brands: ["Mercedes", "Tiffany", "LVMH", "Equinox"],
     signals: ["premium", "luxury", "exclusive", "best in class", "best-in-class", "elite", "enterprise", "control", "elegant", "elegance", "status", "prestige", "top tier", "high-end", "minimal"],
@@ -114,6 +134,10 @@ export const ARCHETYPES = [
   },
   {
     id: "magician", name: "Magician", theme: "Imagination", aka: [],
+    essence: "a product that makes the hard part disappear", flavor: "with a spark of the unexpected",
+    carries: "vivid color, expressive type and one surprising moment per screen",
+    twist: "inventive", noun: "wonder", soloName: "Everyday magic",
+    touch: "a moment of surprise",
     attributes: ["Imagination", "Wonder", "Extraordinary", "Inspiring", "Unique"],
     brands: ["Disney", "Dyson", "Lego", "Pinterest"],
     signals: ["magic", "magical", "impossible", "wonder", "imagine", "imagination", "automate", "automates", "automatically", "effortless", "extraordinary", "inspiring", "unique", "transform", "ai", "bold", "playful"],
@@ -139,6 +163,10 @@ export const ARCHETYPES = [
   },
   {
     id: "rebel", name: "Rebel", theme: "Revolution", aka: ["Outlaw"],
+    essence: "a clean break from how it's always been done", flavor: "with a defiant streak",
+    carries: "stark black and white, heavy type and a single sharp accent",
+    twist: "defiant", noun: "edge", soloName: "Hard edge",
+    touch: "a sharper, starker edge",
     attributes: ["Unconventional", "Bold", "Provocative", "Disruptive", "Confident", "Daring"],
     brands: ["Virgin", "Harley Davidson", "Supreme", "MTV"],
     signals: ["disrupt", "disruptive", "rebel", "challenge", "broken", "outdated", "status quo", "incumbent", "incumbents", "legacy", "fax", "unconventional", "provocative", "daring", "bold", "industrial"],
@@ -164,6 +192,10 @@ export const ARCHETYPES = [
   },
   {
     id: "transformer", name: "Transformer", theme: "Change", aka: [],
+    essence: "a system built to keep up with change", flavor: "with a sense of momentum",
+    carries: "shifting color, adaptable type and fluid shapes",
+    twist: "adaptive", noun: "momentum", soloName: "Built for change",
+    touch: "a sense of movement",
     attributes: ["Adaptive", "Problem-Solving", "Agile", "Dynamic", "Fluid", "Opportunistic"],
     brands: ["Google", "Facebook", "OpenAI"],
     signals: ["change", "adapt", "adaptive", "agile", "modernize", "modernization", "transform", "transformation", "migrate", "workflow", "dynamic", "flexible", "evolve", "fluid", "problem-solving"],
@@ -189,6 +221,10 @@ export const ARCHETYPES = [
   },
   {
     id: "champion", name: "Champion", theme: "Mission", aka: [],
+    essence: "a brand on a mission", flavor: "with a clear sense of purpose",
+    carries: "poster-bold color, condensed type and big, direct headlines",
+    twist: "purposeful", noun: "purpose", soloName: "On a mission",
+    touch: "bolder, more direct headlines",
     attributes: ["Driven", "Motivation", "Passion", "Useful", "Belonging", "Principled", "Essential"],
     brands: ["Patagonia", "Allbirds", "Toms"],
     signals: ["mission", "purpose", "cause", "impact", "sustainable", "sustainability", "climate", "planet", "community", "equity", "fair", "principled", "belonging", "essential", "matters", "bold"],
@@ -214,6 +250,10 @@ export const ARCHETYPES = [
   },
   {
     id: "builder", name: "Builder", theme: "Systems", aka: [],
+    essence: "the dependable system the work runs on", flavor: "with a practical, engineered backbone",
+    carries: "measured color, a visible grid and plain-spoken copy",
+    twist: "engineered", noun: "systems", soloName: "Solid systems",
+    touch: "a firmer, more structured grid",
     attributes: ["Practical", "Measured", "Resourceful", "Rigorous", "Systematic", "Sophisticated"],
     brands: ["IBM", "GE", "Microsoft"],
     signals: ["infrastructure", "operations", "ops", "system", "systems", "platform", "reliable", "reliability", "scale", "logistics", "manufacturing", "construction", "industrial", "legacy", "practical", "rigorous", "sturdy", "precise", "workflow"],
@@ -239,6 +279,10 @@ export const ARCHETYPES = [
   },
   {
     id: "visionary", name: "Visionary", theme: "Future", aka: [],
+    essence: "a clear view of what comes next", flavor: "with a forward-looking clarity",
+    carries: "open white space, one vivid accent and clean geometric type",
+    twist: "forward", noun: "foresight", soloName: "Clear foresight",
+    touch: "more open space and clarity",
     attributes: ["Pioneering", "Ambitious", "Clarity", "Progress", "Aspirational", "Foresight", "Elevated"],
     brands: ["SpaceX", "Tesla", "Apple", "Nvidia"],
     signals: ["future", "next generation", "next-generation", "pioneer", "pioneering", "category", "vision", "ambitious", "progress", "frontier", "breakthrough", "first", "minimal", "precise"],
@@ -264,6 +308,10 @@ export const ARCHETYPES = [
   },
   {
     id: "innocent", name: "Innocent", theme: "Optimism", aka: [],
+    essence: "something simple and honest", flavor: "with an easy optimism",
+    carries: "light, fresh color, rounded type and a cheerful voice",
+    twist: "fresh", noun: "simplicity", soloName: "Simply honest",
+    touch: "a lighter, fresher palette",
     attributes: ["Honest", "Simple", "Optimistic", "Pure", "Trustworthy", "Fresh"],
     brands: ["Coca-Cola", "Innocent Drinks", "Aveeno"],
     signals: ["simple", "honest", "easy", "fresh", "pure", "clean", "first-time", "beginner", "beginners", "straightforward", "optimistic", "calm", "playful"],
@@ -289,6 +337,10 @@ export const ARCHETYPES = [
   },
   {
     id: "explorer", name: "Explorer", theme: "Discovery", aka: [],
+    essence: "a tool for the people out in the field", flavor: "with a pull toward the open field",
+    carries: "earthy tones, sturdy condensed type and wide, open imagery",
+    twist: "rugged", noun: "frontier", soloName: "Open frontier",
+    touch: "earthier tones and wider imagery",
     attributes: ["Independent", "Adventurous", "Curious", "Authentic", "Rugged", "Free"],
     brands: ["The North Face", "Jeep", "National Geographic"],
     signals: ["field", "site", "sites", "remote", "mobile", "travel", "explore", "discover", "discovery", "freedom", "independent", "rugged", "outdoor", "terrain", "map", "maps", "sturdy", "industrial"],
@@ -314,6 +366,10 @@ export const ARCHETYPES = [
   },
   {
     id: "lover", name: "Lover", theme: "Intimacy", aka: [],
+    essence: "an experience that makes people feel looked after", flavor: "with a warm, personal touch",
+    carries: "rich warm color, elegant serifs and close, tactile imagery",
+    twist: "warm", noun: "warmth", soloName: "Close warmth",
+    touch: "warmer color and a more personal voice",
     attributes: ["Passionate", "Sensual", "Warm", "Devoted", "Indulgent", "Beautiful"],
     brands: ["Chanel", "Godiva", "Victoria's Secret"],
     signals: ["hospitality", "beauty", "relationship", "relationships", "client experience", "valued", "appreciated", "personal", "intimate", "devoted", "passion", "passionate", "warm"],
@@ -339,6 +395,10 @@ export const ARCHETYPES = [
   },
   {
     id: "jester", name: "Jester", theme: "Joy", aka: [],
+    essence: "a brand that doesn't take itself too seriously", flavor: "with a playful wink",
+    carries: "loud color, chunky type and a little mischief",
+    twist: "playful", noun: "play", soloName: "Serious fun",
+    touch: "a little mischief",
     attributes: ["Playful", "Witty", "Irreverent", "Spontaneous", "Fun", "Light-hearted"],
     brands: ["Old Spice", "M&M's", "Mailchimp"],
     signals: ["fun", "playful", "witty", "joy", "delight", "irreverent", "humor", "humour", "light-hearted", "quirky", "game", "games"],
@@ -364,6 +424,10 @@ export const ARCHETYPES = [
   },
   {
     id: "hero", name: "Hero", theme: "Mastery", aka: [],
+    essence: "a brand built to win the hard jobs", flavor: "with a competitive drive",
+    carries: "high-contrast color, athletic type and diagonal energy",
+    twist: "driven", noun: "grit", soloName: "True grit",
+    touch: "sharper contrast and more energy",
     attributes: ["Courageous", "Determined", "Strong", "Competent", "Disciplined", "Victorious"],
     brands: ["Nike", "FedEx", "BMW"],
     signals: ["performance", "fast", "faster", "fastest", "speed", "win", "winning", "beat", "outperform", "compete", "competitive", "strong", "strength", "determined", "discipline", "mastery", "sturdy", "bold"],
@@ -389,6 +453,10 @@ export const ARCHETYPES = [
   },
   {
     id: "creator", name: "Creator", theme: "Expression", aka: [],
+    essence: "a toolkit for making things your own", flavor: "with a maker's eye",
+    carries: "confident color, characterful type and visible process",
+    twist: "crafted", noun: "craft", soloName: "Maker's craft",
+    touch: "more character in the type",
     attributes: ["Imaginative", "Original", "Expressive", "Skilled", "Inventive", "Artistic"],
     brands: ["Adobe", "Lego", "Canva"],
     signals: ["create", "creative", "design", "designers", "make", "makers", "build your own", "craft", "original", "expressive", "artistic", "studio", "customize", "playful"],
