@@ -3,6 +3,7 @@
 // The model: a direction is reviewed in rounds. In each round the group marks every module
 // Agreed or Needs work. Not agreed means back to picks: agreed modules lock, so regenerating
 // only touches what is still open, and the round count goes up. Agreed means handoff.
+import { downloadDeck } from "./deck.js";
 import { ALL_SECTIONS, claudeMd, downloadFile, fontsGuide, handoffFiles, tokensCss, tokensJson } from "./exports.js";
 
 export const MODULES = [
@@ -88,11 +89,26 @@ const EXPORT_SECTIONS = [
 // Each format, the sections that have something to put in it, and how to build the file.
 const EXPORT_FORMATS = [
   { id: "pdf", label: "PDF", uses: ALL_SECTIONS },
+  { id: "pptx", label: "PowerPoint", uses: ALL_SECTIONS },
   { id: "claude", label: "CLAUDE.md", uses: ["word", "palette", "ui", "type", "refs", "voice"], name: "CLAUDE.md", mime: "text/markdown", build: (i) => claudeMd(i) },
   { id: "css", label: "CSS tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.css", mime: "text/css", build: (i) => tokensCss(i.d, i.sections) },
   { id: "json", label: "JSON tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.json", mime: "application/json", build: (i) => tokensJson(i.d, i.sections) },
   { id: "fonts", label: "Font guide", uses: ["word", "type"], name: "fonts.md", mime: "text/markdown", build: (i) => fontsGuide(i.d, i.sections) },
 ];
+
+// The deck always has its layouts; the selected sections decide which brand guide slides follow.
+function exportDeck(app, sections) {
+  if (app._deckBusy) return;
+  app._deckBusy = true;
+  app.setState({ allMenu: false, deckBusy: true });
+  return downloadDeck(app.current(), app.state.f, sections)
+    .then((name) => app.showToast(name + " downloaded."))
+    .catch(() => app.showToast("Couldn't build the deck. Try again."))
+    .finally(() => {
+      app._deckBusy = false;
+      app.setState({ deckBusy: false });
+    });
+}
 
 function exportVals(app) {
   const s = app.state;
@@ -114,6 +130,7 @@ function exportVals(app) {
     run: () => {
       if (!usable(current)) return;
       if (current.id === "pdf") return app.printDirection(sel);
+      if (current.id === "pptx") return exportDeck(app, sel);
       const content = current.build({ d: app.current(), f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, banned: s.banned, domains: s.domains, agreedRound: s.meeting.agreedRound, sections: sel });
       downloadFile(current.name, content, current.mime);
       set({ allMenu: false });
@@ -152,6 +169,8 @@ export function flowVals(app) {
     meetingLabel: meeting.log.length ? `Back to meeting · Round ${meeting.round}` : "Take to meeting",
     roundNotice: isOut ? meeting.notice : null,
     exportMenu: exportVals(app),
+    exportDeck: () => exportDeck(app, ALL_SECTIONS),
+    deckBusy: !!s.deckBusy,
     dismissNotice: () => set({ meeting: Object.assign({}, meeting, { notice: null }) }),
   };
   if (!isMeet && !isHandoff) return base;

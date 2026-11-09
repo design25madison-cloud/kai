@@ -4,7 +4,7 @@ import * as accounts from "./accounts.js";
 // Interface state that belongs to this visit, not to the project, so it's never saved.
 const TRANSIENT = new Set([
   "user", "projectId", "projects", "saveStatus", "saveError", "authError", "authBusy",
-  "projectMenu", "renaming", "deleting", "toast", "undo", "allMenu", "edit", "cmode", "draft", "genStep", "vRec", "oRec", "pk",
+  "projectMenu", "renaming", "deleting", "deckBusy", "toast", "undo", "allMenu", "edit", "cmode", "draft", "genStep", "vRec", "oRec", "pk",
 ]);
 // A project reopens on one of these. Generation is a moment, so it reopens on the brief's last step.
 const RESUMABLE = new Set(["welcome", "start", "brief", "out"]);

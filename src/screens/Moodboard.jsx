@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import DeckPreview from "./DeckPreview.jsx";
 import PieceActions from "./PieceActions.jsx";
 import RefImage from "./RefImage.jsx";
 
@@ -137,6 +138,7 @@ export default function Moodboard({ vm }) {
         )}
       </div>
       <p className="m-0 t-13px lh-1_5 c-ink-2"><strong>Brief:</strong> {vm.f.desc} <strong>Core problem:</strong> {vm.f.problem}</p>
+      {!vm.presenting && <DeckPreview vm={vm} />}
     </section>
   );
 }

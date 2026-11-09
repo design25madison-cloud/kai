@@ -497,3 +497,97 @@
 .ref-credit a {
   color: inherit;
 }
+
+/* Deck template preview on the moodboard. Slides are brand content, not interface, so they keep
+   a small radius like other brand renderings (.brand-ui): 24px would clip the slide footers. */
+.deck {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.deck__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.deck__title {
+  margin: 0;
+  font-size: var(--text-20);
+  font-weight: 600;
+}
+.deck__meta,
+.deck__note {
+  color: var(--color-ink-2);
+  font-size: var(--text-13);
+}
+.deck__note {
+  margin: 0;
+}
+.deck__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deck__group-title {
+  margin: 0;
+  font-size: var(--text-13);
+  font-weight: 500;
+}
+.deck__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 1000px) {
+  .deck__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .deck__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.deck__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.deck__label {
+  font-size: var(--text-12);
+  color: var(--color-ink-2);
+}
+.slide {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+  container-type: inline-size;
+  --slide-pt: calc(100cqw / 960);
+}
+.slide__text,
+.slide__shape,
+.slide__img {
+  position: absolute;
+}
+.slide__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  overflow: hidden;
+  white-space: pre-line;
+}
+.slide__img {
+  object-fit: cover;
+}
+.slide__bullets {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: calc(10 * var(--slide-pt));
+}
