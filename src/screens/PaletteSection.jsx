@@ -24,6 +24,13 @@ export default function PaletteSection({ vm }) {
           </Fragment>
         ))}
       </div>
+      {vm.cur.primaryReasons.length > 0 && (
+        <ul className="palette-why" aria-label="Why the palette looks this way">
+          {vm.cur.primaryReasons.map((r, k) => (
+            <li key={k}><span className="palette-why__layer">{r.layer}</span>{r.text}</li>
+          ))}
+        </ul>
+      )}
       <div className="palette-grid">
         {vm.cur.colors.map((c, i_) => (
           <Fragment key={i_}>

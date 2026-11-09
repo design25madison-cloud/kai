@@ -6,6 +6,7 @@ import { ensureFonts } from "./fonts.js";
 import { flowVals, newMeeting } from "./flow.js";
 import { contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
 import { markImagesUsed, subscribe as onImages } from "./referenceImages.js";
+import { INDUSTRIES } from "./layers.js";
 import { restrictedHits } from "./language.js";
 import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
 
@@ -36,7 +37,7 @@ export default class BrandApp extends Component {
   }
   blankF() {
     const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
-      'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site'];
+      'problem', 'short', 'altIn', 'diff', 'diffWhy', 'outcomes', 'switchTo', 'value', 'emo', 'wedge', 'wedgeWhy', 'feel', 'diffFeel', 'wfStart', 'wfAha', 'wfSuccess', 'sigReact', 'sigEasier', 'site', 'industry', 'industryOther'];
     const o = { who: 'operator' }; keys.forEach(k => { o[k] = ''; }); return o;
   }
   sampleState() {
@@ -158,7 +159,7 @@ export default class BrandApp extends Component {
   // (see generate.js and docs/archetypes.md). Cached until the brief inputs change.
   generated() {
     const s = this.state;
-    const key = JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.avoidT]);
+    const key = JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.avoidT, s.comps]);
     if (this._genKey !== key) {
       this._genKey = key;
       this._gen = generateDirections(s, (hex, t) => this.adjust(hex, t));
@@ -371,7 +372,7 @@ export default class BrandApp extends Component {
     }
     const linkColor = !dk ? ui : (this.ratio(accent, T.light) >= 4.5 ? accent : this.tint(ui, 0.45));
     return Object.assign({
-      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, mix: base.mix || [], look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
+      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, mix: base.mix || [], layers: base.layers || [], primaryReasons: base.primaryReasons || [], dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
       displayPkg: this.pkg(display), bodyPkg: this.pkg(body), colors, palNames: names.join(', '),
       darkName: names[darkIdx], darkO, accent, accentName,
       accentText: this.ratio(accent, T.deep) >= 4.5 ? accent : (dk ? lightO : '#FFFFFF'),
@@ -527,7 +528,7 @@ export default class BrandApp extends Component {
     s.tone.forEach(t => { if (!toneAll.includes(t)) toneAll.push(t); });
     const taglines = s.taglines.map((t, i) => ({ text: t, set: listUpd('taglines', i), remove: listRm('taglines', i) }));
     const careChips = ['ROI', 'Growth', 'Efficiency', 'Reliability', 'Cost', 'Risk'].map(label => Object.assign({ label, on: s.buyerCares.includes(label), toggle: toggleIn('buyerCares', label) }, on(s.buyerCares.includes(label))));
-    const comps = s.comps.map((c, i) => ({ name: c.name, url: c.url, setName: listUpd('comps', i, 'name'), setUrl: listUpd('comps', i, 'url'), remove: listRm('comps', i) }));
+    const comps = s.comps.map((c, i) => ({ name: c.name, url: c.url, color: c.color || '', setName: listUpd('comps', i, 'name'), setUrl: listUpd('comps', i, 'url'), setColor: (e) => listUpd('comps', i, 'color')({ target: { value: e.target.value.toUpperCase() } }), remove: listRm('comps', i) }));
     const bannedChips = s.banned.map((w, i) => ({ label: w, aria: 'Remove ' + w, remove: listRm('banned', i) }));
     const addBanned = fromField('bannedIn', 'banned');
     const alts = s.alts.map((a, i) => ({ label: a, aria: 'Remove ' + a, remove: listRm('alts', i) }));
@@ -731,7 +732,7 @@ export default class BrandApp extends Component {
       domains, domainKey: onEnter(addDomain), votes, addVote: fromField('voteIn', 'votes'),
       legalOpen: s.legalOpen, toggleLegal: () => set({ legalOpen: !s.legalOpen }), legalLabel: s.legalOpen ? 'Hide legal name' : 'Different legal name?',
       addTone: fromField('toneIn', 'tone'), taglines, addTagline: () => set({ taglines: s.taglines.concat(['']) }),
-      brandGroups, careChips, comps, addComp: () => set({ comps: s.comps.concat([{ name: '', url: '' }]) }), alts, altKey: onEnter(fromField('altIn', 'alts')),
+      brandGroups, careChips, comps, industries: INDUSTRIES, addComp: () => set({ comps: s.comps.concat([{ name: '', url: '' }]) }), alts, altKey: onEnter(fromField('altIn', 'alts')),
       endOn: s.endOn, endOff: !s.endOn, toggleEnd: () => set({ endOn: !s.endOn }), endLabel: s.endOn ? 'Included' : 'Add end user', endBg: s.endOn ? 'var(--color-action)' : '#FFFFFF', endFg: s.endOn ? '#FFFFFF' : 'var(--color-ink)',
       sigOpen: s.sigOpen, toggleSig: () => set({ sigOpen: !s.sigOpen }), sigLabel: s.sigOpen ? 'Hide early signals' : 'Add early signals of success (optional)',
       domainShown: s.domains[0] || 'yourname.com',

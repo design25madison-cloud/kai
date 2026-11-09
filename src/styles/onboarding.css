@@ -480,3 +480,40 @@ select:not([multiple]) {
   background: var(--color-tint);
   font-size: var(--text-11);
 }
+
+/* A select still on its "Choose…" option reads as empty: Grey 2 outline, muted text. */
+select:not([multiple]):has(option[value=""]:checked) {
+  border-color: var(--color-grey-2);
+  color: var(--color-ink-2);
+}
+
+/* Competitor's main color: a round swatch that opens the system color picker. Empty, it's an
+   outlined plus, like the other empty fields. */
+.comp-color {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-ink);
+  color: var(--color-ink-2);
+  cursor: pointer;
+}
+.comp-color[data-empty] {
+  border-color: var(--color-grey-2);
+}
+.comp-color input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.comp-color:focus-within {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}

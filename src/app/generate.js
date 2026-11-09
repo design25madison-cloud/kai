@@ -6,9 +6,13 @@
 // 3. direction() builds each blend into the same direction shape the rest of the app already
 //              reads (palettes, words, types, voices, images, reason…), so screens don't change.
 //
+// Archetypes say who the brand is. The reasoning layers in layers.js (category, positioning,
+// audience, name) then shape the decisions, and each layer leaves a reason the founder can read.
+//
 // Everything is deterministic: the same brief always gives the same directions.
 import { ARCHETYPES, ARCHETYPE_BY_ID, TONE_CHIPS } from "./archetypes.js";
 import { curatedImage } from "./referenceImages.js";
+import { AUDIENCES, audienceOf, competitorColorsOf, industryOf, nameCuesOf, stanceOf } from "./layers.js";
 
 // ---------- Color helpers ----------
 
@@ -45,11 +49,15 @@ export function contrast(a, b) {
 }
 
 // Darkens a color until it carries white text at AA (4.5:1).
-function darkenForWhite(hsl) {
+function darkenForWhite(hsl, target = 4.5) {
   let [h, s, l] = hsl;
-  while (l > 4 && contrast(hslToHex([h, s, l]), "#FFFFFF") < 4.5) l -= 1;
+  while (l > 4 && contrast(hslToHex([h, s, l]), "#FFFFFF") < target) l -= 1;
   return [h, s, l];
 }
+
+// Signed shortest turn from hue a to hue b, in degrees (-180…180).
+const hueTurn = (a, b) => ((b - a + 540) % 360) - 180;
+const turnTo = (h, deg) => [((h[0] + deg) % 360 + 360) % 360, h[1], h[2]];
 
 function rgbDistance(a, b) {
   const p = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
@@ -73,6 +81,7 @@ export function colorName([h, s, l]) {
     return "Paper";
   }
   if (l > 82 && s < 50 && h >= 15 && h <= 65) return l > 93 ? "Linen" : "Sand";
+  if (s < 55 && l < 45 && h >= 8 && h <= 40) return l < 26 ? "Deep oxide" : "Oxide";
   if (l > 85) return "Pale " + HUES.find(([max]) => h < max)[1].toLowerCase();
   const hue = HUES.find(([max]) => h < max)[1];
   if (l < 26) return "Deep " + hue.toLowerCase();
@@ -126,6 +135,12 @@ export function score(input) {
       if (pick === want) { pts += 0.75; lookHits++; } else pts -= 0.5;
     });
     if (lookHits >= 2) why.push("Your look picks");
+    // Category: archetypes common in the industry get a nudge, not a takeover.
+    const industry = industryOf(f);
+    if (industry && industry.typical.includes(a.id)) {
+      pts += 1.25;
+      why.push(`Common in ${industry.label.split(" and ")[0].toLowerCase()}`);
+    }
     return { id: a.id, pts: Math.round(pts * 100) / 100, why: [...new Set(why)] };
   }).sort((x, y) => y.pts - x.pts);
 }
@@ -152,12 +167,20 @@ const blendKey = (b) => b.map((m) => m.id).sort().join("+");
 
 // The first blend is the recommendation: every archetype within 75% of the top score, up to
 // three. The other two are the strongest different blends, so the three options really differ.
-export function blends(ranked) {
+// noLead: archetypes the audience can take blended in but not as the lead (Rebel for executive
+// buyers, say). Those blends get re-led by their next allowed archetype.
+export function blends(ranked, noLead = []) {
+  const allowed = ranked.filter((r) => !noLead.includes(r.id));
+  const relead = (members) => {
+    if (!noLead.includes(members[0].id)) return members;
+    const ok = members.find((m) => !noLead.includes(m.id)) || allowed[0];
+    return [ok].concat(members.filter((m) => m !== ok)).slice(0, 3);
+  };
   const top = ranked[0].pts;
   const close = ranked.filter((r) => r.pts >= top * 0.75).slice(0, 3);
-  const first = weigh(close);
+  const first = weigh(relead(close));
   const [r1, r2, r3, r4] = ranked;
-  const candidates = [[r2, r1], [r1, r3], [r2, r3], [r3, r1], [r1, r4], [r2], [r3]].map(weigh);
+  const candidates = [[r2, r1], [r1, r3], [r2, r3], [r3, r1], [r1, r4], [r2], [r3]].map((c) => weigh(relead(c)));
   const out = [first];
   candidates.forEach((c) => {
     if (out.length < 3 && !out.some((b) => blendKey(b) === blendKey(c))) out.push(c);
@@ -198,12 +221,68 @@ function buildPalette(mix, v, ctx) {
       primary = [(primary[0] + d * 0.15 + 360) % 360, primary[1], primary[2]];
     }
   }
-  primary = darkenForWhite(primary);
+  const reasons = [];
+  const chromatic = primary[1] > 15;
+  const L = ctx.layers;
+  ctx = { ...ctx, categoryAccent: null };
+
+  // Name: a cue word ("iron", "river"…) pulls the primary toward its color when they're close,
+  // otherwise it joins the accents below.
+  let cueAccent = null;
+  if (L.cue) {
+    const t = hueTurn(primary[0], L.cue.hue[0]);
+    if (chromatic && Math.abs(t) <= 120) {
+      primary = turnTo(primary, t * 0.3);
+      reasons.push({ layer: "Name", text: `"${L.cue.word}" in the name pulls the primary toward ${L.cue.gist}.` });
+    } else cueAccent = L.cue.hue;
+  }
+
+  // Category and positioning: start from what the industry usually uses, then move as far from
+  // it as the distinctiveness dial says.
+  if (L.industry) {
+    const short = L.industry.label.split(" and ")[0];
+    if (!chromatic) {
+      reasons.push({ layer: "Category", text: `A neutral primary sits outside ${short.toLowerCase()}'s usual ${L.industry.look.split(" and ")[0]}.` });
+    } else {
+      const conv = L.industry.hues.reduce((best, h) => (Math.abs(hueTurn(primary[0], h)) < Math.abs(hueTurn(primary[0], best)) ? h : best));
+      const off = hueTurn(conv, primary[0]); // How far the primary already sits from the convention.
+      if (ctx.dial < 0.35) {
+        // Fitting in: keep the archetype's primary and nod to the category with an accent.
+        // Pulling the primary across the wheel toward the category hue just makes mud.
+        ctx.categoryAccent = [conv, 55, 45];
+        reasons.push({ layer: "Category", text: `${short} brands usually use ${L.industry.look}. As the trusted alternative, the palette keeps that color as an accent.` });
+      } else {
+        const need = 25 + ctx.dial * 65;
+        if (Math.abs(off) < need) {
+          primary = turnTo(primary, (Math.sign(off) || 1) * need - off);
+          reasons.push({ layer: "Positioning", text: `${short} brands usually use ${L.industry.look}. You're positioned to stand apart, so the primary moves away from it.` });
+        } else {
+          reasons.push({ layer: "Positioning", text: `Already distinct from ${short.toLowerCase()}'s usual ${L.industry.look.split(" and ")[0]}.` });
+        }
+      }
+    }
+  }
+
+  // Competitors: never share a hue with a competitor's main color. This wins over the above.
+  L.competitors.forEach((c) => {
+    const ch = hexToHsl(c.hex);
+    if (!chromatic || ch[1] <= 15) return;
+    const t = hueTurn(ch[0], primary[0]);
+    if (Math.abs(t) < 35) {
+      primary = turnTo(primary, (Math.sign(t) || 1) * 40 - t);
+      reasons.push({ layer: "Positioning", text: `Steers clear of ${c.name}'s ${colorName(ch).toLowerCase()}.` });
+    }
+  });
+
+  // Audience: field users get AAA contrast on the primary; everyone else AA.
+  const target = L.profile ? L.profile.contrast : 4.5;
+  primary = darkenForWhite(primary, target);
+  if (L.profile && target > 4.5) reasons.push({ layer: "Audience", text: `For ${L.profile.label}, white text on the primary reaches AAA (7:1).` });
   const base = [primary, tweak(pick(p.surface, v)), tweak(pick(p.dark, v)), tweak(pick(p.light, v))];
 
   // Accent set: the weighted average of each archetype's accent count, 1–3. The lead gives the
   // first accent; the other archetypes give the rest, so a blend shows in the accents.
-  const count = clamp(Math.round(mix.reduce((n, m) => n + ARCHETYPE_BY_ID[m.id].accentCount * m.w, 0)), 1, 3);
+  const count = clamp(Math.round(mix.reduce((n, m) => n + ARCHETYPE_BY_ID[m.id].accentCount * m.w, 0)) + (L.profile && L.profile.extraAccent ? 1 : 0) + (cueAccent ? 1 : 0), 1, 3);
   const sources = [lead].concat(mix.slice(1).map((m) => ARCHETYPE_BY_ID[m.id]), lead, lead);
   const accents = [];
   for (let k = 0; accents.length < count && k < 12; k++) {
@@ -217,6 +296,26 @@ function buildPalette(mix, v, ctx) {
   }
 
   if (!accents.length) accents.push(tweak(pick(p.accents, v), true));
+  if (L.industry && ctx.dial >= 0.65) {
+    // Breaking from the category: no accent in its signature hues either.
+    const before = accents.length;
+    for (let k = accents.length - 1; k >= 0 && accents.length > 1; k--) {
+      if (accents[k][1] > 15 && L.industry.hues.some((h) => Math.abs(hueTurn(accents[k][0], h)) < 25)) accents.splice(k, 1);
+    }
+    if (accents.length < before) reasons.push({ layer: "Positioning", text: `No accent in ${L.industry.look.split(" and ")[0]}, to break from the category.` });
+  }
+  if (ctx.categoryAccent) {
+    const cat = tweak(ctx.categoryAccent, true);
+    if (!accents.some((x) => rgbDistance(hslToHex(x), hslToHex(cat)) < 60)) accents.splice(0, accents.length >= 3 ? 1 : 0, cat);
+  }
+  if (cueAccent) {
+    const cue = tweak(cueAccent, true);
+    if (!accents.some((x) => rgbDistance(hslToHex(x), hslToHex(cue)) < 60)) {
+      accents.splice(Math.min(1, accents.length), accents.length >= 3 ? 1 : 0, cue);
+      reasons.push({ layer: "Name", text: `"${L.cue.word}" in the name adds ${colorName(cue).toLowerCase()} as an accent.` });
+    }
+  }
+  accents.splice(3);
   const split = accents.length === 1 ? [10] : accents.length === 2 ? [6, 4] : [5, 3, 2];
   const used = new Set();
   const named = (hsl) => {
@@ -226,20 +325,23 @@ function buildPalette(mix, v, ctx) {
     used.add(n);
     return n;
   };
-  return base.map((hsl, k) => [named(hsl), hslToHex(hsl), ROLES[k], RATIOS[k]])
+  const rows = base.map((hsl, k) => [named(hsl), hslToHex(hsl), ROLES[k], RATIOS[k]])
     .concat(accents.map((hsl, k) => [named(hsl), hslToHex(hsl), k === 0 ? "Accent" : `Accent ${k + 1}`, split[k]]));
+  return { rows, reasons };
 }
 
-function buildVoice(mix, v) {
+function buildVoice(mix, v, ctx) {
   const lead = ARCHETYPE_BY_ID[mix[0].id];
   const leadPairs = lead.voice.pairs;
   const tone = mix[1]
     ? [pick(leadPairs, v * 2), pick(leadPairs, v * 2 + 1), pick(ARCHETYPE_BY_ID[mix[1].id].voice.pairs, v)]
     : [pick(leadPairs, v * 3), pick(leadPairs, v * 3 + 1), pick(leadPairs, v * 3 + 2)];
+  // Audience: the last tone pair speaks to who has to trust it.
+  if (ctx.layers.profile) tone[2] = ctx.layers.profile.pair;
   return { tone: tone.map((t) => t.slice()), headline: pick(lead.voice.headlines, v), micro: pick(lead.voice.micro, v) };
 }
 
-function buildImages(mix, offset, shown) {
+function buildImages(mix, offset, shown, ctx, rank) {
   // Six slots shared by weight and interleaved (lead, second, lead…), so the first few photos,
   // the ones Compare and the moodboard show, already read as the blend.
   // Within each archetype, hand-picked photos come first. Photos an earlier option already shows
@@ -251,7 +353,10 @@ function buildImages(mix, offset, shown) {
     const rotated = list.slice(start).concat(list.slice(0, start));
     return rotated.filter((l) => !shown.has(l)).concat(rotated.filter((l) => shown.has(l)));
   };
-  const queues = mix.map((m, k) => order(ARCHETYPE_BY_ID[m.id], k));
+  // Category: skip images that are the industry's clichés.
+  const L = ctx.layers;
+  const cliche = (label) => L.industry && L.industry.cliches.some((c) => label.toLowerCase().includes(c));
+  const queues = mix.map((m, k) => order(ARCHETYPE_BY_ID[m.id], k).filter((l) => !cliche(l)));
   const taken = mix.map(() => 0);
   const seen = new Set(), images = [];
   for (let slot = 0; slot < 6; slot++) {
@@ -262,6 +367,18 @@ function buildImages(mix, offset, shown) {
       if (label) { seen.add(label); images.push(label); taken[k]++; break; }
     }
   }
+  // Name and category each place one photo: the name's cue on the moodboard, the industry's world
+  // in the imagery set. Options take turns through them so they don't repeat.
+  const place = (slot, list) => {
+    if (!list || !list.length) return;
+    const label = list[rank % list.length];
+    if (images.includes(label)) return;
+    if (images[slot]) seen.delete(images[slot]);
+    images[slot] = label;
+    seen.add(label);
+  };
+  place(3, L.cue && L.cue.images);
+  place(4, L.industry && L.industry.images);
   const pool = [...new Set(queues.flat())].filter((l) => !seen.has(l));
   images.slice(0, 4).forEach((l) => shown.add(l));
   const src = (label) => [label, curatedImage(label) ? "Wikimedia Commons" : "Search"];
@@ -300,7 +417,20 @@ function explain(mix, rank, ctx) {
   if (ctx.noGradients) match.push("No gradients");
   if (ctx.noNeon) match.push("No neon");
   const tradeoff = lead.misfire + (mix.length === 3 ? " Three archetypes can blur together, so lock the pieces you like and regenerate the rest." : "");
-  return { name: names.join(" + "), reason: `${opening} ${reasons.join(" ")} ${standing}`, match, tradeoff };
+
+  // One line per reasoning layer, shown with the recommendation.
+  const L = ctx.layers, layers = [];
+  layers.push({ layer: "Personality", text: `${listOf(names)}: ${listOf(mix.map((m) => ARCHETYPE_BY_ID[m.id].theme.toLowerCase()))}.` });
+  if (L.industry) layers.push({ layer: "Category", text: `${L.industry.label.split(" and ")[0]} brands usually use ${L.industry.look}.` });
+  else if (L.industryOther) layers.push({ layer: "Category", text: `No rules yet for ${L.industryOther}, so this leans on the other layers.` });
+  const dialText = ctx.dial < 0.35 ? "Close to the category: a trusted alternative, done better." : ctx.dial < 0.65 ? "Stands apart from the category without breaking it." : "Breaks from the category: a clear challenger.";
+  const stance = L.stance.length ? ` Your brief calls today's options ${listOf(L.stance.slice(0, 2).map((x) => `"${x}"`))}.` : "";
+  const rivals = L.competitors.length ? ` Steers clear of ${listOf(L.competitors.map((c) => c.name))}'s colors.` : "";
+  layers.push({ layer: "Positioning", text: dialText + stance + rivals });
+  if (L.profile) layers.push({ layer: "Audience", text: `For ${L.profile.label}: ${L.profile.effect}.` });
+  if (L.cue) layers.push({ layer: "Name", text: `"${L.cue.word}" in the name brings ${L.cue.gist} into the palette and imagery, and suggests ${L.cue.wordmark} for the wordmark.` });
+  if (L.industry) match.unshift(L.industry.label.split(" and ")[0]);
+  return { name: names.join(" + "), reason: `${opening} ${reasons.join(" ")} ${standing}`, match: match.slice(0, 6), tradeoff, layers };
 }
 
 function direction(mix, rank, offset, ctx, shown) {
@@ -309,11 +439,13 @@ function direction(mix, rank, offset, ctx, shown) {
   // Three variants of every module, used by Regenerate. An option that shares its lead with an
   // earlier option starts on a later variant, so the two don't look alike.
   const vs = [0, 1, 2].map((k) => k + offset);
-  const palettes = vs.map((v) => buildPalette(mix, v, ctx));
+  ctx = { ...ctx, dial: dialFor(mix, ctx) };
+  const built = vs.map((v) => buildPalette(mix, v, ctx));
+  const palettes = built.map((b) => b.rows);
   const words = vs.map((v) => pick(lead.words, v).slice());
   const types = vs.map((v) => [pick(lead.display, v), second && mix[1].w >= 0.3 ? pick(second.body, v) : pick(lead.body, v)]);
-  const voices = vs.map((v) => buildVoice(mix, v));
-  const { images, imgPool } = buildImages(mix, offset, shown);
+  const voices = vs.map((v) => buildVoice(mix, v, ctx));
+  const { images, imgPool } = buildImages(mix, offset, shown, ctx, rank);
   const text = explain(mix, rank, ctx);
   return {
     ...text,
@@ -323,7 +455,23 @@ function direction(mix, rank, offset, ctx, shown) {
     palettes, words, types, voices, images, imgPool,
     look: { ...lead.look },
     gradient: gradientFor(mix, ctx),
+    dial: ctx.dial,
+    primaryReasons: built[0].reasons,
   };
+}
+
+// Distinctiveness, 0 (look like the category, done better) to 1 (break from it). Pushed up by
+// the founder's stance against today's options and by challenger archetypes, pulled down by
+// steady ones, and capped by what the audience can take.
+function dialFor(mix, ctx) {
+  const L = ctx.layers;
+  let d = 0.4 + Math.min(0.3, L.stance.length * 0.08);
+  mix.forEach((m) => {
+    if (["rebel", "transformer", "magician", "jester"].includes(m.id)) d += m.w * 0.35;
+    if (["protector", "sage", "ruler", "innocent"].includes(m.id)) d -= m.w * 0.15;
+  });
+  if (L.profile) d = Math.min(d + (L.profile.bias || 0), L.profile.cap);
+  return Math.round(clamp(d, 0.1, 0.95) * 100) / 100;
 }
 
 // ---------- Entry point ----------
@@ -335,8 +483,18 @@ export function generateDirections(state, adjust) {
     noNeon: (state.avoidT || []).includes("Neon"),
     adjust: state.f.colorDir ? (hex) => adjust(hex, state.f.colorDir) : null,
   };
+  const audience = audienceOf(state.f);
+  ctx.layers = {
+    industry: industryOf(state.f),
+    industryOther: state.f.industry === "other" ? (state.f.industryOther || "").trim() || "your industry" : "",
+    audience,
+    profile: audience ? AUDIENCES[audience] : null,
+    cue: nameCuesOf(state.f)[0] || null,
+    competitors: competitorColorsOf(state.comps),
+    stance: stanceOf(state.f),
+  };
   const ranked = score(state);
-  const picked = blends(ranked);
+  const picked = blends(ranked, ctx.layers.profile ? ctx.layers.profile.noLead : []);
   const leads = {};
   const shown = new Set(); // Photos earlier options open on, so later ones pick others.
   return {

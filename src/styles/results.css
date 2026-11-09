@@ -595,7 +595,7 @@
 /* Palette swatches: one row on desktop whatever the accent count (5–7 colors), wrapping on phones. */
 .palette-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 12px;
 }
 
@@ -605,4 +605,44 @@
   height: 12px;
   flex: none;
   border-radius: var(--radius-full);
+}
+
+/* The reasoning layers behind a direction, in the recommendation card. */
+.rec-layers {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-line);
+}
+.rec-layers__row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+  font-size: var(--text-13);
+  line-height: 1.45;
+}
+.rec-layers dt {
+  color: var(--color-ink-2);
+}
+.rec-layers dd {
+  margin: 0;
+}
+
+/* Why the primary is the color it is, under the palette bar. */
+.palette-why {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--text-13);
+  color: var(--color-ink-2);
+}
+.palette-why__layer {
+  display: inline-block;
+  min-width: 88px;
+  color: var(--color-ink);
 }

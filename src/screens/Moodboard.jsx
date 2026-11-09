@@ -122,6 +122,16 @@ export default function Moodboard({ vm }) {
           <span className="flex gap-6px items-center t-12px c-ink-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z" /><path d="M18 15l.8 2 2 .8-2 .8L18 21l-.8-2.4-2-.8 2-.8z" /></svg>AI recommendation</span>
           <h2 className="m-0 t-18px w-600" id="why-h">{vm.whyTitle}</h2>
           <p className="m-0 t-14px lh-1_55">{vm.cur.reason}</p>
+          {vm.cur.layers.length > 0 && (
+            <dl className="rec-layers">
+              {vm.cur.layers.map((l) => (
+                <div key={l.layer} className="rec-layers__row">
+                  <dt>{l.layer}</dt>
+                  <dd>{l.text}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
           <div className="flex gap-6px wrap items-center">
             <span className="t-12px c-muted">{vm.matchLabel}</span>
             {vm.cur.match.map((m, i_) => (

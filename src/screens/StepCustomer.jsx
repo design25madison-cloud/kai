@@ -73,11 +73,18 @@ export default function StepCustomer({ vm }) {
       </div>
       <div className="flex col gap-8px">
         <span className="t-15px w-600">Competitors</span>
+        <span className="t-13px c-ink-2">Add their main color if you know it, so your brand steers clear of it.</span>
         {vm.comps.map((c, i_) => (
           <Fragment key={i_}>
             <div className="flex gap-8px">
               <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={c.name} onChange={c.setName} aria-label="Competitor name" placeholder="Name" />
               <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" value={c.url} onChange={c.setUrl} aria-label="Competitor site" placeholder="competitor.com" />
+              <label className="comp-color" data-empty={!c.color || undefined} style={c.color ? { background: c.color } : undefined} title={c.color ? `Main color ${c.color}` : "Their main color (optional)"}>
+                <input type="color" value={c.color || "#888888"} onChange={c.setColor} aria-label={`${c.name || "Competitor"}'s main color (optional)`} />
+                {!c.color && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                )}
+              </label>
               <button className="w-px-40px h-40px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label="Remove competitor">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />

@@ -760,6 +760,87 @@ Options aren't limited to one archetype. Each option is a **blend of 1–3 arche
 2. **Reference brands are for explanation only.** They never appear in output, and they're dropped from any card where they match one of the client's listed competitors.
 3. **Accessibility wins over everything.** Contrast checks stay as they are today.
 
+## Reasoning layers (built Nov 9, 2026: `src/app/layers.js`)
+
+Archetypes alone decide too much: two different companies that both land on Builder get the same brand. Four more layers sit alongside personality. Each one changes specific decisions, and every decision records which layers shaped it, so the reason shown to the founder comes from several layers, not just the archetype.
+
+**Approach:** rules first, running in the browser. A server-side model comes later, to read competitor sites (engineer work).
+
+### How the layers combine
+1. **Category** sets the starting point: what the industry usually looks like.
+2. **Positioning** sets how far to move away from that starting point, and which competitor territory to avoid.
+3. **Personality** (the archetype blend) sets the direction of the move: character, energy, voice.
+4. **Audience** limits how far is safe: legibility, density, how conservative it is.
+5. **Name and meaning** adds specific cues: a hue, imagery subjects, a wordmark detail.
+6. **Constraints** are applied last, as hard filters: the founder's inputs, AA contrast, avoid lists.
+
+### 1. Category conventions
+- **Input:** industry. *Gap: the brief has no industry field. Recommend adding one to General (a picker plus "Other"), rather than guessing from the description.*
+- **Rule table, one row per industry:**
+  - Conventional hues
+  - Conventional type style
+  - Imagery clichés to avoid
+  - Typical archetypes
+- **Example rows:**
+  - **Construction:** safety yellow or orange, heavy grotesk. Clichés: hard hats, cranes. Typical: Builder, Hero.
+  - **Fintech:** navy or teal, geometric sans. Clichés: coins, handshakes. Typical: Sage, Ruler, Visionary.
+  - **Healthcare:** blue or green, rounded sans. Clichés: stethoscopes, smiling doctors. Typical: Protector, Sage.
+- **Changes:** the starting palette and type, and image labels to skip.
+
+### 2. Positioning vs competitors
+- **Inputs:**
+  - Competitors and alternatives
+  - Why current solutions fall short
+  - What makes you different
+  - How strong the stance is: Rebel or Transformer scores, wording like "outdated" or "broken"
+- **Output, a distinctiveness dial from 0 to 1:**
+  - **0, conform:** a trusted alternative that looks like the category, done better.
+  - **1, break:** a challenger that deliberately breaks category conventions.
+- **Competitor colors:**
+  - **Rules-only version:** an optional "Their main color" swatch next to each competitor in the brief.
+  - **Model version, later:** read the competitor's site and pull its colors automatically.
+  - **Either way:** Primary stays clear of competitor hues; colors that are too close get rotated.
+- **Changes:**
+  - How far Primary moves from the category hue (dial × distance)
+  - Whether the wordmark and type follow or break category style
+  - The positioning sentence in the recommendation
+
+### 3. Audience
+- **Inputs:** who feels it most (buyer or operator), buyer and operator roles, what they care about, their motivation.
+- **Profiles (rule table):**
+  - **Field and operational users:** high contrast, larger type, sturdy shapes, less subtlety.
+  - **Executive and procurement buyers:** conservative. The dial is capped at 0.6, and proof and clarity get prioritized in the voice.
+  - **Technical users:** denser layout, a mono or technical secondary font is allowed, precise voice.
+  - **Broad or consumer users:** friendlier, more color.
+- **Changes:** a minimum contrast target (AA or AAA), the type size scale, how conservative the archetype pick is (for example, Rebel can only be blended in), and the voice.
+
+### 4. Name and meaning
+- **Inputs:** the working name and "Name meaning, metaphor, or origin".
+- **A lexicon of cue words.** Each word maps to a hue, imagery subjects and a wordmark cue. For example:
+  - **iron, steel, forge:** oxide or graphite; metal and forge imagery.
+  - **river, wave, tide:** blue-teal; water imagery; flowing letterforms.
+  - **light, sun, lumen:** warm yellow accent; light imagery.
+  - **root, grove, seed:** green; nature imagery.
+  - **north, peak, summit:** cool tones; landscape imagery.
+- **Changes:** a hue pulled into Primary or an accent, extra image labels, and one wordmark note.
+
+### Reasons travel with each decision
+Every decision records the layers behind it, for example:
+```
+primary: { hex, reasons: [
+  { layer: "category",    text: "Construction usually leans safety yellow" },
+  { layer: "positioning", text: "Two competitors use yellow, and you're the modern alternative, so moved away" },
+  { layer: "personality", text: "Builder keeps it grounded: deep green" },
+  { layer: "audience",    text: "Procurement buyers: kept conservative" } ] }
+```
+The recommendation text is built from these, and the moodboard and palette can show a reason for each piece.
+
+### Decisions (Nov 9, 2026)
+- **Industries:** startups can be in any industry. The rules cover 14 broad families; "Other" skips the category layer until the model exists.
+- **Brief:** an Industry dropdown was added to General, and an optional main-color swatch next to each competitor.
+- **Fitting in vs standing out:** a brand meant to fit its category keeps the category color as an accent, not as the primary, because pulling the primary across the color wheel made muddy colors. A brand meant to break from the category drops any accent in the category's hues.
+- **Not built yet:** type and wordmark don't yet follow or break category style. Only color, imagery, voice and contrast respond to the layers.
+
 ## Still open
 
 1. **Choosing:** do you accept A, where KAI suggests the top 3 and the founder confirms? (Increment 3; until then, the founder sees the three blends directly.)

@@ -38,6 +38,19 @@ export default function StepGeneral({ vm }) {
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-desc" name="desc" value={vm.f.desc} onChange={vm.onField} rows="2" placeholder="A short, plain-language description of what the company does and for whom." />
       </div>
       <div className="flex col gap-8px">
+        <label className="t-13px" htmlFor="f-industry">Industry</label>
+        <select className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-industry" name="industry" value={vm.f.industry} onChange={vm.onField}>
+          <option value="">Choose an industry</option>
+          {vm.industries.map((x) => (
+            <option key={x.id} value={x.id}>{x.label}</option>
+          ))}
+          <option value="other">Other</option>
+        </select>
+        {vm.f.industry === "other" && (
+          <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-industryOther" name="industryOther" value={vm.f.industryOther} onChange={vm.onField} aria-label="Your industry" placeholder="Your industry" />
+        )}
+      </div>
+      <div className="flex col gap-8px">
         <span className="t-13px">Requested deliverables</span>
         {vm.deliv.map((d, i_) => (
           <Fragment key={i_}>
