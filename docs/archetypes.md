@@ -691,6 +691,13 @@ Palettes move from one Accent role to an accent set of 1–3 colors:
 - **Unsplash download count:** when an image is actually used (picked for a moodboard or exported), call Unsplash's download endpoint. Unsplash requires this.
 - **Rate limits:** Unsplash demo keys allow 50 requests an hour. Production approval raises this to 5,000. Results should be cached per brief.
 
+**Built (Nov 9, 2026)** in `src/app/imageSearch.js`:
+- **Order:** hand-picked photos (`referenceImages.json`) first, then Unsplash, then Commons.
+- **Search scope:** only labels actually on screen or exported are searched.
+- **Caching:** results are cached in the browser for a week. Misses, and results found before a key existed, are kept for a day only.
+- **Download notice:** sent to Unsplash when a photo is locked, or exported to PDF or PowerPoint.
+- **Commons quality:** Commons matches are literal (often event or news photos), so Unsplash gives noticeably better moodboards.
+
 **Where the key lives:** local dev keeps the key on the dev server, which passes requests through to Unsplash. A deployed version needs a small server function for this. **That's engineer work.**
 
 ## Generation model

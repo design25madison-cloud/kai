@@ -3,7 +3,7 @@
 // The layouts are slide masters with placeholders, so founders add new slides from them in
 // PowerPoint or Google Slides. The preview on the moodboard (DeckPreview.jsx) draws the same
 // slides from deckTheme() and DECK_SLIDES, so the two stay in step.
-import { referenceImage } from "./referenceImages.js";
+import { markImagesUsed, referenceImage } from "./referenceImages.js";
 
 // Wide 16:9 slide, in inches. Font sizes are in points (the slide is 960pt wide).
 const W = 13.333;
@@ -155,7 +155,7 @@ function guideSlides(pptx, t, sections) {
       if (img) s.addImage({ path: new URL(img.src, window.location.href).href, x, y: top, w: cw, h: ch, sizing: { type: "cover", w: cw, h: ch } });
       else s.addShape("rect", { x, y: top, w: cw, h: ch, fill: { color: hex(t.surface) } });
       s.addText(label, { x, y: top + ch + 0.15, w: cw, h: 0.3, fontFace: t.body, fontSize: 12, color: ink, margin: 0 });
-      if (img) s.addText(`${img.author}, ${img.license}`, { x, y: top + ch + 0.45, w: cw, h: 0.3, fontFace: t.body, fontSize: 9, color: ink, margin: 0, hyperlink: { url: img.page } });
+      if (img) s.addText(img.source === "Unsplash" ? `Photo by ${img.author} on Unsplash` : `${img.author}, ${img.license}`, { x, y: top + ch + 0.45, w: cw, h: 0.3, fontFace: t.body, fontSize: 9, color: ink, margin: 0, hyperlink: { url: img.page } });
     });
     s.addText("Reference images set direction only. Don't use them in final work.", { x: M, y: H - 0.6, w: W - 2 * M, h: 0.3, fontFace: t.body, fontSize: 10, color: ink, margin: 0 });
   }
@@ -208,6 +208,7 @@ function guideSlides(pptx, t, sections) {
 export async function downloadDeck(d, f, sections) {
   const { default: PptxGenJS } = await import("pptxgenjs");
   const t = deckTheme(d, f);
+  if (sections.includes(GUIDE_SECTIONS.moodboard)) markImagesUsed(t.imgs);
   const pptx = new PptxGenJS();
   pptx.layout = "LAYOUT_WIDE";
   pptx.title = `${t.name} deck template`;

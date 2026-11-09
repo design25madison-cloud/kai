@@ -1,3 +1,8 @@
 node_modules
 dist
 .DS_Store
+
+# Local secrets (API keys). Never commit.
+.env
+.env.local
+.env.*.local

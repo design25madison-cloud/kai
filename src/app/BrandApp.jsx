@@ -5,6 +5,7 @@ import { currentUser } from "./accounts.js";
 import { ensureFonts } from "./fonts.js";
 import { flowVals, newMeeting } from "./flow.js";
 import { contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
+import { markImagesUsed, subscribe as onImages } from "./referenceImages.js";
 import { restrictedHits } from "./language.js";
 import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
 
@@ -57,8 +58,10 @@ export default class BrandApp extends Component {
     // Closing the tab mid-change still saves it.
     this._flush = () => { if (this._save) saveNow(this); };
     window.addEventListener('beforeunload', this._flush);
+    // Reference photos arrive from image search after the first render; redraw when they do.
+    this._offImages = onImages(() => this.forceUpdate());
   }
-  componentWillUnmount() { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); clearTimeout(this._a); clearInterval(this._o); window.removeEventListener('beforeunload', this._flush); }
+  componentWillUnmount() { if (this._offImages) this._offImages(); clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); clearTimeout(this._a); clearInterval(this._o); window.removeEventListener('beforeunload', this._flush); }
 
   voiceData(n) {
     const smp = this.sampleState(), sf = smp.f;
@@ -346,7 +349,8 @@ export default class BrandApp extends Component {
         while (imgs.some(x => x[0] === p[0]) && g < pool.length) { n++; p = pool[n % pool.length]; g++; }
         const nn = imgs.map(x => x.slice()); nn[k] = [p[0], p[1], true]; this.setOvAt(i, { images: nn, imgN: n + 1 });
       },
-      pin: () => { const nn = imgs.map(x => x.slice()); nn[k][2] = !nn[k][2]; this.setOvAt(i, { images: nn }); }
+      // Locking a photo is picking it, which Unsplash counts as a use.
+      pin: () => { const nn = imgs.map(x => x.slice()); nn[k][2] = !nn[k][2]; if (nn[k][2]) markImagesUsed([im[0]]); this.setOvAt(i, { images: nn }); }
     }));
     const lightName = names[at('Neutral light')], surfName = names[at('Surface')];
     // Gradients run from the hero color to the accent. The far end is nudged until the hero's
@@ -384,6 +388,7 @@ export default class BrandApp extends Component {
   current() { return this.optionData(this.state.option); }
 
   printDirection(sections) {
+    if (sections.includes('mood') || sections.includes('refs')) markImagesUsed(this.current().imgs.map(x => x[0]));
     this.setState({ printSel: sections, allMenu: false }, () => window.print());
   }
 

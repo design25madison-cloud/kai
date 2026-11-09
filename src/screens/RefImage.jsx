@@ -6,16 +6,25 @@ export default function RefImage({ label }) {
   const image = referenceImage(label);
   return (
     <>
-      {image && <img className="ref-image" src={image.src} alt={label} loading="lazy" title={`${image.author}, ${image.license}`} />}
+      {image && <img className="ref-image" src={image.src} alt={label} loading="lazy" title={image.source === "Unsplash" ? `Photo by ${image.author} on Unsplash` : `${image.author}, ${image.license}`} />}
       <span className={image ? "ref-caption" : undefined}>{label}</span>
     </>
   );
 }
 
-// Required by the photos' licenses wherever they're shown at full detail.
+// Required by the photos' licenses wherever they're shown at full detail. Unsplash asks for
+// exactly "Photo by [name] on Unsplash", with both linked.
 export function RefCredit({ label }) {
   const image = referenceImage(label);
   if (!image) return null;
+  if (image.source === "Unsplash") {
+    return (
+      <span className="ref-credit">
+        Photo by <a href={image.authorUrl} target="_blank" rel="noreferrer">{image.author}</a> on{" "}
+        <a href={image.sourceUrl} target="_blank" rel="noreferrer">Unsplash</a>
+      </span>
+    );
+  }
   return (
     <span className="ref-credit">
       <a href={image.page} target="_blank" rel="noreferrer">{image.author}</a>,{" "}

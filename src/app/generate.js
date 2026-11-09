@@ -8,7 +8,7 @@
 //
 // Everything is deterministic: the same brief always gives the same directions.
 import { ARCHETYPES, ARCHETYPE_BY_ID, TONE_CHIPS } from "./archetypes.js";
-import { referenceImage } from "./referenceImages.js";
+import { curatedImage } from "./referenceImages.js";
 
 // ---------- Color helpers ----------
 
@@ -240,9 +240,9 @@ function buildVoice(mix, v) {
 }
 
 function buildImages(mix) {
-  // Visible slots split by weight, lead first. Labels with a real photo go first within each
-  // archetype; the rest wait in the pool until image search arrives.
-  const order = (a) => a.images.slice().sort((x, y) => (referenceImage(y) ? 1 : 0) - (referenceImage(x) ? 1 : 0));
+  // Visible slots split by weight, lead first. Within each archetype, labels with a hand-picked
+  // photo go first; the rest are found by image search when they're shown.
+  const order = (a) => a.images.slice().sort((x, y) => (curatedImage(y) ? 1 : 0) - (curatedImage(x) ? 1 : 0));
   const lists = mix.map((m) => ({ list: order(ARCHETYPE_BY_ID[m.id]), n: Math.max(1, Math.round(m.w * 6)) }));
   const seen = new Set(), images = [], pool = [];
   lists.forEach(({ list, n }) => {
@@ -253,7 +253,7 @@ function buildImages(mix) {
     });
   });
   while (images.length < 6 && pool.length) images.push(pool.shift());
-  const src = (label) => [label, referenceImage(label) ? "Wikimedia Commons" : "Placeholder"];
+  const src = (label) => [label, curatedImage(label) ? "Wikimedia Commons" : "Search"];
   return { images: images.map(src), imgPool: pool.map(src) };
 }
 
