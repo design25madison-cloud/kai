@@ -24,7 +24,7 @@ export default function PaletteSection({ vm }) {
           </Fragment>
         ))}
       </div>
-      <div className="grid cols-repeat-5-minmax-0-1fr gap-12px">
+      <div className="palette-grid">
         {vm.cur.colors.map((c, i_) => (
           <Fragment key={i_}>
             <div className="flex col gap-6px">

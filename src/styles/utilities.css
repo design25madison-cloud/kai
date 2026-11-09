@@ -176,7 +176,6 @@
 .cols-150px-repeat-3-minmax-0-1fr { grid-template-columns: 150px repeat(3, minmax(0, 1fr)); }
 .cols-repeat-3-minmax-0-1fr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .cols-repeat-4-minmax-0-1fr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.cols-repeat-5-minmax-0-1fr { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .h-10px { height: 10px; }
 .h-110px { height: 110px; }
 .h-120px { height: 120px; }

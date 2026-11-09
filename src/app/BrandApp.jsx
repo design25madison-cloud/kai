@@ -2,7 +2,9 @@ import { Component } from "react";
 import Root from "../screens/Root.jsx";
 import { ALL_SECTIONS, typeScaleOf } from "./exports.js";
 import { currentUser } from "./accounts.js";
+import { ensureFonts } from "./fonts.js";
 import { flowVals, newMeeting } from "./flow.js";
+import { contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
 import { restrictedHits } from "./language.js";
 import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
 
@@ -130,6 +132,7 @@ export default class BrandApp extends Component {
   }
   pkg(n) { return '@fontsource/' + n.toLowerCase().replace(/ /g, '-'); }
 
+  mixHex(a, b, t) { const x = this.rgb(a), y = this.rgb(b); return '#' + x.map((v, k) => Math.round(v + (y[k] - v) * t).toString(16).padStart(2, '0')).join('').toUpperCase(); }
   tint(h, t) { const c = this.rgb(h).map(v => Math.round(v + (255 - v) * t)); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase(); }
   hueToward(h, target, step) { const d = ((target - h + 540) % 360) - 180; return (h + Math.sign(d) * Math.min(step, Math.abs(d)) + 360) % 360; }
   norm(t) {
@@ -148,54 +151,19 @@ export default class BrandApp extends Component {
     return this.hsl2hex(h, Math.max(0, Math.min(100, s)), Math.max(4, Math.min(96, l)));
   }
 
+  // The three directions come from the brief: each is a blend of one to three archetypes
+  // (see generate.js and docs/archetypes.md). Cached until the brief inputs change.
+  generated() {
+    const s = this.state;
+    const key = JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.avoidT]);
+    if (this._genKey !== key) {
+      this._genKey = key;
+      this._gen = generateDirections(s, (hex, t) => this.adjust(hex, t));
+    }
+    return this._gen;
+  }
   opts() {
-    const ROLES = ['Primary', 'Surface', 'Neutral dark', 'Neutral light', 'Accent'];
-    const P = (rows, r) => rows.map((x, k) => [x[0], x[1], ROLES[k], r[k]]);
-    const R0 = [30, 40, 15, 5, 10], R2 = [25, 45, 15, 5, 10];
-    const list = [
-      { name: 'Forged warmth', wordFont: 'Anta', track: 6, display: 'Oxanium', body: 'Barlow', accentIdx: 4,
-        colors: P([['Iron', '#3E1F0E'], ['Sand', '#D8CFC4'], ['Graphite', '#2B2B2B'], ['Khaki', '#CFC3A6'], ['Signal amber', '#F5A623']], R0),
-        alt: [P([['Oxide', '#4A2412'], ['Dune', '#E2D6C6'], ['Charcoal', '#262626'], ['Bone', '#EFE8DC'], ['Ember', '#E8892B']], R0),
-          P([['Bronze', '#5A3519'], ['Clay', '#D9C7B0'], ['Soot', '#1F1F1F'], ['Linen', '#F2ECE2'], ['Brass', '#D9A441']], R0)],
-        words: [['Oxanium', 5], ['Chakra Petch', 4]], types: [['Chakra Petch', 'Barlow'], ['Oxanium', 'IBM Plex Sans']],
-        tone: [['Sturdy', 'heavy'], ['Direct', 'blunt'], ['Precise', 'cold']], headline: 'Built for the load you carry.', micro: 'Saved. Your changes are live.',
-        voices: [{ tone: [['Steady', 'slow'], ['Plain-spoken', 'curt'], ['Exact', 'fussy']], headline: 'Strength you can count on.', micro: 'Done. Everything held.' },
-          { tone: [['Grounded', 'stiff'], ['Confident', 'loud'], ['Clear', 'cold']], headline: 'Made to hold.', micro: 'Saved. Nothing lost.' }],
-        images: [['Rusted metal', 'Wikimedia Commons'], ['Sand ripples', 'Wikimedia Commons'], ['Steel lattice', 'Wikimedia Commons'], ['Container yard', 'Wikimedia Commons'], ['Desert texture', 'Wikimedia Commons'], ['Rowing crew', 'Wikimedia Commons']],
-        imgPool: [['Forged steel', 'Wikimedia Commons'], ['Cast iron', 'Wikimedia Commons'], ['Dune shadows', 'Wikimedia Commons'], ['Weld seam', 'Wikimedia Commons'], ['Ochre wall', 'Wikimedia Commons'], ['Quarry', 'Wikimedia Commons']],
-        reason: 'This is the closest match to your brief. The iron brown and the squared Anta wordmark carry "sturdy" and "industrial," the sand surface keeps the warmth your tone sliders leaned toward, and nothing in it uses the gradients or neon on your avoid list. The amber accent is tuned down to a UI primary that passes AA contrast for button text.',
-        match: ['Sturdy', 'Industrial', 'Precise', 'Leans warm', 'No gradients or neon'],
-        tradeoff: 'Signal amber is loud at full strength, so keep it to accents and use the tuned shade for buttons and links.' },
-      { name: 'Cool alloy', wordFont: 'Chakra Petch', track: 4, display: 'Chakra Petch', body: 'IBM Plex Sans', accentIdx: 4,
-        colors: P([['Slate', '#1F2A33'], ['Mist', '#E3E7EA'], ['Steel', '#5B6B78'], ['Frost', '#F5F7F8'], ['Rust', '#C8553D']], R0),
-        alt: [P([['Navy steel', '#1B2838'], ['Fog', '#E6EAEE'], ['Gunmetal', '#4E5A66'], ['Ice', '#F4F6F8'], ['Copper', '#B8643E']], R0),
-          P([['Graphite blue', '#232C35'], ['Cloud', '#DDE3E8'], ['Pewter', '#6A7682'], ['Snow', '#F7F9FA'], ['Signal red', '#C24A3A']], R0)],
-        words: [['IBM Plex Sans', 3], ['Oxanium', 2]], types: [['IBM Plex Sans', 'IBM Plex Sans'], ['Oxanium', 'Work Sans']],
-        tone: [['Calm', 'passive'], ['Clear', 'clinical'], ['Exact', 'rigid']], headline: 'Clarity at every step.', micro: 'All set. Nothing else needed.',
-        voices: [{ tone: [['Measured', 'dull'], ['Lucid', 'sterile'], ['Calm', 'distant']], headline: 'See every step clearly.', micro: 'Up to date. Nothing needs you.' },
-          { tone: [['Precise', 'rigid'], ['Quiet', 'passive'], ['Direct', 'abrupt']], headline: 'Less noise. More signal.', micro: 'All clear.' }],
-        images: [['Brushed steel', 'Wikimedia Commons'], ['Turbine blades', 'Wikimedia Commons'], ['Concrete wall', 'Wikimedia Commons'], ['Wire mesh', 'Wikimedia Commons'], ['Fog over water', 'Wikimedia Commons'], ['Machined parts', 'Wikimedia Commons']],
-        imgPool: [['Aluminum panel', 'Wikimedia Commons'], ['Glass facade', 'Wikimedia Commons'], ['Overcast harbor', 'Wikimedia Commons'], ['Blueprint', 'Wikimedia Commons'], ['Server aisle', 'Wikimedia Commons'], ['Steel cable', 'Wikimedia Commons']],
-        reason: 'This option matches "precise" best and reads the clearest of the three. It ranks second because it is cooler than the warmth your sliders asked for, and slate and steel are the most expected colors for an industrial brand, so it does less to stand apart.',
-        match: ['Precise', 'Industrial', 'No gradients or neon'],
-        tradeoff: 'Strong for product UI, weaker as a memorable brand. Warming the surface toward sand would close the gap with your brief.' },
-      { name: 'Raw ground', wordFont: 'Archivo Black', track: 2, display: 'Archivo', body: 'Work Sans', accentIdx: 4,
-        colors: P([['Rust', '#9C3D1F'], ['Sand', '#E8DCC8'], ['Ink', '#161616'], ['Paper', '#F7F3EC'], ['Olive', '#6B6A3A']], R2),
-        alt: [P([['Terracotta', '#A4472A'], ['Oat', '#EADFCB'], ['Bark', '#1C1A17'], ['Chalk', '#F6F1E8'], ['Moss', '#5E6B3A']], R2),
-          P([['Brick', '#8E3A22'], ['Wheat', '#E3D3B5'], ['Coal', '#141414'], ['Cream', '#F8F2E6'], ['Sage', '#7A7D52']], R2)],
-        words: [['Archivo', 3], ['Work Sans', 4]], types: [['Archivo Black', 'Work Sans'], ['Archivo', 'Barlow']],
-        tone: [['Grounded', 'rough'], ['Honest', 'plain'], ['Bold', 'loud']], headline: 'Made from the ground up.', micro: 'Done. On to the next one.',
-        voices: [{ tone: [['Earthy', 'rustic'], ['Warm', 'soft'], ['Bold', 'brash']], headline: 'Rooted in the real.', micro: 'Nice work. That is done.' },
-          { tone: [['Honest', 'blunt'], ['Hands-on', 'messy'], ['Solid', 'heavy']], headline: 'Built by hand, built to last.', micro: 'Done and dusted.' }],
-        images: [['Weathered wood', 'Wikimedia Commons'], ['Stone slab', 'Wikimedia Commons'], ['Raw clay', 'Wikimedia Commons'], ['Rust bloom', 'Wikimedia Commons'], ['Dry riverbed', 'Wikimedia Commons'], ['Hand tools', 'Wikimedia Commons']],
-        imgPool: [['Sun-dried brick', 'Wikimedia Commons'], ['Linen weave', 'Wikimedia Commons'], ['Clay pots', 'Wikimedia Commons'], ['Olive grove', 'Wikimedia Commons'], ['Sandstone', 'Wikimedia Commons'], ['Wood grain', 'Wikimedia Commons']],
-        reason: 'This is the most distinctive and earthy option, with the heaviest wordmark. It ranks third because it fits "sturdy" but not "precise," and the weight leans toward a lifestyle brand more than an industrial one.',
-        match: ['Sturdy', 'Leans warm', 'No gradients or neon'],
-        tradeoff: 'Memorable, but the furthest from "precise." Pairing it with a lighter wordmark would bring it closer to the brief.' }
-    ].map(o => Object.assign(o, {
-      palettes: [o.colors].concat(o.alt), words: [[o.wordFont, o.track]].concat(o.words), types: [[o.display, o.body]].concat(o.types),
-      voices: [{ tone: o.tone, headline: o.headline, micro: o.micro }].concat(o.voices)
-    }));
+    const list = this.generated().directions.slice();
     if (this.state.mixBase) list.push(this.state.mixBase);
     return list;
   }
@@ -282,10 +250,10 @@ export default class BrandApp extends Component {
   regenPatch(i, mod, ov) {
     const base = this.opts()[i], lock = ov.lock || {};
     if (mod === 'palette') {
-      const sw = ov.swLock || [], L = base.palettes.length, pv = ov.palV || 0, curPal = base.palettes[pv % L];
-      if ([0, 1, 2, 3, 4].every(k => sw[k])) return null;
-      const hex = [0, 1, 2, 3, 4].map(k => sw[k] ? ((ov.hex && ov.hex[k] != null) ? ov.hex[k] : curPal[k][1]) : null);
-      const names = [0, 1, 2, 3, 4].map(k => sw[k] ? ((ov.names && ov.names[k]) || curPal[k][0]) : null);
+      const sw = ov.swLock || [], L = base.palettes.length, pv = ov.palV || 0, curPal = base.palettes[pv % L], idx = curPal.map((_, k) => k);
+      if (idx.every(k => sw[k])) return null;
+      const hex = idx.map(k => sw[k] ? ((ov.hex && ov.hex[k] != null) ? ov.hex[k] : curPal[k][1]) : null);
+      const names = idx.map(k => sw[k] ? ((ov.names && ov.names[k]) || curPal[k][0]) : null);
       const p = { palV: (pv + 1) % L, hex, names };
       if (!ov.uiFixed) p.uiMix = null;
       return p;
@@ -344,7 +312,16 @@ export default class BrandApp extends Component {
     const at = (role) => base.palettes[0].findIndex(c => c[2] === role);
     const primaryO = shown[at('Primary')], surfaceO = shown[at('Surface')], lightO = shown[at('Neutral light')];
     const darkIdx = shown.reduce((m, h, k) => this.lum(h) < this.lum(shown[m]) ? k : m, 0), darkO = shown[darkIdx];
-    const accent = shown[base.accentIdx], accentName = names[base.accentIdx];
+    // UI primary is tuned from the first accent, unless it would have to be darkened so far it
+    // loses its color (yellows go olive). Then the accent that holds up best is used, or the primary
+    // if none can.
+    const accentIdxs = pal.map((c, k) => k).filter(k => /^Accent/.test(pal[k][2]));
+    let uiIdx = base.accentIdx;
+    if (this.minMix(shown[uiIdx]) > 30) {
+      const bestAccent = accentIdxs.reduce((best, k) => this.minMix(shown[k]) < this.minMix(shown[best]) ? k : best, uiIdx);
+      uiIdx = this.minMix(shown[bestAccent]) <= 45 ? bestAccent : at('Primary');
+    }
+    const accent = shown[uiIdx], accentName = names[uiIdx];
     const uiMix = ov.uiMix != null ? ov.uiMix : this.minMix(accent);
     const ui = ov.uiFixed || this.mix(accent, uiMix / 100), uiR = this.ratio(ui, '#FFFFFF');
     const T = dk
@@ -353,6 +330,7 @@ export default class BrandApp extends Component {
     const wv = base.words[(ov.wordV || 0) % base.words.length], tv = base.types[(ov.typeV || 0) % base.types.length], vv = base.voices[(ov.voiceV || 0) % base.voices.length];
     const wordFont = ov.wordFont || wv[0], track = ov.track != null ? ov.track : wv[1];
     const display = ov.display || tv[0], body = ov.body || tv[1];
+    ensureFonts([wordFont, display, body]);
     const toneArr = ov.tone || vv.tone, headline = ov.headline || vv.headline;
     const tone = toneArr.map((t, k) => ({
       yes: t[0], no: t[1], editing: s.edit === 'voice' && s.option === i,
@@ -371,9 +349,25 @@ export default class BrandApp extends Component {
       pin: () => { const nn = imgs.map(x => x.slice()); nn[k][2] = !nn[k][2]; this.setOvAt(i, { images: nn }); }
     }));
     const lightName = names[at('Neutral light')], surfName = names[at('Surface')];
+    // Gradients run from the hero color to the accent. The far end is nudged until the hero's
+    // text still passes AA on it, so a gradient never costs readability.
+    const look = base.look || null, heroKey = (look && look.hero) || 'primary';
+    let gradientCss = null;
+    if (base.gradient && base.gradient !== 'none') {
+      const bg = { primary: T.primary, deep: T.deep, light: T.light }[heroKey], fg = { primary: T.onPrimary, deep: T.onDeep, light: T.ink }[heroKey];
+      // Try the accents, then the primary, and take the first that passes with a small nudge.
+      // Forcing a color far from its own lightness (yellow darkened for light text) turns to mud.
+      const accents = colors.filter(c => /^Accent/.test(c.role)).map(c => c.show);
+      const candidates = (base.gradient === 'core' ? accents : accents.map(x => this.mixHex(bg, x, 0.35))).concat([T.primary]).filter(x => x.toUpperCase() !== bg.toUpperCase());
+      const step = this.lum(fg) > 0.5 ? -1 : 1;
+      const fit = (hex) => { let e = hexToHsl(hex), n = 0; while (n < 60 && contrast(hslToHex(e), fg) < 4.5) { e = [e[0], e[1], Math.max(0, Math.min(100, e[2] + step))]; n++; } return { e, n }; };
+      const tries = candidates.map(fit);
+      const end = (tries.find(t => t.n <= 12) || tries[tries.length - 1]).e;
+      gradientCss = 'linear-gradient(120deg, ' + bg + ' 0%, ' + hslToHex(end) + ' 100%)';
+    }
     const linkColor = !dk ? ui : (this.ratio(accent, T.light) >= 4.5 ? accent : this.tint(ui, 0.45));
     return Object.assign({
-      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, wordFont, track, trackPx: track + 'px', display, body,
+      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, mix: base.mix || [], look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
       displayPkg: this.pkg(display), bodyPkg: this.pkg(body), colors, palNames: names.join(', '),
       darkName: names[darkIdx], darkO, accent, accentName,
       accentText: this.ratio(accent, T.deep) >= 4.5 ? accent : (dk ? lightO : '#FFFFFF'),
@@ -383,7 +377,7 @@ export default class BrandApp extends Component {
       darkRoles: [{ role: 'Background', name: names[darkIdx] }, { role: 'Text', name: lightName }, { role: 'Wordmark and headings', name: surfName }, { role: 'Buttons', name: 'UI primary' }],
       tone, toneArr, headline, micro: vv.micro, hits: restrictedHits(s.banned, { tone: toneArr, headline, micro: vv.micro }), reason: base.reason, match: base.match, tradeoff: base.tradeoff,
       imgs, imageCards, img0: imgs[0][0], img1: imgs[1][0], img2: imgs[2][0], img3: imgs[3][0], word: (this.state.f.name || 'Name').toUpperCase(),
-      locks: { word: !!lock.word, palette: [0, 1, 2, 3, 4].every(k => swLock[k]), ui: !!ov.uiFixed, type: !!lock.type, voice: !!lock.voice, refs: imgs.every(x => x[2]) },
+      locks: { word: !!lock.word, palette: pal.every((_, k) => swLock[k]), ui: !!ov.uiFixed, type: !!lock.type, voice: !!lock.voice, refs: imgs.every(x => x[2]) },
       lk
     }, T);
   }
@@ -417,10 +411,10 @@ export default class BrandApp extends Component {
     const words = (t.match(/warm|cool|light|dark|bright|bold|mute|soft|deep|vivid|calm/g) || []).map(w => w === 'mute' ? 'muted' : w).filter((x, k, a) => a.indexOf(x) === k);
     if (c.sec === 'palette' || c.sec === 'preview') {
       const before = d.colors.map(x => x.show), after = before.slice(), swLock = (ov.swLock || []).slice();
-      const targets = typeof c.target === 'number' ? [c.target] : [0, 1, 2, 3, 4].filter(k => !swLock[k]);
+      const targets = typeof c.target === 'number' ? [c.target] : before.map((_, k) => k).filter(k => !swLock[k]);
       const nextPal = base.palettes[((ov.palV || 0) + 1 + n) % base.palettes.length];
-      targets.forEach(k => { after[k] = this.adjust(before[k], t) || nextPal[k][1]; swLock[k] = true; });
-      const what = typeof c.target === 'number' ? d.colors[c.target].name : (targets.length === 5 ? 'the whole palette' : 'the unlocked colors');
+      targets.forEach(k => { after[k] = this.adjust(before[k], t) || (nextPal[k] ? nextPal[k][1] : before[k]); swLock[k] = true; });
+      const what = typeof c.target === 'number' ? d.colors[c.target].name : (targets.length === before.length ? 'the whole palette' : 'the unlocked colors');
       const how = words.length ? 'shifted ' + what + ' to read ' + words.join(' and ') + '.' : 'swapped ' + what + ' for the next shade that stays within ' + base.name + '.';
       return { kind: 'colors', summary: 'You asked: "' + c.text + '". I ' + how + ' Changed colors will be locked.', before, after,
         patch: { hex: after, names: d.colors.map(x => x.name), swLock } };
@@ -470,14 +464,13 @@ export default class BrandApp extends Component {
   createMix() {
     const s = this.state, mp = s.mixPick, O = this.opts();
     const dd = [0, 1, 2].map(k => this.optionData(k));
-    const ROLES = ['Primary', 'Surface', 'Neutral dark', 'Neutral light', 'Accent'];
     const uniq = (a) => a.filter((x, k) => a.findIndex(y => JSON.stringify(y) === JSON.stringify(x)) === k);
     const pd = dd[mp.palette], wd = dd[mp.word], td = dd[mp.type], vd = dd[mp.voice], rd = dd[mp.refs];
-    const palNow = pd.colors.map((c, k) => [c.name, c.show, ROLES[k], c.ratio]);
+    const palNow = pd.colors.map((c) => [c.name, c.show, c.role, c.ratio]);
     const L = (k) => 'Option ' + (k + 1);
     const mixBase = {
-      name: 'Your mix', accentIdx: 4,
-      palettes: [palNow].concat(O[mp.palette].palettes.filter(pl => pl.some((c, k) => !pd.colors[k].locked && c[1] !== palNow[k][1]))), words: uniq([[wd.wordFont, wd.track]].concat(O[mp.word].words)),
+      name: 'Your mix', accentIdx: 4, mix: O[mp.palette].mix, look: O[mp.palette].look, gradient: O[mp.palette].gradient,
+      palettes: [palNow].concat(O[mp.palette].palettes.filter(pl => pl.length === palNow.length && pl.some((c, k) => !pd.colors[k].locked && c[1] !== palNow[k][1]))), words: uniq([[wd.wordFont, wd.track]].concat(O[mp.word].words)),
       types: uniq([[td.display, td.body]].concat(O[mp.type].types)), voices: uniq([{ tone: vd.toneArr, headline: vd.headline, micro: vd.micro }].concat(O[mp.voice].voices)),
       images: rd.imgs.map(x => [x[0], x[1]]), imgPool: O[mp.refs].imgPool,
       reason: 'Your own combination: the wordmark from ' + L(mp.word) + ', the palette from ' + L(mp.palette) + ', typography from ' + L(mp.type) + ', imagery from ' + L(mp.refs) + ', and the voice from ' + L(mp.voice) + '. Regenerating a section stays within the direction that piece came from.',

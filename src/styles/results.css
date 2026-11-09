@@ -591,3 +591,10 @@
   flex-direction: column;
   gap: calc(10 * var(--slide-pt));
 }
+
+/* Palette swatches: one row on desktop whatever the accent count (5–7 colors), wrapping on phones. */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 12px;
+}

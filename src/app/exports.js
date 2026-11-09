@@ -38,6 +38,7 @@ export function tokensCss(d, sections = ALL_SECTIONS) {
   const has = (id) => sections.includes(id);
   const blocks = [];
   if (has("palette")) blocks.push(colorTokens(d).map((c) => `  ${c.token}: ${c.hex}; /* ${c.name}, ${c.usage}% of the layout */`).join("\n"));
+  if (has("palette") && d.gradientCss) blocks.push(`  /* Hero and brand moments only. Never behind body text or on controls. */\n  --brand-gradient: ${d.gradientCss};`);
   if (has("ui")) blocks.push(`  /* Buttons and links. White text: ${d.uiRatio}:1 */\n  --ui-primary: ${d.ui};\n  --ui-primary-hover: ${d.uiHover};`);
   const fonts = [];
   if (has("word")) fonts.push(`  --font-wordmark: ${stack(d.wordFont)};`);
@@ -54,6 +55,7 @@ export function tokensJson(d, sections = ALL_SECTIONS) {
     colorTokens(d).forEach((c) => {
       out.color[slug(c.role)] = { $value: c.hex, $type: "color", name: c.name, usagePercent: c.usage };
     });
+    if (d.gradientCss) out.gradient = { $value: d.gradientCss, $type: "gradient", usage: "Hero and brand moments only. Never behind body text or on controls." };
   }
   if (has("ui")) {
     out.ui = {
@@ -129,6 +131,8 @@ export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRou
   if (has("palette")) {
     if ((f.colorDir || "").trim()) rules.push("Color direction from the brief: " + f.colorDir.trim());
     rules.push(`Keep ${d.accentName} (${d.accent}) to accents. Don't use it for buttons or links.`);
+    if (d.gradientCss) rules.push(`Use the brand gradient (\`--brand-gradient\`) only for hero areas and brand moments. Never put it behind body text or on buttons and inputs.`);
+    else rules.push("Don't use gradients. This direction is flat color.");
     rules.push("Don't use brand colors for status. Success, warning, and error colors aren't part of this direction, so ask the designer before adding them.");
   }
   if (rules.length) color.push(rules.map((r) => "- " + r).join("\n"));

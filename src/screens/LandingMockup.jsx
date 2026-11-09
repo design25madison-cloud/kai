@@ -58,8 +58,9 @@ export const LANDING_COPY = {
   rights: "All rights reserved.",
 };
 
-// The template stays the same for every brand. These set how each direction wears it: its corners,
-// weight, and which of its colors the hero sits on. "Your mix" falls back to the template's own look.
+// The template stays the same for every brand. Each direction's lead archetype sets how it wears it
+// (its corners, weight, and which color the hero sits on); see `look` in archetypes.js. These
+// named looks are the fallback for directions saved before archetypes existed.
 const LOOKS = {
   "Forged warmth": { radius: "8px", cardRadius: "20px", weight: 600, hero: "primary", align: "center" },
   "Cool alloy": { radius: "2px", cardRadius: "4px", weight: 500, hero: "deep", align: "start" },
@@ -97,7 +98,7 @@ const STAR = "M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 
 export default function LandingMockup({ vm, expanded = true }) {
   const c = vm.cur;
   const copy = LANDING_COPY;
-  const look = LOOKS[c.name] || DEFAULT_LOOK;
+  const look = c.look || LOOKS[c.name] || DEFAULT_LOOK;
   const photo = (k) => c.imgs[k % c.imgs.length][0];
   const eyebrow = c.tone.map((t) => `${t.yes}.`).join(" ");
   const style = {
@@ -106,6 +107,7 @@ export default function LandingMockup({ vm, expanded = true }) {
     "--m-weight": look.weight,
     "--m-hero-align": look.align,
     ...HERO_COLORS[look.hero],
+    ...(c.gradientCss ? { "--h-bg": c.gradientCss } : {}),
   };
   // Alternates photos with the brand's own colors, so the fan shows the system at a glance.
   const fan = [
