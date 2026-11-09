@@ -239,20 +239,31 @@ function buildVoice(mix, v) {
   return { tone: tone.map((t) => t.slice()), headline: pick(lead.voice.headlines, v), micro: pick(lead.voice.micro, v) };
 }
 
-function buildImages(mix) {
-  // Visible slots split by weight, lead first. Within each archetype, labels with a hand-picked
-  // photo go first; the rest are found by image search when they're shown.
-  const order = (a) => a.images.slice().sort((x, y) => (curatedImage(y) ? 1 : 0) - (curatedImage(x) ? 1 : 0));
-  const lists = mix.map((m) => ({ list: order(ARCHETYPE_BY_ID[m.id]), n: Math.max(1, Math.round(m.w * 6)) }));
-  const seen = new Set(), images = [], pool = [];
-  lists.forEach(({ list, n }) => {
-    list.forEach((label) => {
-      if (seen.has(label)) return;
-      seen.add(label);
-      (images.length < 6 && list.indexOf(label) < n ? images : pool).push(label);
-    });
-  });
-  while (images.length < 6 && pool.length) images.push(pool.shift());
+function buildImages(mix, offset, shown) {
+  // Six slots shared by weight and interleaved (lead, second, lead…), so the first few photos,
+  // the ones Compare and the moodboard show, already read as the blend.
+  // Within each archetype, hand-picked photos come first. Photos an earlier option already shows
+  // go to the back, and an option sharing its lead with an earlier one starts further down the
+  // lead's list, so no two options open on the same photos.
+  const order = (a, k) => {
+    const list = a.images.slice().sort((x, y) => (curatedImage(y) ? 1 : 0) - (curatedImage(x) ? 1 : 0));
+    const start = k === 0 ? (offset * 3) % list.length : 0;
+    const rotated = list.slice(start).concat(list.slice(0, start));
+    return rotated.filter((l) => !shown.has(l)).concat(rotated.filter((l) => shown.has(l)));
+  };
+  const queues = mix.map((m, k) => order(ARCHETYPE_BY_ID[m.id], k));
+  const taken = mix.map(() => 0);
+  const seen = new Set(), images = [];
+  for (let slot = 0; slot < 6; slot++) {
+    // Largest remainder: the archetype furthest behind its share goes next.
+    const ranked = mix.map((m, k) => k).sort((x, y) => (mix[y].w * (slot + 1) - taken[y]) - (mix[x].w * (slot + 1) - taken[x]));
+    for (const k of ranked) {
+      const label = queues[k].find((l) => !seen.has(l));
+      if (label) { seen.add(label); images.push(label); taken[k]++; break; }
+    }
+  }
+  const pool = [...new Set(queues.flat())].filter((l) => !seen.has(l));
+  images.slice(0, 4).forEach((l) => shown.add(l));
   const src = (label) => [label, curatedImage(label) ? "Wikimedia Commons" : "Search"];
   return { images: images.map(src), imgPool: pool.map(src) };
 }
@@ -292,7 +303,7 @@ function explain(mix, rank, ctx) {
   return { name: names.join(" + "), reason: `${opening} ${reasons.join(" ")} ${standing}`, match, tradeoff };
 }
 
-function direction(mix, rank, offset, ctx) {
+function direction(mix, rank, offset, ctx, shown) {
   const lead = ARCHETYPE_BY_ID[mix[0].id];
   const second = mix[1] && ARCHETYPE_BY_ID[mix[1].id];
   // Three variants of every module, used by Regenerate. An option that shares its lead with an
@@ -302,7 +313,7 @@ function direction(mix, rank, offset, ctx) {
   const words = vs.map((v) => pick(lead.words, v).slice());
   const types = vs.map((v) => [pick(lead.display, v), second && mix[1].w >= 0.3 ? pick(second.body, v) : pick(lead.body, v)]);
   const voices = vs.map((v) => buildVoice(mix, v));
-  const { images, imgPool } = buildImages(mix);
+  const { images, imgPool } = buildImages(mix, offset, shown);
   const text = explain(mix, rank, ctx);
   return {
     ...text,
@@ -327,12 +338,13 @@ export function generateDirections(state, adjust) {
   const ranked = score(state);
   const picked = blends(ranked);
   const leads = {};
+  const shown = new Set(); // Photos earlier options open on, so later ones pick others.
   return {
     ranked,
     directions: picked.map((mix, rank) => {
       const offset = leads[mix[0].id] || 0;
       leads[mix[0].id] = offset + 1;
-      return direction(mix, rank, offset, ctx);
+      return direction(mix, rank, offset, ctx, shown);
     }),
   };
 }

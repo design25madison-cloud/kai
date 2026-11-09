@@ -38,7 +38,7 @@ export default function CompareView({ vm }) {
           {vm.cols.map((col, i_) => (
             <Fragment key={i_}>
               <div className="p-16px bd-t-1px-solid-divider bd-l-1px-solid-divider flex col gap-10px minw-0">
-                <div className="flex h-48px r-6px of-hidden">
+                <div className="flex h-48px r-6px of-hidden brand-ui">
                   {col.colors.map((c, i_) => (
                     <Fragment key={i_}>
                       <span style={{ flex: c.ratio, background: c.show }} />
@@ -46,16 +46,13 @@ export default function CompareView({ vm }) {
                   ))}
                 </div>
                 <span className="t-12px c-ink-2">{col.palNames}</span>
+                {/* UI primary comes with the palette, so it's shown here as a swatch, not a button
+                    sample that would look like the Use this control below it. */}
+                <span className="t-12px c-ink-2 flex items-center gap-6px">
+                  <span className="compare-ui-dot" style={{ background: col.ui }} aria-hidden="true" />
+                  UI primary {col.ui} · {col.uiRatio}:1 · {col.passLabel}
+                </span>
                 <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-1 t-12px" type="button" onClick={col.pk.palette.pick} aria-pressed={col.pk.palette.on} style={{ background: col.pk.palette.bg, color: col.pk.palette.fg }}>{col.pk.palette.label}</button>
-              </div>
-            </Fragment>
-          ))}
-          <div className="p-16px bd-t-1px-solid-divider t-13px w-600">UI primary</div>
-          {vm.cols.map((col, i_) => (
-            <Fragment key={i_}>
-              <div className="p-16px bd-t-1px-solid-divider bd-l-1px-solid-divider flex col gap-10px minw-0">
-                <span className="self-flex-start p-8px-14px r-6px c-bg t-13px" style={{ background: col.ui }}>Button</span>
-                <span className="t-12px c-ink-2">{col.uiRatio}:1 · {col.passLabel}. Comes with the palette.</span>
               </div>
             </Fragment>
           ))}

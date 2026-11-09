@@ -598,3 +598,11 @@
   grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
   gap: 12px;
 }
+
+/* UI primary swatch in Compare's palette row. */
+.compare-ui-dot {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border-radius: var(--radius-full);
+}
