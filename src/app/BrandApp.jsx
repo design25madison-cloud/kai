@@ -375,7 +375,7 @@ export default class BrandApp extends Component {
     }
     const linkColor = !dk ? ui : (this.ratio(accent, T.light) >= 4.5 ? accent : this.tint(ui, 0.45));
     return Object.assign({
-      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, mix: base.mix || [], layers: base.layers || [], primaryReasons: base.primaryReasons || [], dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
+      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, recommended: !!base.recommended, fit: base.fit || '', mix: base.mix || [], layers: base.layers || [], primaryReasons: base.primaryReasons || [], dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
       displayPkg: this.pkg(display), bodyPkg: this.pkg(body), colors, palNames: names.join(', '),
       darkName: names[darkIdx], darkO, accent, accentName,
       accentText: this.ratio(accent, T.deep) >= 4.5 ? accent : (dk ? lightO : '#FFFFFF'),
@@ -562,7 +562,7 @@ export default class BrandApp extends Component {
 
     const cur = this.current();
     const OPT = this.opts();
-    const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: k === 0, on: s.option === k, bd: s.option === k ? 'var(--color-action)' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? 'var(--color-ink)' : 'var(--color-ink)', pick: () => set({ option: k, edit: null, draft: null, view: 'dir' }) }));
+    const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: !!o.recommended, on: s.option === k, bd: s.option === k ? 'var(--color-action)' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? 'var(--color-ink)' : 'var(--color-ink)', pick: () => set({ option: k, edit: null, draft: null, view: 'dir' }) }));
 
     const SECTION_IDS = ['word', 'palette', 'ui', 'type', 'refs', 'preview', 'voice'];
     const secNames = { word: 'Wordmark', palette: 'Palette', ui: 'UI primary', type: 'Typography', refs: 'Reference imagery', preview: 'Visualization', voice: 'Voice and tone' };
@@ -659,7 +659,7 @@ export default class BrandApp extends Component {
     const pickCell = (row, k) => { const onn = mp[row] === k; return { on: onn, label: onn ? 'Picked' : 'Use this', bg: onn ? 'var(--color-action)' : '#FFFFFF', fg: onn ? '#FFFFFF' : 'var(--color-ink)', pick: () => set({ mixPick: Object.assign({}, mp, { [row]: k }) }) }; };
     const cols = [0, 1, 2].map(k => {
       const d = this.optionData(k), pk = {}; ROWS.forEach(r => { pk[r[0]] = pickCell(r[0], k); });
-      return Object.assign({}, d, { rec: k === 0, imgTop: d.imageCards.slice(0, 3), open: () => set({ option: k, view: 'dir' }), pk });
+      return Object.assign({}, d, { rec: d.recommended, imgTop: d.imageCards.slice(0, 3), open: () => set({ option: k, view: 'dir' }), pk });
     });
     const mixSummary = ROWS.map(r => r[1] + ' from Option ' + (mp[r[0]] + 1)).join(' · ');
 
@@ -761,14 +761,14 @@ export default class BrandApp extends Component {
       generate: () => {
         if (missing > 0) return;
         set({ screen: 'gen', genStep: 0 }); clearInterval(this._g);
-        this._g = setInterval(() => { const n = this.state.genStep + 1; if (n > 4) { clearInterval(this._g); this.setState({ screen: 'out', option: 0, ov: this.followOv(), mixBase: null, comments: [], view: 'dir', draft: null, darkPrev: false, cmode: false, meeting: Object.assign({}, this.state.meeting, { marks: {}, notice: null, agreedRound: null }) }); } else { this.setState({ genStep: n }); } }, 650);
+        this._g = setInterval(() => { const n = this.state.genStep + 1; if (n > 4) { clearInterval(this._g); const rec = this.generated().recommended || 0; this.setState({ screen: 'out', option: rec, mixPick: { word: rec, palette: rec, type: rec, refs: rec, voice: rec }, ov: this.followOv(), mixBase: null, comments: [], view: 'dir', draft: null, darkPrev: false, cmode: false, meeting: Object.assign({}, this.state.meeting, { marks: {}, notice: null, agreedRound: null }) }); } else { this.setState({ genStep: n }); } }, 650);
       },
       genSteps,
       backToBrief: () => set({ screen: 'brief', step: 5 }),
       startOver: () => { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); this.setState(Object.assign(JSON.parse(JSON.stringify(this._init)), { screen: 'welcome', user: s.user, projectId: s.projectId, projects: s.projects, saveStatus: s.saveStatus })); },
       optTabs, allMenu: s.allMenu, toggleAll: () => set({ allMenu: !s.allMenu }),
       cur, wordUpper: (f.name || 'Name').toUpperCase(),
-      whyTitle: s.option === 0 ? 'Why we recommend Option 1' : (s.option === 3 ? 'About your custom mix' : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
+      whyTitle: s.option === 3 ? 'About your custom mix' : (cur.recommended ? 'Why we recommend Option ' + (s.option + 1) : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
       matchLabel: s.option === 3 ? 'Built from' : 'Matches your brief on',
       sec, fonts: ['Anta', 'Oxanium', 'Chakra Petch', 'Archivo Black', 'Archivo', 'Barlow', 'IBM Plex Sans', 'Work Sans'],
       setWordFont: (e) => this.lockOv('word', { wordFont: e.target.value, track: cur.track }), setTrack: (e) => this.lockOv('word', { track: Number(e.target.value), wordFont: cur.wordFont }),

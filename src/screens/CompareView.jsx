@@ -106,6 +106,7 @@ export default function CompareView({ vm }) {
                     </Fragment>
                   ))}
                 </div>
+                {col.fit && <span className="t-13px lh-1_45">{col.fit}</span>}
                 <span className="t-12px c-ink-2 lh-1_45">{col.tradeoff}</span>
               </div>
             </Fragment>

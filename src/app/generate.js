@@ -16,6 +16,7 @@ import { imageColors } from "./imageColors.js";
 import { curatedImage } from "./referenceImages.js";
 
 export { hexToOklch, oklchToHex };
+import { restrictedHits } from "./language.js";
 import { AUDIENCES, audienceOf, competitorColorsOf, industryOf, nameCuesOf, stanceOf } from "./layers.js";
 
 // ---------- Color helpers ----------
@@ -287,6 +288,9 @@ function buildPalette(mix, v, ctx) {
 
   // ---- From here the palette is built in OKLCH, around the primary, so every color relates. ----
 
+  // Category and competitor moves can land on a color the founder ruled out: check again.
+  for (let g = 0; g < 6 && ctx.avoidC.some((x) => rgbDistance(hslToHex(primary), x) < 70); g++) primary = turnTo(primary, 30);
+
   // Audience: field users get AAA contrast on the primary; everyone else AA.
   const target = L.profile ? L.profile.contrast : 4.5;
   let P = hexToOklch(hslToHex(primary));
@@ -550,11 +554,8 @@ function explain(mix, rank, ctx, firstLead) {
   design += ".";
 
   // 4. Where it sits among the three options.
-  const standing = rank === 0
-    ? "It's the closest read of your brief."
-    : lead.id === firstLead
-      ? `Same foundation as Option 1, ${second ? second.flavor : "on its own"} instead.`
-      : rank === 1 ? `A different emphasis on the same brief, with ${lead.name} leading.` : `The wildcard: ${lead.name} leading, a less expected answer to the same brief.`;
+  // Where it sits among the three is added after scoring (see standingFor), because the
+  // recommendation goes to the best fit, not to the first option.
 
   const match = [...new Set(mix.flatMap((m) => m.why))].filter((x) => !/^(Your |Common in )/.test(x)).slice(0, 4);
   if (ctx.noGradients) match.push("No gradients");
@@ -582,7 +583,7 @@ function explain(mix, rank, ctx, firstLead) {
   if (L.profile) layers.push({ layer: "Audience", text: `For ${L.profile.label}: ${L.profile.effect}.` });
   if (L.cue) layers.push({ layer: "Name", text: `"${L.cue.word}" in the name brings ${L.cue.gist} into the palette and imagery, and suggests ${L.cue.wordmark} for the wordmark.` });
   if (L.industry) match.unshift(L.industry.label.split(" and ")[0]);
-  return { name: directionName(mix), reason: `${opening} ${evidence} ${design} ${standing}`, match: match.slice(0, 6), tradeoff, layers };
+  return { name: directionName(mix), reasonBody: `${opening} ${evidence} ${design}`, match: match.slice(0, 6), tradeoff, layers };
 }
 
 // Tone, as three color dials from the system map (each -1…1):
@@ -693,6 +694,116 @@ function dialFor(mix, ctx) {
   return Math.round(clamp(d, 0.1, 0.95) * 100) / 100;
 }
 
+// ---------- 4. Scoring ----------
+// Each finished option is checked against the brief: does it keep the founder's colors, stay
+// clear of what they want to avoid and of competitors, match the tone, sit where positioning
+// says, and keep the archetype fit? Points rank the options; only words are ever shown.
+
+const labDist = (a, b) => {
+  const ab = (c) => [c[0], c[1] * Math.cos((c[2] * Math.PI) / 180), c[1] * Math.sin((c[2] * Math.PI) / 180)];
+  const [x, y] = [ab(a), ab(b)];
+  return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+};
+const isWarm = (H) => H < 110 || H > 330; // OKLCH: reds, oranges, yellows
+
+function scoreDirection(d, mixPts, ctx) {
+  const pal = d.palettes[0], lch = pal.map((r) => hexToOklch(r[1]));
+  const primary = lch[0], accents = lch.slice(4);
+  const strong = [], weak = [];
+  let pts = 2 * mixPts; // Personality: how well the archetypes fit the brief (0–2).
+  if (mixPts >= 0.9) strong.push({ w: 1.5, text: "fits the character of your brief most closely" });
+
+  // Seeds: kept colors should actually be in the palette.
+  (ctx.seeds || []).forEach((sd) => {
+    const near = Math.min(...lch.map((c) => labDist(c, sd.lch)));
+    if (near < 0.06) { pts += 2; strong.push({ w: 2, text: "keeps your colors" }); }
+    else if (near > 0.15) { pts -= 2; weak.push({ w: 2, text: `drifts from your color ${sd.hex}` }); }
+  });
+
+  // Avoid list: nothing close to a color the founder ruled out.
+  ctx.avoidC.forEach((hex) => {
+    const hit = pal.find((r) => rgbDistance(r[1], hex) < 60);
+    if (hit) { pts -= 3; weak.push({ w: 3, text: `has a ${hit[0].toLowerCase()} close to your avoided ${hex}` }); }
+  });
+
+  // Competitors: primary and accents clear of their main colors.
+  const rivals = ctx.layers.competitors;
+  let clash = null;
+  rivals.forEach((c) => {
+    const ch = hexToOklch(c.hex);
+    if (ch[1] < 0.04) return;
+    [primary].concat(accents).forEach((col, k) => {
+      if (!clash && col[1] > 0.04 && Math.abs(hueTurn(col[2], ch[2])) < 30) clash = { c, k };
+    });
+  });
+  if (clash) { pts -= clash.k === 0 ? 3 : 1.5; weak.push({ w: clash.k === 0 ? 3 : 1.5, text: `has ${clash.k === 0 ? "a primary" : "an accent"} close to ${clash.c.name}'s color` }); }
+  else if (rivals.length) { pts += 1; strong.push({ w: 1, text: `stands clear of ${listOf(rivals.map((c) => c.name))}` }); }
+
+  // Tone: does the finished palette read the way the sliders asked?
+  const T = ctx.toneDials, chromatic = [primary].concat(accents).filter((c) => c[1] > 0.04);
+  if (Math.abs(T.temperature) > 0.3 && chromatic.length) {
+    const warmShare = chromatic.filter((c) => isWarm(c[2])).length / chromatic.length;
+    const ok = T.temperature > 0 ? warmShare >= 0.5 : warmShare <= 0.5;
+    pts += ok ? 1 : -1.5;
+    (ok ? strong : weak).push({ w: ok ? 1 : 1.5, text: ok ? `reads as ${T.temperature > 0 ? "warm" : "cool"} as you asked` : `reads ${T.temperature > 0 ? "cooler" : "warmer"} than your tone` });
+  }
+  if (Math.abs(T.loudness) > 0.3 && accents.length) {
+    const vivid = Math.max(...accents.map((c) => c[1])) > 0.13;
+    const ok = T.loudness > 0 ? vivid : !vivid;
+    pts += ok ? 1 : -1;
+    (ok ? strong : weak).push({ w: 1, text: ok ? (T.loudness > 0 ? "has the energy you asked for" : "stays quiet, as you asked") : (T.loudness > 0 ? "is quieter than your tone" : "is louder than your tone") });
+  }
+  if (Math.abs(T.sharpness) > 0.3) {
+    // Serious reads as a deep primary, playful as a lighter one; the middle ground passes both.
+    const ok = T.sharpness > 0 ? primary[0] < 0.52 : primary[0] > 0.4;
+    pts += ok ? 0.5 : -0.5;
+    if (!ok) weak.push({ w: 0.5, text: T.sharpness > 0 ? "is lighter than a serious tone suggests" : "is heavier than a playful tone suggests" });
+  }
+
+  // Positioning: distance from the category's usual colors should match the boldness setting.
+  const ind = ctx.layers.industry;
+  if (ind && primary[1] > 0.04) {
+    const hslHue = hexToHsl(pal[0][1])[0];
+    const away = Math.min(...ind.hues.map((h) => Math.abs(hueTurn(hslHue, h))));
+    const short = ind.label.split(" and ")[0].toLowerCase();
+    if (d.dial >= 0.65) {
+      const ok = away > 45;
+      pts += ok ? 1.5 : -1.5;
+      (ok ? strong : weak).push({ w: 1.5, text: ok ? `breaks from ${short} convention like a challenger should` : `looks too much like ${short} convention for a challenger` });
+    } else if (d.dial < 0.35) {
+      const nod = pal.slice(4).some((r) => ind.hues.some((h) => Math.abs(hueTurn(hexToHsl(r[1])[0], h)) < 25));
+      pts += nod ? 1 : 0;
+      if (nod) strong.push({ w: 1, text: `feels at home in ${short}` });
+    }
+  }
+
+  // Words the founder ruled out shouldn't appear in the voice.
+  if (restrictedHits(ctx.banned || [], d.voices[0]).length) { pts -= 2; weak.push({ w: 2, text: "uses a word you ruled out" }); }
+
+  strong.sort((x, y) => y.w - x.w);
+  weak.sort((x, y) => y.w - x.w);
+  return { pts, strong: strong.map((x) => x.text), weak: weak.map((x) => x.text) };
+}
+
+// One sentence on fit, in words: the two biggest strengths and the biggest thing to watch.
+function fitLine(sc) {
+  const s2 = [...new Set(sc.strong)].slice(0, 2), w1 = sc.weak[0];
+  if (!s2.length && !w1) return "";
+  if (!s2.length) return `Watch: it ${w1}.`;
+  return `It ${listOf(s2)}${w1 ? `; watch: it ${w1}` : ""}.`;
+}
+
+function standingFor(d, k, rec, dirs) {
+  const leadOf = (x) => x.mix[0].id;
+  if (k === rec) return "It's the strongest fit for your brief.";
+  // Same lead as the recommendation, or as an earlier option: say so, and what's different.
+  const twin = leadOf(d) === leadOf(dirs[rec]) ? rec : dirs.findIndex((x, j) => j < k && j !== rec && leadOf(x) === leadOf(d));
+  if (twin >= 0) return `Same foundation as Option ${twin + 1}, ${d.mix[1] ? ARCHETYPE_BY_ID[d.mix[1].id].flavor : "on its own"} instead.`;
+  return dirs.filter((_, j) => j !== rec).indexOf(d) === 0
+    ? `A different emphasis on the same brief, with ${d.mix[0].name} leading.`
+    : `The wildcard: ${d.mix[0].name} leading, a less expected answer to the same brief.`;
+}
+
 // ---------- Entry point ----------
 
 export function generateDirections(state, adjust) {
@@ -702,6 +813,7 @@ export function generateDirections(state, adjust) {
     noNeon: (state.avoidT || []).includes("Neon"),
     adjust: state.f.colorDir ? (hex) => adjust(hex, state.f.colorDir) : null,
     sl: state.sl,
+    banned: state.banned || [],
     tone: state.tone || [],
     toneDials: toneDials(state.sl, state.tone || []),
     keepStrength: 1 - (state.keep == null ? 40 : state.keep) / 100,
@@ -729,12 +841,21 @@ export function generateDirections(state, adjust) {
   ctx.firstLead = picked[0][0].id;
   const leads = {};
   const shown = new Set(); // Photos earlier options open on, so later ones pick others.
-  return {
-    ranked,
-    directions: picked.map((mix, rank) => {
-      const offset = leads[mix[0].id] || 0;
-      leads[mix[0].id] = offset + 1;
-      return direction(mix, rank, offset, ctx, shown);
-    }),
-  };
+  const dirs = picked.map((mix, rank) => {
+    const offset = leads[mix[0].id] || 0;
+    leads[mix[0].id] = offset + 1;
+    return direction(mix, rank, offset, ctx, shown);
+  });
+  // Score the finished options and recommend the best fit. Ties keep the generated order.
+  const top = ranked[0].pts || 1;
+  const fitPts = (mix) => mix.reduce((n, m) => n + m.w * ((ranked.find((r) => r.id === m.id) || {}).pts || 0), 0) / top;
+  const scores = dirs.map((d, k) => scoreDirection(d, fitPts(picked[k]), ctx));
+  const rec = scores.reduce((best, sc, k) => (sc.pts > scores[best].pts + 0.01 ? k : best), 0);
+  dirs.forEach((d, k) => {
+    d.recommended = k === rec;
+    d.fit = fitLine(scores[k]);
+    d.reason = `${d.reasonBody} ${standingFor(d, k, rec, dirs)}`;
+    if (d.fit) d.layers.unshift({ layer: "Fit", text: d.fit });
+  });
+  return { ranked, directions: dirs, recommended: rec };
 }
