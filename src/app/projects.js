@@ -1,5 +1,6 @@
-// Log in, the project list, and autosave. Storage itself lives in accounts.js.
-import * as accounts from "./accounts.js";
+// Log in, the project list, and autosave. Storage itself lives in accounts.js (this browser) or
+// accountsRemote.js (the hosted server); store.js picks one.
+import accounts from "./store.js";
 
 // Interface state that belongs to this visit, not to the project, so it's never saved.
 const TRANSIENT = new Set([
@@ -84,7 +85,8 @@ export function projectVals(app) {
   const toProjects = () =>
     saveNow(app)
       .then(() => accounts.listProjects(user.id))
-      .then((projects) => app.setState(fresh(app, { screen: "projects", projects })));
+      .then((projects) => app.setState(fresh(app, { screen: "projects", projects })))
+      .catch(fail);
 
   const cards = (s.projects || []).map((p) => ({
     id: p.id,
@@ -127,7 +129,7 @@ export function projectVals(app) {
     submitAuth,
     leaveSplash: () => {
       if (s.screen !== "splash") return;
-      if (user) accounts.listProjects(user.id).then((projects) => set({ projects, screen: "projects" }));
+      if (user) accounts.listProjects(user.id).then((projects) => set({ projects, screen: "projects" })).catch(fail);
       else set({ screen: "auth" });
     },
     userEmail: user ? user.email : "",

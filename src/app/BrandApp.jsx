@@ -1,7 +1,7 @@
 import { Component } from "react";
 import Root from "../screens/Root.jsx";
 import { ALL_SECTIONS, typeScaleOf } from "./exports.js";
-import { currentUser } from "./accounts.js";
+import accounts from "./store.js";
 import { ensureFonts } from "./fonts.js";
 import { flowVals, newMeeting } from "./flow.js";
 import { contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
@@ -26,7 +26,7 @@ export default class BrandApp extends Component {
       meeting: newMeeting(), handoffFile: 'claude', printSel: ALL_SECTIONS, exportSel: ALL_SECTIONS, exportFormat: 'pdf'
     };
     this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
-    Object.assign(this.state, { user: currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
+    Object.assign(this.state, { user: accounts.currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
     this._init = JSON.parse(JSON.stringify(this.state));
   }
   // A new screen or step opens at its top, not wherever the last one was scrolled to.
