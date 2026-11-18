@@ -6,3 +6,8 @@ dist
 .env
 .env.local
 .env.*.local
+
+# Terraform: local state and real variable values
+.terraform/
+*.tfvars
+*.tfstate*

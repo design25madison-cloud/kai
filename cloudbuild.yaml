@@ -1,0 +1,73 @@
+# Test, build and deploy this git revision to Cloud Run.
+# Used by the manual Cloud Build trigger (pick a branch in the console) and by `gcloud builds submit`.
+# Nothing deploys on push.
+substitutions:
+  _REGION: us-central1
+  _AR_REPOSITORY: kai
+  _SERVICE: kai
+
+steps:
+  # Server tests, against a throwaway Postgres. A failure here stops the deploy.
+  - id: tests
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["-"]
+    entrypoint: bash
+    args:
+      - -euo
+      - pipefail
+      - -c
+      - |
+        docker run -d --name kai-test-pg --network cloudbuild -e POSTGRES_HOST_AUTH_METHOD=trust postgres:16
+        until docker exec kai-test-pg pg_isready -h 127.0.0.1 -U postgres -q; do sleep 1; done
+        docker run --rm --network cloudbuild -v /workspace:/app -w /app \
+          -e PGHOST=kai-test-pg -e PGUSER=postgres -e PGDATABASE=postgres \
+          node:24-slim sh -c 'npm ci && npm test'
+
+  - id: terraform-validate
+    name: hashicorp/terraform:1.9
+    waitFor: ["-"]
+    entrypoint: sh
+    args:
+      - -c
+      - terraform -chdir=infra init -backend=false -input=false && terraform -chdir=infra validate
+
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    waitFor: [tests, terraform-validate]
+    env:
+      - DOCKER_BUILDKIT=1
+    entrypoint: bash
+    args:
+      - -euo
+      - pipefail
+      - -c
+      - |
+        image='${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/app'
+        docker pull "$$image:cache" || true
+        docker build \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from "$$image:cache" \
+          --tag "$$image:$BUILD_ID" \
+          --tag "$$image:cache" \
+          .
+        docker push "$$image:$BUILD_ID"
+        docker push "$$image:cache"
+
+  # Only the image changes. Terraform owns the service's settings, so a deploy can't overwrite them.
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    waitFor: [build]
+    entrypoint: bash
+    args:
+      - -euo
+      - pipefail
+      - -c
+      - |
+        gcloud run services update '${_SERVICE}' \
+          --project '$PROJECT_ID' \
+          --region '${_REGION}' \
+          --image '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/app:$BUILD_ID' \
+          --quiet
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars (git ignores it) and fill in. Real values never go in the repository.
+project_id = "REPLACE_WITH_PROJECT_ID"
+
+# Everyone at the Workspace domain can sign in. Add other whole domains or named people here.
+# iap_domains = ["example.com"]
+# iap_users   = ["person@example.edu"]
+
+# After adding a version to the kai-unsplash-access-key secret:
+# unsplash_key_set = true
+
+# After connecting the Cloud Build GitHub App to the repository:
+# enable_branch_deploy_trigger = true
