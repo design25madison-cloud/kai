@@ -1,4 +1,4 @@
-# Two identities: one the app runs as, one Cloud Build deploys as.
+# Three identities: one the app runs as, one the converter runs as, one Cloud Build deploys as.
 
 resource "google_service_account" "app" {
   project      = var.project_id
@@ -74,4 +74,33 @@ resource "google_storage_bucket_iam_member" "build_reads_source" {
   bucket = "${var.project_id}_cloudbuild"
   role   = "roles/storage.objectViewer"
   member = google_service_account.build.member
+}
+
+# --- Materials: the app stores uploads, calls Gemini, and calls the converter.
+
+resource "google_storage_bucket_iam_member" "app_uploads" {
+  bucket = google_storage_bucket.uploads.name
+  role   = "roles/storage.objectUser"
+  member = google_service_account.app.member
+}
+
+resource "google_project_iam_member" "app_ai_user" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = google_service_account.app.member
+}
+
+# The converter opens files people upload, so it gets no roles at all.
+resource "google_service_account" "converter" {
+  project      = var.project_id
+  account_id   = "${local.name_prefix}-converter"
+  display_name = "KAI ${var.environment} converter"
+
+  depends_on = [google_project_service.required]
+}
+
+resource "google_service_account_iam_member" "build_uses_converter" {
+  service_account_id = google_service_account.converter.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = google_service_account.build.member
 }

@@ -21,7 +21,7 @@ export default function StepGeneral({ vm }) {
         </div>
       )}
       <div className="flex col gap-8px">
-        <label className="t-13px flex gap-8px items-center" htmlFor="f-name">Working name{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+        <label className="t-13px flex gap-8px items-center" htmlFor="f-name">Working name{vm.sug.name && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-name" name="name" value={vm.f.name} onChange={vm.onField} placeholder="What are you calling it for now?" />
         <button className="self-flex-start p-4px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.toggleLegal} aria-expanded={vm.legalOpen}>{vm.legalLabel}</button>
         {vm.legalOpen && (
@@ -33,7 +33,7 @@ export default function StepGeneral({ vm }) {
       </div>
       <div className="flex col gap-8px">
         <div className="flex justify-space-between items-center">
-          <label className="t-13px flex gap-8px items-center" htmlFor="f-desc">Company description{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+          <label className="t-13px flex gap-8px items-center" htmlFor="f-desc">Company description{vm.sug.desc && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         </div>
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-desc" name="desc" value={vm.f.desc} onChange={vm.onField} rows="2" placeholder="A short, plain-language description of what the company does and for whom." />
       </div>

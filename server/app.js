@@ -1,6 +1,8 @@
 // The hosted server: saved projects in Postgres, the Unsplash proxy, and the built app's files.
 // Every project query filters by owner, so people only ever see their own projects.
 import express from "express";
+import { addEditRoutes } from "./edit.js";
+import { MATERIALS_SCHEMA, addMaterialsRoutes, projectObjects, removeObjects } from "./materials.js";
 
 export const SCHEMA = `
   create table if not exists projects (
@@ -14,7 +16,7 @@ export const SCHEMA = `
     updated_at timestamptz not null default now()
   );
   create index if not exists projects_owner on projects (owner, updated_at desc);
-`;
+${MATERIALS_SCHEMA}`;
 // shortcut: the schema is applied at startup with "if not exists", which can't change a column. Adopt a migration tool at the first schema change.
 
 const COLS = `id, name, renamed, summary,
@@ -46,8 +48,9 @@ function parseSave(body) {
   return { data, name: cleanName(name) || null, rest };
 }
 
-// identify(req) returns the signed-in person's email, or null. unsplashKey is optional.
-export function createApp({ pool, identify, unsplashKey, staticDir }) {
+// identify(req) returns the signed-in person's email, or null. unsplashKey is optional. cloud is the
+// Google Cloud client from cloud.js; without it, uploads and filling from materials answer 503.
+export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
   const app = express();
   const api = express.Router();
 
@@ -119,9 +122,15 @@ export function createApp({ pool, identify, unsplashKey, staticDir }) {
   });
 
   api.delete("/projects/:id", async (req, res) => {
+    // The file rows go with the project (cascade), so collect what they point at first.
+    const objects = cloud ? await projectObjects(pool, req.params.id, req.email) : [];
     await pool.query(`delete from projects where id = $1 and owner = $2`, [req.params.id, req.email]);
+    if (objects.length) await removeObjects(cloud, objects);
     res.json({});
   });
+
+  addMaterialsRoutes(api, { pool, cloud });
+  addEditRoutes(api, { pool, cloud });
 
   // /api/unsplash/... → api.unsplash.com/... with the key attached, so the key never reaches the browser.
   api.use("/unsplash", async (req, res) => {
@@ -142,7 +151,9 @@ export function createApp({ pool, identify, unsplashKey, staticDir }) {
   app.use((err, req, res, next) => {
     const status = err.status || err.statusCode || 500;
     if (status >= 500) console.error(err);
-    res.status(status).json({ error: status >= 500 ? "Something went wrong on the server." : err.message });
+    const tooLarge = req.path.endsWith("/files") ? "That's over the size limit (25 MB per file)." : "That's too much to save at once.";
+    const message = err.type === "entity.too.large" ? tooLarge : err.message;
+    res.status(status).json({ error: status >= 500 && !err.expose ? "Something went wrong on the server." : message });
   });
 
   return app;

@@ -10,8 +10,11 @@ Terraform for the hosted version. It follows the Richard project's infra (`25Mad
 - **Cloud SQL Postgres 16:** saved projects. It has no public address; Cloud Run reaches it over a private network.
 - **Secret Manager:** containers for the database password and the Unsplash key. Values are added
   outside Terraform, so they never reach its state.
+- **Uploads bucket:** files people add to a project. Private; only the app can read or write it.
+- **Cloud Run service `kai-converter`:** turns PowerPoint and Word uploads into PDFs (`converter/`). It has no access to anything, and only the app may call it.
+- **Gemini access:** the app's service account may call Gemini through Agent Platform. There is no API key.
 - **Artifact Registry `kai`:** container images.
-- **Two service accounts:** one the app runs as, one Cloud Build deploys as.
+- **Three service accounts:** the app, the converter, and Cloud Build.
 - **A manual Cloud Build trigger** (optional): pick a branch, press Run. Nothing deploys on push.
 
 ## First-time setup

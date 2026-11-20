@@ -4,6 +4,9 @@
 // between devices. Every function returns a promise and takes plain data, the way calls to a
 // real server would, so a backend can replace this file without changing the screens.
 
+// Reading uploaded materials needs the hosted server (see accountsRemote.js).
+export const canFill = false;
+
 const USERS = "kai.users";
 const SESSION = "kai.session";
 const projectsKey = (userId) => `kai.projects.${userId}`;

@@ -10,6 +10,8 @@ import { INDUSTRIES } from "./layers.js";
 import { imageColorsVersion, subscribe as onImageColors } from "./imageColors.js";
 import { restrictedHits } from "./language.js";
 import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
+import { loadMaterials, materialVals } from "./materials.js";
+import { editContext, editProposal } from "./edits.js";
 
 export default class BrandApp extends Component {
   constructor(props) {
@@ -23,10 +25,12 @@ export default class BrandApp extends Component {
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
       arts: [], view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
       mixPick: { word: 0, palette: 0, type: 0, refs: 0, voice: 0 }, mixBase: null, keep: 40, opinion: '', oRec: null,
-      meeting: newMeeting(), handoffFile: 'claude', printSel: ALL_SECTIONS, exportSel: ALL_SECTIONS, exportFormat: 'pdf'
+      meeting: newMeeting(), handoffFile: 'claude', printSel: ALL_SECTIONS, exportSel: ALL_SECTIONS, exportFormat: 'claude'
     };
     this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
     Object.assign(this.state, { user: accounts.currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
+    // Materials: pasted notes and which answers were suggested from them are saved with the project; the rest is per visit.
+    Object.assign(this.state, { material: '', sugg: {}, files: [], uploading: '', fillBusy: false, fillError: '' });
     this._init = JSON.parse(JSON.stringify(this.state));
   }
   // A new screen or step opens at its top, not wherever the last one was scrolled to.
@@ -35,6 +39,7 @@ export default class BrandApp extends Component {
     if (s.screen !== prev.screen || s.step !== prev.step || s.view !== prev.view) window.scrollTo(0, 0);
     // Autosave: any change to the open project saves shortly after the last edit.
     if (s.projectId && s.projectId === prev.projectId && projectChanged(prev, s)) scheduleSave(this);
+    if (s.screen === 'start' && (prev.screen !== 'start' || prev.projectId !== s.projectId)) loadMaterials(this);
   }
   blankF() {
     const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
@@ -404,9 +409,26 @@ export default class BrandApp extends Component {
   }
   isPicked(sec, target) { const d = this.state.draft; return !!(d && d.items && d.items.some(x => x.sec === sec && x.target === target)); }
   updComment(id, patch) { this.setState({ comments: this.state.comments.map(c => c.id === id ? Object.assign({}, c, patch) : c) }); }
+  // On the hosted version the server's AI proposes the change. `npm run dev` has no server, so
+  // there it falls back to the keyword rules in propose().
+  // this._asking holds the requests in flight ("project:comment"). A comment saved as 'thinking' with
+  // no request behind it (the page was closed mid-answer) can then be retried instead of sticking.
   applyAI(id) {
-    this.updComment(id, { status: 'thinking' });
-    this._a = setTimeout(() => { const c = this.state.comments.find(x => x.id === id); if (!c) return; this.updComment(id, { status: 'proposed', prop: this.propose(c) }); }, 1100);
+    const c = this.state.comments.find(x => x.id === id); if (!c) return;
+    const pid = this.state.projectId, key = pid + ':' + id, asking = this._asking || (this._asking = new Set());
+    // An answer that arrives after another project was opened is dropped.
+    const done = (patch) => { asking.delete(key); if (this.state.projectId === pid) this.updComment(id, patch); };
+    asking.add(key);
+    this.updComment(id, { status: 'thinking', error: null });
+    if (!accounts.canFill) { this._a = setTimeout(() => { const cc = this.state.comments.find(x => x.id === id); done(cc ? { status: 'proposed', prop: this.propose(cc) } : {}); }, 1100); return; }
+    const i = c.opt, about = { c, d: this.optionData(i), base: this.opts()[i], ov: this.state.ov[i] || {} };
+    accounts.editPiece(pid, editContext(Object.assign({ f: this.state.f, tone: this.state.tone, banned: this.state.banned }, about)))
+      .then(change => {
+        const prop = editProposal(Object.assign({ change, ratio: (a, b) => this.ratio(a, b) }, about));
+        ensureFonts([prop.aFont].concat(prop.aType || []));
+        done({ status: 'proposed', prop });
+      })
+      .catch(err => done({ status: 'open', error: err.message }));
   }
   accept(id) {
     const c = this.state.comments.find(x => x.id === id); if (!c || !c.prop) return;
@@ -583,7 +605,8 @@ export default class BrandApp extends Component {
     const vRec = !!(s.vRec && s.vRec.step === s.step);
     const vDone = vRec ? null : s.vDone[s.step];
     const voice = {
-      show: s.screen === 'brief' && s.step <= 4, idle: !vRec && !vDone, rec: vRec, done: !!vDone,
+      // Voice entry is out of scope for v1. Restore: s.screen === 'brief' && s.step <= 4
+      show: false, idle: !vRec && !vDone, rec: vRec, done: !!vDone,
       section: VD ? VD.section : '', startAria: VD ? 'Start talking through ' + VD.section : 'Start talking',
       prompts: VD ? VD.prompts : [], live: vRec ? (vWords.slice(0, s.vRec.shown).join(' ') || 'Start talking…') : '',
       transcript: VD ? VD.transcript : '', filled: vDone ? vDone.filled.map(l => ({ label: l })) : [],
@@ -621,17 +644,20 @@ export default class BrandApp extends Component {
     });
     const ST = { open: ['Open', 'var(--color-grey-1)', 'var(--color-ink)'], thinking: ['AI working', 'var(--color-grey-1)', 'var(--color-ink)'], proposed: ['Suggestion ready', '#FFFFFF', 'var(--color-ink)'], applied: ['Applied', 'var(--color-ink)', '#FFFFFF'] };
     const cm = {};
+    const asked = (c) => !!this._asking && this._asking.has(s.projectId + ':' + c.id);
     const mkC = (c) => {
         const p = c.prop || {}, st = ST[c.status];
         return {
           num: c.num, label: c.label, text: c.text, status: st[0], stBg: st[1], stFg: st[2],
-          canApply: c.status === 'open', thinking: c.status === 'thinking', proposed: c.status === 'proposed' && !!c.prop,
+          canApply: c.status === 'open' || (c.status === 'thinking' && !asked(c)), thinking: c.status === 'thinking' && asked(c), proposed: c.status === 'proposed' && !!c.prop,
           summary: p.summary || '', isColors: p.kind === 'colors', isText: p.kind === 'text', isWord: p.kind === 'word', isImages: p.kind === 'images', isType: p.kind === 'type',
           swaps: p.swaps || [], typeRows: p.kind === 'type' ? [['Before', p.bType], ['After', p.aType]] : [], sample: p.sample || [],
           bSw: (p.before || []).map(hex => ({ hex })), aSw: (p.after || []).map(hex => ({ hex })), bText: p.bText || '', aText: p.aText || '',
           bFont: p.bFont || '', bTrack: p.bTrack || '', aFont: p.aFont || '', aTrack: p.aTrack || '',
           apply: () => this.applyAI(c.id), accept: () => this.accept(c.id),
-          reject: () => this.updComment(c.id, { status: 'open', prop: null, tries: (c.tries || 0) + 1 }),
+          error: c.error || '', idle: c.status === 'thinking' && !asked(c) ? "This edit didn't finish." : '',
+          // Rejected summaries go back to the AI, so "Try another version" proposes something else.
+          reject: () => this.updComment(c.id, { status: 'open', prop: null, tries: (c.tries || 0) + 1, rejected: (c.rejected || []).concat(p.summary || []).slice(-3) }),
           isApplied: c.status === 'applied', where: secNames[c.sec] === c.label ? c.label : secNames[c.sec] + ' · ' + c.label, href: '#sec-' + c.sec
         };
     };
@@ -822,9 +848,17 @@ export default class BrandApp extends Component {
         let id = s.cid;
         const add = d.items.map((it, k) => { id++; return { id, num: myC.length + k + 1, opt: oi, sec: it.sec, target: it.target, label: it.label, text: d.text.trim(), status: 'thinking', tries: 0 }; });
         set({ comments: s.comments.concat(add), cid: id, draft: { items: [], text: '' } });
-        add.forEach((c, k) => setTimeout(() => { const cc = this.state.comments.find(x => x.id === c.id); if (cc) this.updComment(c.id, { status: 'proposed', prop: this.propose(cc) }); }, 1000 + k * 450));
+        // Marked as asked right away, so they read "working" while they wait their turn.
+        const asking = this._asking || (this._asking = new Set());
+        add.forEach((c, k) => {
+          const key = s.projectId + ':' + c.id;
+          asking.add(key);
+          setTimeout(() => { if (this.state.projectId === s.projectId) this.applyAI(c.id); else asking.delete(key); }, k * 450);
+        });
       },
-      cols, mixSummary, mixBtn: s.mixBase ? 'Update your mix' : 'Create custom direction', createMix: () => this.createMix()
+      cols, mixSummary, mixBtn: s.mixBase ? 'Update your mix' : 'Create custom direction', createMix: () => this.createMix(),
+      // Last, so its brief-review values replace the old mocked import's.
+      ...materialVals(this)
     };
   }
 

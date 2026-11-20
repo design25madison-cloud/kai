@@ -21,8 +21,9 @@ export default function StepReview({ vm }) {
         ))}
       </div>
       {vm.hasMissing && (
-        <button className="self-flex-start p-10px-16px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.fillSample}>Fill the gaps with sample answers</button>
+        <button className="self-flex-start p-10px-16px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.fillSample} disabled={vm.gapBusy}>{vm.gapLabel}</button>
       )}
+      {vm.mat.error && <p className="upload__error" role="alert">{vm.mat.error}</p>}
     </div>
   );
 }

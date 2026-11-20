@@ -32,10 +32,26 @@ resource "google_cloud_run_v2_service" "app" {
       resources {
         limits = {
           cpu    = "1"
-          memory = "512Mi"
+          memory = "1Gi" # Uploads of up to 25 MB pass through memory.
         }
         cpu_idle          = true
         startup_cpu_boost = true
+      }
+
+      # Materials: where uploads go, which project Gemini is called in, and the converter to call.
+      env {
+        name  = "GCP_PROJECT"
+        value = var.project_id
+      }
+
+      env {
+        name  = "UPLOADS_BUCKET"
+        value = google_storage_bucket.uploads.name
+      }
+
+      env {
+        name  = "CONVERTER_URL"
+        value = google_cloud_run_v2_service.converter.uri
       }
 
       # server/index.js checks the sign-in header against this value.
@@ -108,7 +124,58 @@ resource "google_cloud_run_v2_service" "app" {
     google_project_iam_member.app_sql_client,
     google_secret_manager_secret_iam_member.app_database_password,
     google_secret_manager_secret_iam_member.app_unsplash_access_key,
+    google_storage_bucket_iam_member.app_uploads,
+    google_project_iam_member.app_ai_user,
   ]
+}
+
+# Turns PowerPoint and Word uploads into PDFs (converter/). LibreOffice handles one file at a time.
+resource "google_cloud_run_v2_service" "converter" {
+  project             = var.project_id
+  location            = var.region
+  name                = "kai-converter"
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
+  labels              = local.labels
+
+  template {
+    service_account                  = google_service_account.converter.email
+    max_instance_request_concurrency = 1
+    timeout                          = "180s"
+
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 2
+    }
+
+    containers {
+      image = var.image
+
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "2Gi"
+        }
+        cpu_idle          = true
+        startup_cpu_boost = true
+      }
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [template[0].containers[0].image, client, client_version, scaling]
+  }
+
+  depends_on = [google_project_service.required]
+}
+
+# Only the app may call the converter.
+resource "google_cloud_run_v2_service_iam_member" "app_invokes_converter" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.converter.name
+  role     = "roles/run.invoker"
+  member   = google_service_account.app.member
 }
 
 # Only the sign-in gate (IAP) may call the service. Nobody reaches it directly.

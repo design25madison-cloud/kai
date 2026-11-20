@@ -5,6 +5,7 @@ substitutions:
   _REGION: us-central1
   _AR_REPOSITORY: kai
   _SERVICE: kai
+  _CONVERTER_SERVICE: kai-converter
 
 steps:
   # Server tests, against a throwaway Postgres. A failure here stops the deploy.
@@ -53,16 +54,44 @@ steps:
         docker push "$$image:$BUILD_ID"
         docker push "$$image:cache"
 
-  # Only the image changes. Terraform owns the service's settings, so a deploy can't overwrite them.
-  - id: deploy
-    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
-    waitFor: [build]
+  # The converter (LibreOffice) is its own image, built from the converter folder.
+  - id: build-converter
+    name: gcr.io/cloud-builders/docker
+    waitFor: [tests, terraform-validate]
+    env:
+      - DOCKER_BUILDKIT=1
     entrypoint: bash
     args:
       - -euo
       - pipefail
       - -c
       - |
+        image='${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/converter'
+        docker pull "$$image:cache" || true
+        docker build \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from "$$image:cache" \
+          --tag "$$image:$BUILD_ID" \
+          --tag "$$image:cache" \
+          converter
+        docker push "$$image:$BUILD_ID"
+        docker push "$$image:cache"
+
+  # Only the images change. Terraform owns the services' settings, so a deploy can't overwrite them.
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    waitFor: [build, build-converter]
+    entrypoint: bash
+    args:
+      - -euo
+      - pipefail
+      - -c
+      - |
+        gcloud run services update '${_CONVERTER_SERVICE}' \
+          --project '$PROJECT_ID' \
+          --region '${_REGION}' \
+          --image '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/converter:$BUILD_ID' \
+          --quiet
         gcloud run services update '${_SERVICE}' \
           --project '$PROJECT_ID' \
           --region '${_REGION}' \

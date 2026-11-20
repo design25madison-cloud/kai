@@ -43,8 +43,8 @@ export default function PreciseEditingPanel({ vm }) {
                     )}
                     {cmt.canApply && (
                       <div className="flex gap-8px items-center wrap">
-                        <span className="t-13px c-ink-2 flex-1">Suggestion rejected.</span>
-                        <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={cmt.apply}>Try another version</button>
+                        <span className="t-13px c-ink-2 flex-1" role={cmt.error ? "alert" : undefined}>{cmt.error || cmt.idle || "Suggestion rejected."}</span>
+                        <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={cmt.apply}>{cmt.error || cmt.idle ? "Try again" : "Try another version"}</button>
                       </div>
                     )}
                     {cmt.isApplied && (

@@ -176,16 +176,10 @@ export default function DeckPreview({ vm }) {
       <div className="deck__head">
         <div className="flex col gap-2px">
           <h2 className="deck__title" id="deck-h">Deck template</h2>
-          <span className="deck__meta">PowerPoint · opens in Keynote and Google Slides</span>
         </div>
-        <button className="btn btn--primary btn--icon" type="button" onClick={vm.exportDeck} disabled={vm.deckBusy}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M4 19h16" /></svg>
-          {vm.deckBusy ? "Building…" : "Export .pptx"}
-        </button>
       </div>
       <SlideGroup title="Layouts" slides={DECK_SLIDES.filter((s) => s.layout)} t={t} />
       <SlideGroup title="Brand guide" slides={DECK_SLIDES.filter((s) => !s.layout)} t={t} />
-      <p className="deck__note">Fonts: install {t.display}{t.body !== t.display && ` and ${t.body}`} from Google Fonts for PowerPoint, or open the file in Google Slides.</p>
     </section>
   );
 }

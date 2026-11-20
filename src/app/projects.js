@@ -6,6 +6,7 @@ import accounts from "./store.js";
 const TRANSIENT = new Set([
   "user", "projectId", "projects", "saveStatus", "saveError", "authError", "authBusy",
   "projectMenu", "renaming", "deleting", "deckBusy", "toast", "undo", "allMenu", "edit", "cmode", "draft", "genStep", "vRec", "oRec", "pk",
+  "files", "uploading", "fillBusy", "fillError",
 ]);
 // A project reopens on one of these. Generation is a moment, so it reopens on the brief's last step.
 const RESUMABLE = new Set(["welcome", "start", "brief", "out"]);

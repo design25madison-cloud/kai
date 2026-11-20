@@ -10,6 +10,7 @@ import StepReview from "./StepReview.jsx";
 export default function BriefScreen({ vm }) {
   return (
     <div className="flow-page gap-28px">
+      {vm.sugCss && <style>{vm.sugCss}</style>}
       <HomeLogo vm={vm} className="page-logo" />
       <div className="flex justify-space-between items-center gap-12px wrap">
         <Breadcrumbs items={vm.crumbs} />

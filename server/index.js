@@ -3,8 +3,9 @@ import path from "node:path";
 import pg from "pg";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { createApp, SCHEMA } from "./app.js";
+import { createCloud } from "./cloud.js";
 
-const { IAP_AUDIENCE, DEV_USER_EMAIL, UNSPLASH_ACCESS_KEY, PORT = 8080 } = process.env;
+const { IAP_AUDIENCE, DEV_USER_EMAIL, UNSPLASH_ACCESS_KEY, GCP_PROJECT, UPLOADS_BUCKET, CONVERTER_URL, GEMINI_MODEL, PORT = 8080 } = process.env;
 
 // On Google Cloud, IAP (the Google sign-in gate) signs every request with who is signed in. We check that
 // signature here too, so a request that somehow skipped the gate is refused rather than trusted.
@@ -27,6 +28,9 @@ const identify = IAP_AUDIENCE ? iapIdentify(IAP_AUDIENCE) : async () => DEV_USER
 const pool = new pg.Pool(); // Reads PGHOST, PGPORT, PGUSER, PGPASSWORD and PGDATABASE.
 await pool.query(SCHEMA);
 
-createApp({ pool, identify, unsplashKey: UNSPLASH_ACCESS_KEY, staticDir: path.resolve("dist") }).listen(PORT, () => {
+// Uploads and filling the brief from materials need all three; without them those routes answer 503.
+const cloud = GCP_PROJECT && UPLOADS_BUCKET && CONVERTER_URL ? createCloud({ project: GCP_PROJECT, bucket: UPLOADS_BUCKET, converterUrl: CONVERTER_URL, model: GEMINI_MODEL || undefined }) : null;
+
+createApp({ pool, identify, unsplashKey: UNSPLASH_ACCESS_KEY, staticDir: path.resolve("dist"), cloud }).listen(PORT, () => {
   console.log(`KAI server on port ${PORT}, ${IAP_AUDIENCE ? "Google sign-in required" : `signed in as ${DEV_USER_EMAIL}`}`);
 });

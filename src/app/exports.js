@@ -104,7 +104,33 @@ ${imports.join("\n")}
 `;
 }
 
-export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRound, sections = ALL_SECTIONS }) {
+// Who the brand is for and why it exists, from the brief. Only answered questions appear.
+function briefContext(f, { tone = [], comps = [], alts = [], taglines = [] }) {
+  const join = (...parts) => parts.filter((p) => !isPlaceholder(p)).map((p) => p.trim().replace(/[.]$/, "")).join(". ");
+  // "Label: answer", or nothing when the answer is empty or still a sample placeholder.
+  const said = (label, v) => (isPlaceholder(v) ? "" : label + v);
+  const names = (list) => list.map((x) => (typeof x === "string" ? x : x.name)).filter((x) => !isPlaceholder(x)).join(", ");
+  return [
+    ["Buyer", join(f.buyerRole, said("Motivated by: ", f.mot), said("Success for them: ", f.success))],
+    ["Day-to-day user", join([f.opRole, f.opTeam].filter((p) => !isPlaceholder(p)).join(", "), said("Cares about: ", f.opCares))],
+    ["End user", join(f.endWho, said("Cares about: ", f.endCares))],
+    ["Problem today", join(f.problem, said("Current solutions fall short because: ", f.short))],
+    ["What makes it different", join(f.diff, said("Why it matters: ", f.diffWhy))],
+    ["Outcomes users want", join(f.outcomes)],
+    ["Primary value", join(f.value)],
+    ["Emotional value", join(f.emo)],
+    ["How it should feel to use", join(f.feel)],
+    ["Competitors", names(comps)],
+    ["Alternatives people use today", names(alts)],
+    ["Tone", names(tone)],
+    ["Working taglines", names(taglines)],
+  ]
+    .filter(([, text]) => text)
+    .map(([label, text]) => `- **${label}:** ${text}`)
+    .join("\n");
+}
+
+export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRound, sections = ALL_SECTIONS, ...brief }) {
   const has = (id) => sections.includes(id);
   const name = f.name || "Brand";
   const about = [];
@@ -115,10 +141,14 @@ export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRou
     Number(d.uiRatio) >= 4.5
       ? `White text on it is ${d.uiRatio}:1, which passes AA.`
       : `White text on it is only ${d.uiRatio}:1, which fails AA. Fix this before shipping.`;
-  const status = agreedRound ? `Agreed in alignment round ${agreedRound}.` : "Not yet agreed in an alignment meeting.";
+  // The alignment meeting isn't reachable in v1, so this only speaks up when a round was agreed.
+  const status = agreedRound ? ` Agreed in alignment round ${agreedRound}.` : "";
   const language = banned.length ? `## Words not to use\n\nNever use these words in any copy, in any form: ${banned.join(", ")}.` : "";
-  const blocks = [`# ${name} brand rules\n\nDirection: ${d.name}. ${status} This is a starting direction, not a finished brand. The designer owns the final system.`];
+  const blocks = [`# ${name} brand rules\n\nDirection: ${d.name}.${status} This is a starting direction, not a finished brand. The designer owns the final system.`];
   if (about.length) blocks.push(about.join("\n"));
+  // Like the description, context applies to everything, so it stays whichever sections are exported.
+  const context = briefContext(f, brief);
+  if (context) blocks.push("## Context\n\nUse this to judge copy and design choices. It is background, not copy to reuse.\n\n" + context);
   // A restriction applies to everything, so it stays in whichever sections are exported.
   if (language) blocks.push(language);
 
@@ -162,13 +192,7 @@ export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRou
 }
 
 export function handoffFiles(input) {
-  const { d } = input;
-  return [
-    { id: "claude", name: "CLAUDE.md", desc: "Brand rules that AI coding tools read from a project folder", mime: "text/markdown", content: claudeMd(input) },
-    { id: "css", name: "tokens.css", desc: "Color, UI primary, and font variables", mime: "text/css", content: tokensCss(d) },
-    { id: "json", name: "tokens.json", desc: "The same tokens as structured data, plus the type scale", mime: "application/json", content: tokensJson(d) },
-    { id: "fonts", name: "fonts.md", desc: "Install commands, embed link, and CSS stacks", mime: "text/markdown", content: fontsGuide(d) },
-  ];
+  return [{ id: "claude", name: "CLAUDE.md", desc: "Brand rules that AI coding tools read from a project folder", mime: "text/markdown", content: claudeMd(input) }];
 }
 
 export function downloadFile(name, content, mime) {

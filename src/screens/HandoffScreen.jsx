@@ -48,7 +48,6 @@ export default function HandoffScreen({ vm }) {
           <section className="handoff__files" aria-labelledby="h-files">
             <div className="handoff__files-head">
               <h2 id="h-files" className="m-0 t-18px w-600">Files</h2>
-              <button className="btn" type="button" onClick={h.printPdf}>Save direction as PDF</button>
             </div>
             <ul className="file-list">
               {h.files.map((x) => (

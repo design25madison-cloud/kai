@@ -7,7 +7,7 @@ export default function StepBranding({ vm }) {
       <h2 className="m-0 t-22px w-600">Branding</h2>
       <div className="flex col gap-8px">
         <div className="flex justify-space-between items-center">
-          <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+          <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin{vm.sug.meaning && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         </div>
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-meaning" name="meaning" value={vm.f.meaning} onChange={vm.onField} rows="2" placeholder="Where does the name come from?" />
       </div>

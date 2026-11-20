@@ -16,6 +16,7 @@ locals {
   }
 
   required_services = toset([
+    "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
     "compute.googleapis.com",
@@ -166,6 +167,21 @@ resource "google_secret_manager_secret" "unsplash_access_key" {
   replication {
     auto {}
   }
+
+  depends_on = [google_project_service.required]
+}
+
+# --- Uploaded materials: private, reachable only through the app, deleted by the app with their project.
+
+resource "google_storage_bucket" "uploads" {
+  project                     = var.project_id
+  name                        = "${var.project_id}-kai-uploads"
+  location                    = upper(var.region)
+  storage_class               = "STANDARD"
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+  force_destroy               = false
+  labels                      = local.labels
 
   depends_on = [google_project_service.required]
 }

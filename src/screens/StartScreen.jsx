@@ -1,28 +1,37 @@
 import Breadcrumbs from "./Breadcrumbs.jsx";
 import { HomeLogo } from "./ProjectChrome.jsx";
 
+// Layout follows the "Onboarding · Start" frame in the V1 Happy Path Figma page.
 export default function StartScreen({ vm }) {
+  const m = vm.mat;
   return (
     <div className="upload flow-page">
       <HomeLogo vm={vm} className="page-logo" />
       <Breadcrumbs items={vm.crumbs} />
       <div className="upload__head">
-        <h1 className="upload__title">Start a brand direction</h1>
-        <p className="upload__intro">Add anything you already have. We will use it in the process.</p>
+        <h1 className="upload__title">Input project context</h1>
+        <p className="upload__intro">
+          Add anything you already have: decks, notes, logos. We read it and fill in what we can.
+          <br />
+          Have scattered notes or files elsewhere? Ask Claude to pull them into one summary, then paste it below.{" "}
+          <button className="link-btn" type="button" onClick={m.copyPrompt}>Copy a prompt for Claude</button>
+        </p>
       </div>
       <div className="upload__files">
-        <button className="dropzone" type="button" onClick={vm.addArts}>
+        <label className="dropzone" onDrop={m.onDrop} onDragOver={m.onDragOver} aria-disabled={m.working || !m.canFill}>
+          <input className="dropzone__input" type="file" multiple accept={m.accept} onChange={m.onPick} disabled={m.working || !m.canFill} aria-describedby="upload-types" />
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 15V4" />
             <path d="M7 9l5-5 5 5" />
             <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
           </svg>
           Add files
-        </button>
-        {vm.hasArts && (
+        </label>
+        <p className="upload__note" id="upload-types">PDF, PNG, JPG, PowerPoint or Word. Up to 10 files, 25 MB each.</p>
+        {m.hasFiles && (
           <ul className="file-chips">
-            {vm.arts.map((a) => (
-              <li key={a.name} className="file-chip">
+            {m.files.map((a) => (
+              <li key={a.id} className="file-chip">
                 {a.name}
                 <button className="file-chip__remove" type="button" onClick={a.remove} aria-label={a.removeAria}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
@@ -34,53 +43,17 @@ export default function StartScreen({ vm }) {
           </ul>
         )}
       </div>
-      {vm.hasArts && (
-        <>
-          <section className="upload__section upload__section--opinion" aria-labelledby="op-h">
-            <h2 className="upload__h2" id="op-h">How do like your current files?</h2>
-            <div className="opinion">
-              {vm.oRec && (
-                <p className="opinion__text" role="status" aria-live="polite">{vm.oLive}</p>
-              )}
-              {vm.oIdle && (
-                <textarea className="opinion__text" value={vm.opinion} onChange={vm.setOpinion} aria-label="Your thoughts on what you uploaded" placeholder="For example: I like the warm brown in the logo, but the letters feel too techy." />
-              )}
-              <div className="opinion__bar">
-                <button className="opinion__mic" type="button" onClick={vm.toggleOpinionVoice} aria-pressed={vm.oRec} aria-label={vm.oMicAria} style={{ background: vm.oMicBg }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <rect x="9" y="3" width="6" height="11" rx="3" />
-                    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-                  </svg>
-                </button>
-                <span className="t-13px">{vm.oMicText}</span>
-              </div>
-            </div>
-            {vm.hasHeard && <span className="opinion__heard">We heard: {vm.heardText}</span>}
-          </section>
-          <section className="upload__section" aria-labelledby="keep-h">
-            <h2 className="upload__h2" id="keep-h">How much should we keep?</h2>
-            <div className="keep">
-              <div className="keep__ends">
-                <span>Keep what I have</span>
-                <span>Start fresh</span>
-              </div>
-              <div className="keep__track">
-                <div className="keep__rail" />
-                <div className="keep__fill" style={{ width: vm.keepPct }} />
-                <input className="dial keep__input" type="range" min="0" max="100" value={vm.keep} onChange={vm.setKeep} aria-label="How much to keep, from keep what I have to start fresh" aria-valuetext={vm.keepName} />
-              </div>
-              <div className="keep__stops" role="group" aria-label="Stops">
-                {vm.keepStops.map((ks) => (
-                  <button key={ks.label} className="keep__stop" type="button" onClick={ks.pick} aria-pressed={ks.on} style={{ borderColor: ks.bd, background: ks.bg, color: ks.fg }}>{ks.label}</button>
-                ))}
-              </div>
-            </div>
-          </section>
-          <div className="upload__actions">
-            <button className="btn-cta" type="button" onClick={vm.toBrief}>Continue</button>
-          </div>
-        </>
+      <p className="upload__or">or</p>
+      <textarea className="paste-box" value={m.text} onChange={m.setText} placeholder="Paste notes or a summary" aria-label="Paste notes or a summary" />
+      {!m.canFill && (
+        <p className="upload__note" role="note">Filling the brief from materials works on the hosted version of KAI. Here you can continue and fill it in yourself.</p>
       )}
+      <p className="upload__status" role="status" aria-live="polite">{m.status}</p>
+      {m.error && <p className="upload__error" role="alert">{m.error}</p>}
+      <div className="upload__actions">
+        <button className="link-btn" type="button" onClick={vm.toBrief}>Skip, I'll fill it in myself</button>
+        <button className="btn-cta" type="button" onClick={m.fill} disabled={!m.canRun}>Fill in my brief</button>
+      </div>
     </div>
   );
 }

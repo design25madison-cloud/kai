@@ -9,7 +9,7 @@ let user = null;
 async function api(path, options = {}) {
   let res;
   try {
-    res = await fetch("/api" + path, { ...options, headers: options.body ? { "Content-Type": "application/json" } : undefined });
+    res = await fetch("/api" + path, { ...options, headers: options.headers || (options.body ? { "Content-Type": "application/json" } : undefined) });
   } catch {
     // An expired Google sign-in answers with a redirect that fetch can't follow, which lands here too.
     throw new Error("Couldn't reach the server. Reload the page to sign in again.");
@@ -52,3 +52,14 @@ export function saveProject(userId, id, data, summary = {}) {
 export const renameProject = (userId, id, name) => api(`/projects/${id}/rename`, send("POST", { name }));
 export const duplicateProject = (userId, id) => api(`/projects/${id}/duplicate`, send("POST"));
 export const deleteProject = (userId, id) => api(`/projects/${id}`, { method: "DELETE" });
+
+// Materials: uploaded files, and filling the brief from them (server/materials.js).
+export const canFill = true;
+export const listFiles = (id) => api(`/projects/${id}/files`);
+export const uploadFile = (id, file) =>
+  api(`/projects/${id}/files`, { method: "POST", body: file, headers: { "Content-Type": "application/octet-stream", "X-File-Name": encodeURIComponent(file.name) } });
+export const deleteFile = (id, fileId) => api(`/projects/${id}/files/${fileId}`, { method: "DELETE" });
+// With `brief` (the answers so far), the server drafts the unanswered ones instead.
+export const fillBrief = (id, text, brief) => api(`/projects/${id}/fill`, send("POST", { text, brief }));
+// Precise editing: one piece, one request, one proposed change (server/edit.js).
+export const editPiece = (id, edit) => api(`/projects/${id}/edit`, send("POST", edit));

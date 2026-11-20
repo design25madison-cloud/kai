@@ -52,7 +52,7 @@ export default function StepCustomer({ vm }) {
         <span className="t-15px w-600">Core problem</span>
         <div className="flex col gap-8px">
           <div className="flex justify-space-between items-center">
-            <label className="t-13px flex gap-8px items-center" htmlFor="f-problem">What problem exists today?{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+            <label className="t-13px flex gap-8px items-center" htmlFor="f-problem">What problem exists today?{vm.sug.problem && (<span className="status-pill">{vm.badgeText}</span>)}</label>
           </div>
           <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-problem" name="problem" value={vm.f.problem} onChange={vm.onField} rows="2" placeholder=" " />
         </div>
@@ -106,7 +106,7 @@ export default function StepCustomer({ vm }) {
       </div>
       <div className="two">
         <div className="flex col gap-8px">
-          <label className="t-13px flex gap-8px items-center" htmlFor="f-diff">What makes you different{vm.badge && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+          <label className="t-13px flex gap-8px items-center" htmlFor="f-diff">What makes you different{vm.sug.diff && (<span className="status-pill">{vm.badgeText}</span>)}</label>
           <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-diff" name="diff" value={vm.f.diff} onChange={vm.onField} placeholder=" " />
         </div>
         <div className="flex col gap-8px">
