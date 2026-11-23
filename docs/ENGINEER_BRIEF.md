@@ -108,7 +108,7 @@ brief → score 16 archetypes → pick 3 blends → for each blend:
 ### Step by step
 1. **Score archetypes** (`score()`): tone chips, keywords in brief answers, slider proximity, look picks and an industry bonus. Each archetype keeps the matched words as `why`.
 2. **Blends** (`blends()`): option 1 is every archetype within 75% of the top score (up to 3). Options 2 and 3 are the strongest *different* sets. The lead carries at least 55%. Audience rules can stop an archetype from leading, for example Rebel for executive buyers.
-3. **Images** (`buildImages()`): six photo slots shared by weight across the blend, avoiding category clichés, plus the name's cue photo and an industry photo. No repeats across options.
+3. **Images** (`buildImages()`): six photo slots shared by weight across the blend, plus the name's cue photo. Literal subjects (workplaces, equipment, products, the founder's industry) are filtered out, because imagery carries the brand, not the business. No repeats across options. Full rules are in `docs/imagery-instructions.md`.
 4. **Photo colors** (`photoPalette()`): the main colors of the four visible photos (vivid colors become accent candidates; the overall cast tints the surface).
 5. **Palette** (`buildPalette()`), built in OKLCH. Order of authority:
    1. **Seeds:** colors to keep, and admired references. The keep dial sets the strength, from exact to a nudge.

@@ -1,6 +1,7 @@
 // Finds a reference photo for an image label ("Forest canopy", "Server aisle"…).
 //
-// Order: Unsplash first (through the dev server, which holds the key), then Wikimedia Commons.
+// Order: Unsplash first (through the dev server, which holds the key). Wikimedia Commons is only
+// used when Unsplash has no result that clears the quality bar below, or there's no key.
 // Results are cached in this browser for a week, because Unsplash demo keys allow only 50
 // searches an hour. A label with no result is retried after a day.
 //
@@ -9,11 +10,13 @@
 // - Every photo is credited with links to the photographer and source.
 // - Commons: only freely licensed files. Anything non-commercial or no-derivatives is skipped.
 
-const CACHE_KEY = "kai.images.v1";
+const CACHE_KEY = "kai.images.v2"; // v2: Unsplash-first with a quality bar
 const WEEK = 7 * 24 * 3600 * 1000;
 const DAY = 24 * 3600 * 1000;
 const APP = "kai_prototype"; // Unsplash asks for this on every link back to them.
 
+const MIN_SHORT_EDGE_UNSPLASH = 1600; // px
+const MIN_WIDTH_COMMONS = 1600; // px, for the fallback
 const utm = (url) => `${url}${url.includes("?") ? "&" : "?"}utm_source=${APP}&utm_medium=referral`;
 
 function readCache() {
@@ -42,7 +45,8 @@ async function fromUnsplash(term) {
   }
   if (!res.ok) return null;
   const json = await res.json();
-  const p = (json.results || [])[0];
+  // Quality bar: big enough to use full-bleed, and not an Unsplash+ (paid) photo.
+  const p = (json.results || []).find((r) => !r.premium && !r.plus && Math.min(r.width, r.height) >= MIN_SHORT_EDGE_UNSPLASH);
   if (!p) return null;
   return {
     source: "Unsplash",
@@ -71,7 +75,7 @@ async function fromCommons(term) {
   const params = new URLSearchParams({
     action: "query", format: "json", origin: "*",
     generator: "search", gsrsearch: `${term} filetype:bitmap`, gsrnamespace: "6", gsrlimit: "10",
-    prop: "imageinfo", iiprop: "url|extmetadata|mime", iiurlwidth: "1200",
+    prop: "imageinfo", iiprop: "url|extmetadata|mime|size", iiurlwidth: "1200",
     iiextmetadatafilter: "LicenseShortName|LicenseUrl|Artist|NonFree",
   });
   const res = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`);
@@ -82,6 +86,7 @@ async function fromCommons(term) {
     const meta = info?.extmetadata || {};
     const license = meta.LicenseShortName?.value || "";
     if (!info || !/^image\/(jpeg|png)$/.test(info.mime)) continue;
+    if ((info.width || 0) < MIN_WIDTH_COMMONS) continue; // Too small to hold up in a moodboard
     if (meta.NonFree?.value || !FREE.test(license) || RESTRICTED.test(license)) continue;
     return {
       source: "Wikimedia Commons",

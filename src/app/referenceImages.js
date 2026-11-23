@@ -1,6 +1,5 @@
-// The photo for an image label. Hand-picked Wikimedia Commons photos (referenceImages.json,
-// shipped with the app) come first; any other label is looked up on Unsplash and Commons
-// (imageSearch.js). Each result holds the photo's author, license, source and links for credit.
+// The photo for an image label: Unsplash first (imageSearch.js); hand-picked Wikimedia Commons
+// photos (referenceImages.json, shipped with the app) and Commons search only as a fallback. Each result holds the photo's author, license, source and links for credit.
 import credits from "./referenceImages.json";
 import { isSearching, markUsed, searchedImage, subscribe } from "./imageSearch.js";
 
@@ -12,9 +11,13 @@ export function curatedImage(label) {
   return credit ? { ...credit, source: "Wikimedia Commons", src: files[`../assets/references/${credit.file}`] } : null;
 }
 
+// Unsplash comes first. The hand-picked Commons photos, then Commons search, are the fallback: used
+// only when Unsplash has nothing that clears its quality bar (or there's no key yet).
 // Starts a search on a miss, so only call it for photos that are actually on screen or exported.
 export function referenceImage(label) {
-  return curatedImage(label) || searchedImage(label);
+  const searched = searchedImage(label);
+  if (searched && searched.source === "Unsplash") return searched;
+  return curatedImage(label) || searched;
 }
 
 export { isSearching, subscribe };
