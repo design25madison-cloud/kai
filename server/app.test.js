@@ -39,6 +39,7 @@ before(async () => {
 after(async () => {
   await pool.query("delete from projects where owner in ($1, $2)", [ana, ben]);
   await pool.query("delete from fills where owner in ($1, $2)", [ana, ben]);
+  await pool.query("delete from unsplash_searches where url like $1", [`%${run}%`]);
   server.close();
   await pool.end();
 });
@@ -255,4 +256,43 @@ test("a deck comes back as a PDF, and only a deck is accepted", async () => {
   assert.equal(Buffer.from(await ok.arrayBuffer()).toString(), "%PDF-converted");
   assert.equal((await send(ana, PDF)).status, 400);
   assert.equal((await send("", PPTX)).status, 401);
+});
+
+test("an Unsplash search is asked once and then shared, but a used photo is always reported", async () => {
+  // Stands in for Unsplash: counts the calls, and can be switched to "over the limit".
+  const realFetch = globalThis.fetch;
+  const calls = [];
+  let limited = false;
+  globalThis.fetch = async (url, options) => {
+    if (!String(url).startsWith("https://api.unsplash.com")) return realFetch(url, options);
+    calls.push(String(url));
+    return limited ? new Response("Rate Limit Exceeded", { status: 403 }) : Response.json({ results: [{ id: "p1" }], key: options.headers.Authorization });
+  };
+  const withKey = createApp({ pool, cloud, unsplashKey: "k", identify: async (req) => req.get("x-test-user") || null }).listen(0);
+  const get = (user, path) => fetch(`http://localhost:${withKey.address().port}/api/unsplash${path}`, { headers: { "x-test-user": user } });
+  try {
+    const search = `/search/photos?query=steel-${run}&per_page=5`;
+    const first = await get(ana, search);
+    assert.deepEqual(await first.json(), { results: [{ id: "p1" }], key: "Client-ID k" });
+    const second = await get(ben, search); // Another person, same keyword: no new call.
+    assert.deepEqual((await second.json()).results, [{ id: "p1" }]);
+    assert.equal(calls.length, 1);
+
+    await get(ana, `/photos/p1/download?run=${run}`);
+    await get(ana, `/photos/p1/download?run=${run}`);
+    assert.equal(calls.length, 3); // Never remembered.
+
+    // A week-old answer is asked again, and still served if Unsplash is over its limit.
+    await pool.query("update unsplash_searches set fetched_at = now() - interval '8 days' where url = $1", [search]);
+    limited = true;
+    const stale = await get(ana, search);
+    assert.equal(stale.status, 200);
+    assert.deepEqual((await stale.json()).results, [{ id: "p1" }]);
+    assert.equal(calls.length, 4);
+    assert.equal((await get(ana, `/search/photos?query=new-${run}`)).status, 403); // Nothing kept: the limit shows through.
+    assert.equal((await get("", search)).status, 401);
+  } finally {
+    globalThis.fetch = realFetch;
+    withKey.close();
+  }
 });

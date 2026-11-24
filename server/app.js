@@ -16,6 +16,11 @@ export const SCHEMA = `
     updated_at timestamptz not null default now()
   );
   create index if not exists projects_owner on projects (owner, updated_at desc);
+  create table if not exists unsplash_searches (
+    url text primary key,
+    body text not null,
+    fetched_at timestamptz not null default now()
+  );
 ${MATERIALS_SCHEMA}`;
 // shortcut: the schema is applied at startup with "if not exists", which can't change a column. Adopt a migration tool at the first schema change.
 
@@ -136,11 +141,24 @@ export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
   api.use("/unsplash", async (req, res) => {
     if (req.method !== "GET") throw fail(405, "Not allowed.");
     if (!unsplashKey) throw fail(401, "No Unsplash key is set."); // The app falls back to Wikimedia Commons.
+    // A search is remembered for a week and shared by everyone: a demo key allows 50 calls an hour,
+    // and every project draws its photo keywords from the same fixed list. Only searches are kept;
+    // the "photo was used" calls must always reach Unsplash.
+    const search = req.path === "/search/photos" && req.url.length <= 300;
+    const kept = search ? (await pool.query(`select body, fetched_at > now() - interval '7 days' as fresh from unsplash_searches where url = $1`, [req.url])).rows[0] : null;
+    if (kept && kept.fresh) return res.type("application/json").send(kept.body);
+
     const upstream = await fetch("https://api.unsplash.com" + req.url, {
       headers: { Authorization: `Client-ID ${unsplashKey}`, "Accept-Version": "v1" },
     });
+    const body = Buffer.from(await upstream.arrayBuffer());
+    if (search && upstream.status === 200) {
+      await pool.query(`insert into unsplash_searches (url, body) values ($1, $2) on conflict (url) do update set body = excluded.body, fetched_at = now()`, [req.url, body.toString()]);
+    } else if (kept) {
+      return res.type("application/json").send(kept.body); // Unsplash is over its limit or down: an old answer beats none.
+    }
     res.status(upstream.status).type(upstream.headers.get("content-type") || "application/json");
-    res.send(Buffer.from(await upstream.arrayBuffer()));
+    res.send(body);
   });
 
   api.use((req, res) => res.status(404).json({ error: "Not found." }));

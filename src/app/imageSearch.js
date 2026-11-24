@@ -2,7 +2,8 @@
 //
 // Order: Unsplash first (through the dev server, which holds the key), then Wikimedia Commons.
 // Results are cached in this browser for a week, because Unsplash demo keys allow only 50
-// searches an hour. A label with no result is retried after a day.
+// searches an hour. A label with no result is retried after a day. The hosted server also
+// remembers each search for a week and shares it between everyone (server/app.js).
 //
 // Rules from the two sources' terms (see "Image sourcing" in docs/archetypes.md):
 // - Unsplash photos are shown from the URLs Unsplash returns, never downloaded and re-hosted.
