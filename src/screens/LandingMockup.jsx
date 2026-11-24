@@ -1,4 +1,4 @@
-import { referenceImage } from "../app/referenceImages.js";
+import { brokenImage, referenceImage } from "../app/referenceImages.js";
 import DashboardMockup from "./DashboardMockup.jsx";
 
 export const LANDING_COPY = {
@@ -90,7 +90,7 @@ const STACK = "M12 3l9 5-9 5-9-5zM3 13l9 5 9-5";
 // Photos fill their parent. A label with no photo, such as someone's own upload, keeps the plain tile.
 function Photo({ label }) {
   const image = referenceImage(label);
-  return image ? <img className="mock-photo" src={image.src} alt={label} loading="lazy" title={`${image.author}, ${image.license}`} /> : null;
+  return image ? <img className="mock-photo" src={image.src} alt={label} loading="lazy" onError={() => brokenImage(image.src)} title={`${image.author}, ${image.license}`} /> : null;
 }
 
 const STAR = "M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z";

@@ -32,7 +32,7 @@ function lockedOv(app, i, mods, release = []) {
   const prev = app.state.ov[i] || {};
   const patch = { lock: Object.assign({}, prev.lock) };
   mods.forEach((m) => {
-    if (m === "palette") Object.assign(patch, { swLock: [true, true, true, true, true], hex: d.colors.map((c) => c.show), names: d.colors.map((c) => c.name), uiFixed: d.ui, uiMix: d.uiMix });
+    if (m === "palette") Object.assign(patch, { swLock: d.colors.map(() => true), hex: d.colors.map((c) => c.show), names: d.colors.map((c) => c.name), uiFixed: d.ui, uiMix: d.uiMix });
     else if (m === "refs") patch.images = d.imgs.map((x) => [x[0], x[1], true]);
     else patch.lock[m] = true;
   });
@@ -162,9 +162,6 @@ export function flowVals(app) {
   const base = {
     isSplash: s.screen === "splash",
     isWelcome: s.screen === "welcome",
-    leaveSplash: () => {
-      if (app.state.screen === "splash") set({ screen: "welcome" });
-    },
     chooseMaterials: () => set({ path: "brief", screen: "start" }),
     chooseScratch: () => set({ path: "scratch", screen: "brief", step: 1 }),
     crumbs: onboardingCrumbs(app),

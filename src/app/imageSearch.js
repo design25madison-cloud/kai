@@ -16,10 +16,22 @@ const DAY = 24 * 3600 * 1000;
 const APP = "kai"; // Unsplash asks for the application's name (as registered with them) on every link back.
 
 const utm = (url) => `${url}${url.includes("?") ? "&" : "?"}utm_source=${APP}&utm_medium=referral`;
+// Links come from Unsplash and Commons data, so anything else (javascript:, data:…) is dropped.
+// Commons often gives license links as http://creativecommons.org; those are upgraded, since
+// CC licenses ask for a link to the license.
+export const https = (url) => {
+  const u = typeof url === "string" ? url.replace(/^http:\/\/creativecommons\.org\//i, "https://creativecommons.org/") : "";
+  return /^https:\/\//i.test(u) ? u : "";
+};
 
 function readCache() {
   try {
-    return JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+    const cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+    // Entries saved before links were checked may hold any URL.
+    Object.values(cache).forEach(({ image }) => {
+      if (image) ["authorUrl", "licenseUrl", "page", "sourceUrl"].forEach((k) => { image[k] = https(image[k]); });
+    });
+    return cache;
   } catch {
     return {};
   }
@@ -50,10 +62,10 @@ async function fromUnsplash(term) {
     id: p.id,
     src: p.urls.regular,
     author: p.user.name,
-    authorUrl: utm(p.user.links.html),
+    authorUrl: https(utm(p.user.links.html)),
     license: "Unsplash License",
     licenseUrl: utm("https://unsplash.com/license"),
-    page: utm(p.links.html),
+    page: https(utm(p.links.html)),
     sourceUrl: utm("https://unsplash.com"),
     // Unsplash requires a call to this when the photo is actually used. See markUsed().
     download: p.links.download_location.replace("https://api.unsplash.com", "/api/unsplash"),
@@ -61,12 +73,11 @@ async function fromUnsplash(term) {
 }
 
 const FREE = /^(public domain|pd|cc0|cc[- ]by(-sa)?([- ][\d.]+)?)/i;
-const RESTRICTED = /nc|nd|non-?commercial|no ?deriv/i;
-const stripHtml = (html) => {
-  const el = document.createElement("div");
-  el.innerHTML = html || "";
-  return el.textContent.trim().replace(/\s+/g, " ");
-};
+// shortcut: "nc"/"nd" anywhere also refuses free names like "PD-Finland", fine while a refusal only costs one photo.
+const RESTRICTED = /nc|nd|commercial|deriv/i;
+export const freeLicense = (license) => FREE.test(license) && !RESTRICTED.test(license);
+// DOMParser documents are inert: no scripts, no image loads, no event handlers.
+const stripHtml = (html) => new DOMParser().parseFromString(html || "", "text/html").body.textContent.trim().replace(/\s+/g, " ");
 
 async function fromCommons(term) {
   const params = new URLSearchParams({
@@ -83,14 +94,14 @@ async function fromCommons(term) {
     const meta = info?.extmetadata || {};
     const license = meta.LicenseShortName?.value || "";
     if (!info || !/^image\/(jpeg|png)$/.test(info.mime)) continue;
-    if (meta.NonFree?.value || !FREE.test(license) || RESTRICTED.test(license)) continue;
+    if (meta.NonFree?.value || !freeLicense(license)) continue;
     return {
       source: "Wikimedia Commons",
       src: info.thumburl || info.url,
       author: stripHtml(meta.Artist?.value) || "Unknown author",
       license,
-      licenseUrl: meta.LicenseUrl?.value || "",
-      page: info.descriptionurl,
+      licenseUrl: https(meta.LicenseUrl?.value),
+      page: https(info.descriptionurl),
     };
   }
   return null;
@@ -115,9 +126,28 @@ function fresh(entry) {
   return Date.now() - entry.t < (entry.image && entry.unsplash ? WEEK : DAY);
 }
 
+// Photos an open project stored with its directions, by label, so it keeps the same picture and
+// credit after a search would find another (BrandApp.generated()). One that fails to load is
+// searched for again instead.
+let pinned = {};
+const broken = new Set();
+export function pinImages(map) {
+  pinned = map || {};
+}
+export function brokenImage(src) {
+  if (broken.has(src)) return;
+  broken.add(src);
+  listeners.forEach((fn) => fn());
+}
+
+// The photo a search already found for a label, without starting one.
+export const cachedImage = (label) => (cache[label] && cache[label].image) || null;
+
 // Returns the cached photo for a label, or null while it's being looked up (or if none exists).
 // A miss starts a lookup; subscribers hear when it lands.
 export function searchedImage(label) {
+  const pin = pinned[label];
+  if (pin && !broken.has(pin.src)) return pin;
   const entry = cache[label];
   if (fresh(entry)) return entry.image;
   if (!pending.has(label) && typeof window !== "undefined") {
@@ -136,8 +166,8 @@ export function searchedImage(label) {
   return entry ? entry.image : null;
 }
 
-export function isSearching(label) {
-  return pending.has(label);
+export function isSearching() {
+  return pending.size > 0;
 }
 
 // Tells Unsplash a photo was used, once per photo per visit. Their API terms require this

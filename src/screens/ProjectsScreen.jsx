@@ -2,7 +2,12 @@ import KaiLogo from "./KaiLogo.jsx";
 import { AccountMenu } from "./ProjectChrome.jsx";
 
 function RenameField({ card }) {
-  const done = (e) => card.commitRename(e.target.value);
+  // Clicking away without a new name cancels: a rename marks the name as chosen, so the brief no longer names the project.
+  const done = (e) => {
+    const name = e.target.value.trim();
+    if (name && name !== card.name) card.commitRename(name);
+    else card.cancelRename();
+  };
   return (
     <input
       className="project-card__rename"
@@ -13,7 +18,10 @@ function RenameField({ card }) {
       onBlur={done}
       onKeyDown={(e) => {
         if (e.key === "Enter") e.target.blur();
-        if (e.key === "Escape") card.cancelRename();
+        if (e.key === "Escape") {
+          e.target.value = card.name; // so the blur that follows cancels instead of renaming
+          e.target.blur();
+        }
       }}
     />
   );

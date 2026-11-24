@@ -35,7 +35,7 @@ test("running it again refreshes untouched suggestions but keeps edited ones", (
 test("confirmed answers count as the person's own", () => {
   let state = empty();
   state = after(state, applyFill(state, { f: { name: "Ferra" } }).patch);
-  state = { ...state, sugg: {}, confirmed: true }; // What "Confirm all" does.
+  state = { ...state, sugg: {} }; // What "Confirm all" does.
   const { patch, filled } = applyFill(state, { f: { name: "Something else" } });
   assert.equal(filled, 0);
   assert.equal(patch.f.name, "Ferra");

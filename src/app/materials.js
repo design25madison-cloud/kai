@@ -140,12 +140,11 @@ export function materialVals(app) {
     sug: Object.fromEntries(textKeys.map((k) => [k, true])),
     sugCss: textKeys.length ? `${textKeys.map((k) => `[name="${k}"]`).join(",")}{background:var(--color-tint)}` : "",
     badgeText: "Suggested",
-    showUpload: false,
     imported: suggested.length > 0,
     importName: "Suggested answers",
     importText: `${suggested.length} ${suggested.length === 1 ? "answer" : "answers"} suggested. Suggested fields are tinted, so check each one.`,
     confirmLabel: "Confirm all",
-    confirmAll: () => app.setState({ sugg: {}, confirmed: true }),
+    confirmAll: () => app.setState({ sugg: {} }),
 
     // The review step's gap button. Without a server (`npm run dev`) it keeps the sample answers.
     gapLabel: !accounts.canFill ? "Fill the gaps with sample answers" : s.fillBusy ? "Suggesting answers…" : "Suggest answers for the gaps",

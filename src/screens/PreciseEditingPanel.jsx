@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { referenceImage } from "../app/referenceImages.js";
+import { brokenImage, referenceImage } from "../app/referenceImages.js";
 
 // One side of a proposed image swap. A label with no photo keeps the plain tile.
 function SwapImage({ state, label }) {
@@ -7,7 +7,7 @@ function SwapImage({ state, label }) {
   return (
     <div className="swap-image">
       <span className="t-11px c-muted">{state}</span>
-      <span className="swap-image__frame">{image && <img src={image.src} alt={label} title={`${image.author}, ${image.license}`} />}</span>
+      <span className="swap-image__frame">{image && <img src={image.src} alt={label} onError={() => brokenImage(image.src)} title={`${image.author}, ${image.license}`} />}</span>
       <span className="t-12px">{label}</span>
     </div>
   );

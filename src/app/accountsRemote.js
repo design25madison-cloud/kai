@@ -5,6 +5,8 @@
 // that the screens pass in is ignored.
 
 let user = null;
+// Reloading would lose unsaved work, so the advice is a new tab: autosave retries once sign-in works again.
+const UNREACHABLE = "Couldn't reach the server. If your sign-in expired, sign in again in a new tab, then come back here.";
 
 async function api(path, options = {}) {
   let res;
@@ -12,11 +14,11 @@ async function api(path, options = {}) {
     res = await fetch("/api" + path, { ...options, headers: options.headers || (options.body ? { "Content-Type": "application/json" } : undefined) });
   } catch {
     // An expired Google sign-in answers with a redirect that fetch can't follow, which lands here too.
-    throw new Error("Couldn't reach the server. Reload the page to sign in again.");
+    throw new Error(UNREACHABLE);
   }
-  if (res.status === 401) throw new Error("Your sign-in expired. Reload the page to sign in again.");
+  if (res.status === 401) throw new Error("Your sign-in expired. Sign in again in a new tab, then come back here.");
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || "Something went wrong on the server.");
+  if (!res.ok) throw Object.assign(new Error(body.error || "Something went wrong on the server."), { status: res.status });
   return body;
 }
 const send = (method, body) => ({ method, body: JSON.stringify(body || {}) });
@@ -40,12 +42,12 @@ export const listProjects = () => api("/projects");
 export const loadProject = (userId, id) => api(`/projects/${id}`);
 export const createProject = (userId, data, summary = {}) => api("/projects", send("POST", { data, summary }));
 
-// shortcut: saves aren't queued, so a slow save could land after a newer one. Autosave waits 700 ms between
-// saves, which makes that unlikely. Queue them if lost edits are ever reported.
-export function saveProject(userId, id, data, summary = {}) {
-  const options = send("PUT", { data, summary });
-  // keepalive lets the save finish while the page is closing. Browsers cap it at 64 KB.
-  options.keepalive = options.body.length < 60000;
+// updatedAt is the version this tab last saw: the server answers 409 if the project changed since.
+// projects.js sends one save at a time, so each carries the version the one before got back.
+export function saveProject(userId, id, data, summary = {}, updatedAt, closing = false) {
+  const options = send("PUT", { data, summary, updatedAt });
+  // keepalive lets the closing save finish after the page is gone. Browsers cap keepalive bodies at 64 KiB in total.
+  options.keepalive = closing && new TextEncoder().encode(options.body).length < 60000;
   return api(`/projects/${id}`, options).then((saved) => saved.updatedAt);
 }
 
@@ -64,7 +66,7 @@ export const fillBrief = (id, text, brief) => api(`/projects/${id}/fill`, send("
 // The PDF export: sends the finished deck, gets the same slides back as a PDF (a Blob).
 export async function deckPdf(deck) {
   const res = await fetch("/api/deck-pdf", { method: "POST", body: deck, headers: { "Content-Type": "application/octet-stream" } }).catch(() => null);
-  if (!res) throw new Error("Couldn't reach the server. Reload the page to sign in again.");
+  if (!res) throw new Error(UNREACHABLE);
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "The PDF couldn't be made. Try again.");
   return res.blob();
 }

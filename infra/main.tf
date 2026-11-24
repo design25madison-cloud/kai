@@ -71,6 +71,26 @@ resource "google_compute_subnetwork" "serverless" {
   ip_cidr_range = "10.30.0.0/24"
 }
 
+# The converter opens files from outside clients. If one took over LibreOffice, it must not be able
+# to send anything anywhere: not the internet, not the database. All its traffic is routed into this
+# network (run.tf), and this drops it. Requests to the converter arrive through Cloud Run, not this
+# network, so the app can still call it.
+# shortcut: DNS lookups go to Google's resolver, which firewall rules don't cover, so a few bytes
+# could still leak in hostnames; add a DNS response policy if uploads become highly sensitive.
+resource "google_compute_firewall" "converter_deny_egress" {
+  project            = var.project_id
+  name               = "${local.name_prefix}-converter-deny-egress"
+  network            = google_compute_network.app.id
+  direction          = "EGRESS"
+  priority           = 0 # Above any allow rule added later.
+  target_tags        = ["${local.name_prefix}-converter"]
+  destination_ranges = ["0.0.0.0/0"]
+
+  deny {
+    protocol = "all"
+  }
+}
+
 resource "google_compute_global_address" "private_services" {
   project       = var.project_id
   name          = "${local.name_prefix}-private-services"
@@ -106,9 +126,14 @@ resource "google_sql_database_instance" "postgres" {
     edition           = "ENTERPRISE"
     user_labels       = local.labels
 
+    # Blocks deletion at the API too (console, gcloud), not only from Terraform.
+    deletion_protection_enabled = true
+
     backup_configuration {
       enabled    = true
       start_time = "04:00"
+      # Restore to any moment in the last 7 days (default log retention), not only to 04:00.
+      point_in_time_recovery_enabled = true
 
       backup_retention_settings {
         retained_backups = 7
@@ -140,6 +165,9 @@ resource "google_sql_database" "application" {
   project  = var.project_id
   instance = google_sql_database_instance.postgres.name
   name     = "kai"
+
+  # Removing this resource (or a replace) leaves the data in place instead of dropping the database.
+  deletion_policy = "ABANDON"
 }
 
 # The kai_app database user is created outside Terraform (see README.md), because Terraform would

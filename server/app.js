@@ -24,10 +24,14 @@ export const SCHEMA = `
 ${MATERIALS_SCHEMA}`;
 // shortcut: the schema is applied at startup with "if not exists", which can't change a column. Adopt a migration tool at the first schema change.
 
+// A project's version is its updated_at in milliseconds: what the client gets back, and sends with each save.
+const UPDATED_MS = "(extract(epoch from updated_at) * 1000)::bigint";
 const COLS = `id, name, renamed, summary,
   (extract(epoch from created_at) * 1000)::bigint as created_ms,
-  (extract(epoch from updated_at) * 1000)::bigint as updated_ms`;
+  ${UPDATED_MS} as updated_ms`;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// The only Unsplash calls the app makes (src/app/imageSearch.js).
+const UNSPLASH = /^\/(search\/photos|photos\/[\w-]+\/download)$/;
 
 // The shape the screens already use (see src/app/accounts.js).
 const toProject = (r) => ({
@@ -98,13 +102,18 @@ export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
 
   api.put("/projects/:id", async (req, res) => {
     const { data, name, rest } = parseSave(req.body);
-    // A name someone typed in the project list wins over the brief's working name.
+    const version = Number.isSafeInteger(req.body.updatedAt) ? req.body.updatedAt : null;
+    // A name someone typed in the project list wins over the brief's working name. Only the version the
+    // tab last saw is replaced, so a stale tab can't overwrite newer work.
     const result = await pool.query(
       `update projects set name = case when renamed then name else coalesce($3, name) end,
          summary = summary || $4, data = $5, updated_at = now()
-       where id = $1 and owner = $2 returning ${COLS}`,
-      [req.params.id, req.email, name, rest, data],
+       where id = $1 and owner = $2 and ${UPDATED_MS} = $6 returning ${COLS}`,
+      [req.params.id, req.email, name, rest, data, version],
     );
+    if (!result.rows[0] && (await pool.query(`select 1 from projects where id = $1 and owner = $2`, [req.params.id, req.email])).rows[0]) {
+      throw fail(409, "This project was changed in another tab or device. Reload the page to get the latest.");
+    }
     res.json({ updatedAt: toProject(one(result)).updatedAt });
   });
 
@@ -139,6 +148,7 @@ export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
 
   // /api/unsplash/... → api.unsplash.com/... with the key attached, so the key never reaches the browser.
   api.use("/unsplash", async (req, res) => {
+    if (!UNSPLASH.test(req.path)) throw fail(404, "Not found.");
     if (req.method !== "GET") throw fail(405, "Not allowed.");
     if (!unsplashKey) throw fail(401, "No Unsplash key is set."); // The app falls back to Wikimedia Commons.
     // A search is remembered for a week and shared by everyone: a demo key allows 50 calls an hour,

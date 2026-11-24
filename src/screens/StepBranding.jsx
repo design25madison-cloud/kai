@@ -143,8 +143,11 @@ export default function StepBranding({ vm }) {
           </Fragment>
         ))}
       </div>
+      {/* Refs a hosted project already has stay listed, since they still steer the palette and need a way out. */}
+      {(vm.addRefs || vm.refsAdded) && (
       <div className="flex col gap-8px">
         <span className="t-13px">Image references</span>
+        {vm.addRefs && (
         <button className="dropzone" type="button" onClick={vm.addRefs}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 15V4" />
@@ -153,6 +156,7 @@ export default function StepBranding({ vm }) {
           </svg>
           Add images
         </button>
+        )}
         {vm.refsAdded && (
           <div className="ref-grid">
             {vm.refCards.map((r) => (
@@ -171,6 +175,7 @@ export default function StepBranding({ vm }) {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

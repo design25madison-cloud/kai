@@ -481,7 +481,8 @@ function buildImages(mix, offset, shown, ctx, rank) {
   const place = (slot, list) => {
     if (!list || !list.length) return;
     const label = list[rank % list.length];
-    if (images.includes(label)) return;
+    // A short list wraps around, so a later option skips a photo an earlier one opens on.
+    if (images.includes(label) || (slot < 4 && shown.has(label))) return;
     if (images[slot]) seen.delete(images[slot]);
     images[slot] = label;
     seen.add(label);
@@ -805,6 +806,13 @@ function standingFor(d, k, rec, dirs) {
 }
 
 // ---------- Entry point ----------
+
+// A project stores the directions it was generated with (BrandApp.generated()), so later changes
+// here or in archetypes.js don't move its colors. A stored copy with another version is dropped and
+// recomputed. Bump this when a change would break how screens read an older copy (a field renamed,
+// removed or newly required), or when a deploy should regenerate every saved project on purpose.
+// Changing colors or wording alone doesn't need it: saved projects then keep what they had.
+export const GEN_VERSION = 1;
 
 export function generateDirections(state, adjust) {
   const ctx = {

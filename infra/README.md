@@ -11,7 +11,7 @@ Terraform for the hosted version. It follows the Richard project's infra (`25Mad
 - **Secret Manager:** containers for the database password and the Unsplash key. Values are added
   outside Terraform, so they never reach its state.
 - **Uploads bucket:** files people add to a project. Private; only the app can read or write it.
-- **Cloud Run service `kai-converter`:** turns PowerPoint and Word uploads into PDFs (`converter/`). It has no access to anything, and only the app may call it.
+- **Cloud Run service `kai-converter`:** turns PowerPoint and Word uploads into PDFs (`converter/`). It has no access to anything, cannot send traffic anywhere (a firewall rule drops all of it), and only the app may call it.
 - **Gemini access:** the app's service account may call Gemini through Agent Platform. There is no API key.
 - **Artifact Registry `kai`:** container images.
 - **Three service accounts:** the app, the converter, and Cloud Build.
@@ -27,10 +27,13 @@ Real values live in an untracked `terraform.tfvars` (copy `terraform.tfvars.exam
 4. Apply the APIs and the two secret containers first (a targeted apply, this one time).
 5. Add the database password without showing it:
    `openssl rand -hex 32 | tr -d '\n' | gcloud secrets versions add kai-database-password --data-file=- --project PROJECT_ID`
-6. Apply everything. The service starts on a placeholder image.
-7. Create the `kai_app` database user with the password from the secret.
-8. Deploy the real image (below).
-9. Create the sign-in client by hand. Every account needs it, 25madison.com included, because the
+6. Create the bucket `gcloud builds submit` uploads source to, because the next step grants the
+   build account read on it and `gcloud` would otherwise only create it on the first deploy:
+   `gcloud storage buckets create gs://PROJECT_ID_cloudbuild --project PROJECT_ID --location us --uniform-bucket-level-access`
+7. Apply everything. The service starts on a placeholder image.
+8. Create the `kai_app` database user with the password from the secret.
+9. Deploy the real image (below).
+10. Create the sign-in client by hand. Every account needs it, 25madison.com included, because the
    project sits in a different Google organization. In Google Auth Platform: audience External
    (leave it in Testing, as Richard does), then a Web application client with the redirect URI
    `https://iap.googleapis.com/v1/oauth/clientIds/CLIENT_ID:handleRedirect`. Attach it with
@@ -39,18 +42,25 @@ Real values live in an untracked `terraform.tfvars` (copy `terraform.tfvars.exam
 
 ## Deploying
 
-From the repository root, with the build service account Terraform created:
+Deploy with the script, from a clean checkout of the commit you want to ship:
 
 ```bash
-gcloud builds submit --project PROJECT_ID --region us-central1 \
-  --service-account projects/PROJECT_ID/serviceAccounts/kai-dev-build@PROJECT_ID.iam.gserviceaccount.com \
-  --config cloudbuild.yaml .
+scripts/deploy.sh
 ```
 
-The build runs the server tests, builds the image, and points the service at it. Once the Cloud
+It refuses to run if `git status` shows any change, so the image is exactly a commit. It reads the
+project ID from `terraform.tfvars` and runs `gcloud builds submit` as the build service account
+Terraform created. The build runs the server tests, builds both images (tagged with the build ID and
+the short commit hash), and points the services at them; each revision carries a `commit` label. Once the Cloud
 Build GitHub App is connected to the repository, set `enable_branch_deploy_trigger = true` and
 deploy from the Cloud Build console instead.
 
 ## Adding someone
 
 Add their Google account to `iap_users` in `terraform.tfvars` and apply.
+
+That is not always enough: the sign-in client's consent screen (step 10 above) is External and was
+left in Testing, and while it stays in Testing Google admits only accounts on its test-user list.
+So either publish the consent screen (Google Auth Platform, Audience, Publish app), or also add
+each person, including everyone in `workspace_domain` and `iap_domains`, as a test user there.
+Check which of the two is true for the project before relying on the IAP list alone.

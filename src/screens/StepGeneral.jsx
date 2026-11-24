@@ -4,16 +4,6 @@ export default function StepGeneral({ vm }) {
   return (
     <div className="flex col gap-24px">
       <h2 className="m-0 t-22px w-600">General</h2>
-      {vm.showUpload && (
-        <button className="h-150px r-10px bd-1px-dashed-grey-2 bg-bg flex col items-center justify-center gap-8px" type="button" onClick={vm.doImport}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 15V4" />
-            <path d="M7 9l5-5 5 5" />
-            <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
-          </svg>
-          <span className="t-15px w-600">Upload your brief</span>
-        </button>
-      )}
       {vm.imported && (
         <div className="p-14px-16px flex col items-flex-start gap-12px bg-bg bd-1px-solid-grey-2 r-12px">
           <span className="t-14px"><strong>{vm.importName}</strong> · {vm.importText}</span>

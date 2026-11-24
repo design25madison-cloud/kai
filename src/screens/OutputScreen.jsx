@@ -14,6 +14,7 @@ import WordmarkSection from "./WordmarkSection.jsx";
 
 export default function OutputScreen({ vm }) {
   const [projectMenu, setProjectMenu] = useState(false);
+  const [askStart, setAskStart] = useState(false);
   // The rail gives way to the AI chat, which takes over the side of the screen.
   const showRail = vm.isDir && !vm.cmode;
   return (
@@ -25,11 +26,23 @@ export default function OutputScreen({ vm }) {
               <HomeLogo vm={vm} size="sm" />
               <span className="c-muted t-14px">/</span>
               <div className="relative">
-                <button className="crumb-btn" type="button" onClick={() => setProjectMenu(!projectMenu)} aria-expanded={projectMenu} aria-haspopup="menu">{vm.projectName}</button>
+                <button className="crumb-btn" type="button" onClick={() => { setProjectMenu(!projectMenu); setAskStart(false); }} aria-expanded={projectMenu} aria-haspopup="menu">{vm.projectName}</button>
                 {projectMenu && (
-                  <div className="menu menu--start">
-                    <button className="menu__item" type="button" onClick={vm.backToBrief}>Edit answers</button>
-                    <button className="menu__item" type="button" onClick={vm.startOver}>Start over</button>
+                  <div className={askStart ? "menu menu--start project-menu" : "menu menu--start"}>
+                    {askStart ? (
+                      <div className="project-menu__confirm">
+                        <span className="t-13px">Start over? This clears every answer and direction in this project. It can't be undone.</span>
+                        <div className="flex gap-8px">
+                          <button className="btn btn--danger" type="button" onClick={vm.startOver}>Start over</button>
+                          <button className="btn" type="button" onClick={() => { setAskStart(false); setProjectMenu(false); }}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button className="menu__item" type="button" onClick={vm.backToBrief}>Edit answers</button>
+                        <button className="menu__item" type="button" onClick={() => setAskStart(true)}>Start over</button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

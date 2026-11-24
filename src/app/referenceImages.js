@@ -2,7 +2,7 @@
 // shipped with the app) come first; any other label is looked up on Unsplash and Commons
 // (imageSearch.js). Each result holds the photo's author, license, source and links for credit.
 import credits from "./referenceImages.json";
-import { isSearching, markUsed, searchedImage, subscribe } from "./imageSearch.js";
+import { brokenImage, cachedImage, isSearching, markUsed, pinImages, searchedImage, subscribe } from "./imageSearch.js";
 
 const files = import.meta.glob("../assets/references/*.jpg", { eager: true, query: "?url", import: "default" });
 
@@ -17,7 +17,10 @@ export function referenceImage(label) {
   return curatedImage(label) || searchedImage(label);
 }
 
-export { isSearching, subscribe };
+export { brokenImage, isSearching, pinImages, subscribe };
+
+// The searched photos these labels show now (hand-picked ones ship with the app), for a project to keep.
+export const shownImages = (labels) => Object.fromEntries(labels.filter((l) => !curatedImage(l) && cachedImage(l)).map((l) => [l, cachedImage(l)]));
 
 // Call when photos are picked or exported, so Unsplash counts the use (their terms require it).
 export function markImagesUsed(labels) {

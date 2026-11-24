@@ -141,9 +141,6 @@ export default function Moodboard({ vm }) {
             ))}
           </div>
           <p className="m-0 t-13px lh-1_5 c-ink-2"><strong>Trade-off:</strong> {vm.cur.tradeoff}</p>
-          {vm.hasFollowNote && (
-            <p className="m-0 t-12px lh-1_5 c-ink-2 bd-t-1px-solid-line pt-10px"><strong>From your uploads:</strong> {vm.followNote} {vm.contextNote}</p>
-          )}
         </section>
         )}
       </div>

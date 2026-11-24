@@ -66,12 +66,12 @@ test("a project saves, reloads, and keeps a name typed in the project list", asy
   const created = (await call(ana, "POST", "/projects", { data: { screen: "welcome" } })).body;
   assert.equal(created.name, "Untitled brand");
 
-  await call(ana, "PUT", `/projects/${created.id}`, { data: { screen: "brief" }, summary: { name: "Ferra", where: "Brief step 2" } });
+  await call(ana, "PUT", `/projects/${created.id}`, { data: { screen: "brief" }, summary: { name: "Ferra", where: "Brief step 2" }, updatedAt: created.updatedAt });
   let loaded = (await call(ana, "GET", `/projects/${created.id}`)).body;
   assert.deepEqual([loaded.name, loaded.where, loaded.data.screen], ["Ferra", "Brief step 2", "brief"]);
 
-  await call(ana, "POST", `/projects/${created.id}/rename`, { name: "Ferra v2" });
-  await call(ana, "PUT", `/projects/${created.id}`, { data: { screen: "out" }, summary: { name: "Ferra" } });
+  const renamed = (await call(ana, "POST", `/projects/${created.id}/rename`, { name: "Ferra v2" })).body;
+  assert.equal((await call(ana, "PUT", `/projects/${created.id}`, { data: { screen: "out" }, summary: { name: "Ferra" }, updatedAt: renamed.updatedAt })).status, 200);
   loaded = (await call(ana, "GET", `/projects/${created.id}`)).body;
   assert.equal(loaded.name, "Ferra v2");
 
@@ -95,6 +95,28 @@ test("nobody else can see or change a project", async () => {
 
   const mine = (await call(ana, "GET", `/projects/${id}`)).body;
   assert.deepEqual([mine.name, mine.data], ["Untitled brand", { secret: true }]);
+});
+
+test("a save over a version the tab didn't see is refused", async () => {
+  const { id } = (await call(ana, "POST", "/projects", { data: { v: 0 } })).body;
+  // Back-date it, so the next save can't land in the same millisecond.
+  await pool.query("update projects set updated_at = now() - interval '1 minute' where id = $1", [id]);
+  const seen = (await call(ana, "GET", `/projects/${id}`)).body.updatedAt;
+  const put = (data, updatedAt) => call(ana, "PUT", `/projects/${id}`, { data, updatedAt });
+
+  const first = await put({ v: 1 }, seen);
+  assert.equal(first.status, 200);
+  assert.ok(first.body.updatedAt > seen);
+  // A second tab that still holds the old version, or a client that sends none, can't overwrite it.
+  const stale = await put({ v: "stale" }, seen);
+  assert.equal(stale.status, 409);
+  assert.match(stale.body.error, /another tab or device/);
+  assert.equal((await put({ v: "unversioned" })).status, 409);
+  assert.equal((await put({ v: 2 }, first.body.updatedAt)).status, 200);
+  assert.deepEqual((await call(ana, "GET", `/projects/${id}`)).body.data, { v: 2 });
+
+  await call(ana, "DELETE", `/projects/${id}`);
+  assert.equal((await put({ v: 3 }, first.body.updatedAt)).status, 404);
 });
 
 test("bad input is refused", async () => {
@@ -291,6 +313,29 @@ test("an Unsplash search is asked once and then shared, but a used photo is alwa
     assert.equal(calls.length, 4);
     assert.equal((await get(ana, `/search/photos?query=new-${run}`)).status, 403); // Nothing kept: the limit shows through.
     assert.equal((await get("", search)).status, 401);
+  } finally {
+    globalThis.fetch = realFetch;
+    withKey.close();
+  }
+});
+
+test("the Unsplash relay passes on only the two calls the app makes", async () => {
+  const realFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    if (!String(url).startsWith("https://api.unsplash.com")) return realFetch(url, options);
+    calls.push(String(url));
+    return Response.json({});
+  };
+  const withKey = createApp({ pool, cloud, unsplashKey: "k", identify: async (req) => req.get("x-test-user") || null }).listen(0);
+  const get = (path) => fetch(`http://localhost:${withKey.address().port}/api/unsplash${path}`, { headers: { "x-test-user": ana } });
+  try {
+    for (const path of ["/me", "/users/someone/photos", "/photos/p1", "/photos/p1/download/extra", "/photos/a%2F..%2Fb/download", "/search/users?query=x"]) {
+      assert.equal((await get(path)).status, 404, path);
+    }
+    assert.equal(calls.length, 0);
+    assert.equal((await get(`/photos/Ab-c_1/download?ixid=${run}`)).status, 200);
+    assert.deepEqual(calls, [`https://api.unsplash.com/photos/Ab-c_1/download?ixid=${run}`]);
   } finally {
     globalThis.fetch = realFetch;
     withKey.close();

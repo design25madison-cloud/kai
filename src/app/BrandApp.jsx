@@ -4,30 +4,31 @@ import { ALL_SECTIONS, typeScaleOf } from "./exports.js";
 import accounts from "./store.js";
 import { ensureFonts } from "./fonts.js";
 import { flowVals, newMeeting } from "./flow.js";
-import { contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
-import { markImagesUsed, subscribe as onImages } from "./referenceImages.js";
+import { GEN_VERSION, contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
+import { isSearching, markImagesUsed, pinImages, shownImages, subscribe as onImages } from "./referenceImages.js";
 import { INDUSTRIES } from "./layers.js";
-import { imageColorsVersion, subscribe as onImageColors } from "./imageColors.js";
+import { imageColorsVersion, readingColors, subscribe as onImageColors } from "./imageColors.js";
 import { restrictedHits } from "./language.js";
 import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
 import { loadMaterials, materialVals } from "./materials.js";
 import { editContext, editProposal } from "./edits.js";
 
+const SETTLE_MS = 30000;
+
 export default class BrandApp extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      screen: 'splash', path: 'brief', step: 1, imported: false, confirmed: false,
+      screen: 'splash', path: 'brief', step: 1, dirs: null,
       f: this.blankF(), tone: [], looks: {}, sl: { warmth: 50, energy: 50, serious: 50 },
       avoidC: [], keepC: [], avoidT: [], banned: [], brandsA: [], deliv: [], domains: [], votes: [], taglines: [], buyerCares: [], comps: [], alts: [],
       refs: [], refTags: {}, legalOpen: false, endOn: false, sigOpen: false,
       pk: { open: false, mode: 'avoid', h: 280, s: 70, l: 30, text: null },
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
-      arts: [], view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
-      mixPick: { word: 0, palette: 0, type: 0, refs: 0, voice: 0 }, mixBase: null, keep: 40, opinion: '', oRec: null,
+      view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
+      mixPick: { word: 0, palette: 0, type: 0, refs: 0, voice: 0 }, mixBase: null, keep: 40,
       meeting: newMeeting(), handoffFile: 'claude', exportSel: ALL_SECTIONS, exportFormat: 'claude'
     };
-    this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
     Object.assign(this.state, { user: accounts.currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
     // Materials: pasted notes and which answers were suggested from them are saved with the project; the rest is per visit.
     Object.assign(this.state, { material: '', sugg: {}, files: [], uploading: '', fillBusy: false, fillError: '' });
@@ -40,6 +41,7 @@ export default class BrandApp extends Component {
     // Autosave: any change to the open project saves shortly after the last edit.
     if (s.projectId && s.projectId === prev.projectId && projectChanged(prev, s)) scheduleSave(this);
     if (s.screen === 'start' && (prev.screen !== 'start' || prev.projectId !== s.projectId)) loadMaterials(this);
+    this.storeDirs();
   }
   blankF() {
     const keys = ['name', 'legal', 'desc', 'domainIn', 'voteIn', 'meaning', 'toneIn', 'lookNote', 'colorDir', 'avoidOther', 'bannedIn', 'brandAIn', 'buyerRole', 'mot', 'success', 'opRole', 'opTeam', 'opCares', 'endWho', 'endCares',
@@ -63,75 +65,19 @@ export default class BrandApp extends Component {
   }
   componentDidMount() {
     // Closing the tab mid-change still saves it.
-    this._flush = () => { if (this._save) saveNow(this); };
+    this._flush = () => { if (this._save) saveNow(this, { closing: true }); };
     window.addEventListener('beforeunload', this._flush);
     // Reference photos arrive from image search after the first render; redraw when they do.
     this._offImages = onImages(() => this.forceUpdate());
     this._offImageColors = onImageColors(() => this.forceUpdate());
   }
-  componentWillUnmount() { if (this._offImages) this._offImages(); if (this._offImageColors) this._offImageColors(); clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); clearTimeout(this._a); clearInterval(this._o); window.removeEventListener('beforeunload', this._flush); }
-
-  voiceData(n) {
-    const smp = this.sampleState(), sf = smp.f;
-    const pickF = (keys) => { const o = {}; keys.forEach(k => { o[k] = sf[k]; }); return o; };
-    if (n === 1) return {
-      section: 'the basics', prompts: ['What you are calling it', 'What it does and for whom', 'What you need', 'Domains you secured', 'Names the team likes'],
-      transcript: 'Okay, so the working name is Ferra, like iron. It is [what the company does] for [who it is for]. We secured ferra dot example. We need a logo and a website. The team likes Ferra best, and [an alternate name] came second.',
-      items: [{ label: 'Working name', f: pickF(['name']) }, { label: 'Company description', f: pickF(['desc']) }, { label: 'Domains secured', x: { domains: smp.domains } },
-        { label: 'Deliverables', x: { deliv: smp.deliv } }, { label: 'Name preferences', x: { votes: smp.votes } }]
-    };
-    if (n === 2) return {
-      section: 'your brand', prompts: ['Where the name comes from', 'How it should look and feel', 'Brands you admire or want to avoid', 'Colors and styles to stay away from', 'Any taglines'],
-      transcript: 'Ferra comes from Fe, the symbol for iron, so strength that holds under load. It should look warm rather than cold, clean and minimal. We like [a brand we admire] because [why]. We do not want to look like [a brand to avoid]. No gradients, no neon, and stay away from purple. A working tagline is [working tagline].',
-      items: [{ label: 'Name meaning', f: pickF(['meaning']) }, { label: 'Look and feel', x: { looks: smp.looks } },
-        { label: 'Colors to avoid', x: { avoidC: smp.avoidC } }, { label: 'Treatments to avoid', x: { avoidT: smp.avoidT } },
-        { label: 'Brands admired', x: { brandsA: smp.brandsA } }, { label: 'Taglines', x: { taglines: smp.taglines } }]
-    };
-    if (n === 3) return {
-      section: 'your customer', prompts: ['Who buys it and who uses it', 'The problem and who feels it most', 'Competitors and workarounds', 'What makes you different'],
-      transcript: 'The buyer is usually [buyer role]. They care about ROI and reliability, and they buy because [motivation]. The day-to-day user is [operator role] on the [team] team. The problem is [the problem today], and operators feel it most. Right now people get by with [a workaround] or [a competitor], which fall short because [reason]. What makes us different is [differentiator], and that matters because [why].',
-      items: [{ label: 'Economic buyer', f: pickF(['buyerRole', 'mot', 'success']) }, { label: 'What the buyer cares about', x: { buyerCares: smp.buyerCares } },
-        { label: 'Operational user', f: pickF(['opRole', 'opTeam', 'opCares']) }, { label: 'Core problem', f: pickF(['problem', 'short']) },
-        { label: 'Competitors', x: { comps: smp.comps } }, { label: 'Alternatives', x: { alts: smp.alts } },
-        { label: 'Differentiation', f: pickF(['diff', 'diffWhy']) }, { label: 'Audience motivation', f: pickF(['outcomes', 'switchTo']) }]
-    };
-    return {
-      section: 'your tone', prompts: ['How the name should come across', 'The main value it delivers', 'What gets people to try it', 'How it should feel to use'],
-      transcript: 'It should feel sturdy, industrial, and precise, and more serious than playful. The main value is [primary value], and it should make people feel [emotional value]. People will try it first for [the wedge feature], because [why it beats alternatives]. Using it should feel [how it feels end to end]. The aha moment is [aha moment], and success looks like [outcome].',
-      items: [{ label: 'Tone of the name', x: { tone: smp.tone } }, { label: 'Emotional tone', x: { sl: smp.sl }, force: true }, { label: 'Value', f: { value: sf.value, emo: sf.emo } }, { label: 'Wedge feature', f: { wedge: '[Feature that gets users to try it]', wedgeWhy: '[Why it beats alternatives]' } },
-        { label: 'Product feel', f: { feel: '[How it should feel end to end]', diffFeel: '[What should feel different]' } },
-        { label: 'Workflow', f: { wfStart: '[Where users start]', wfAha: '[The aha moment]', wfSuccess: '[What success looks like]' } }]
-    };
-  }
-  applyVoice(n) {
-    const s = this.state, d = this.voiceData(n), nf = Object.assign({}, s.f), patch = {}, filled = [], prev = { f: s.f };
-    d.items.forEach(it => {
-      let did = false;
-      Object.keys(it.f || {}).forEach(k => { if (!nf[k]) { nf[k] = it.f[k]; did = true; } });
-      Object.keys(it.x || {}).forEach(k => {
-        const cur = s[k];
-        const empty = it.force || (Array.isArray(cur) ? cur.length === 0 : (cur && typeof cur === 'object' ? Object.keys(cur).length === 0 : !cur));
-        if (empty) { prev[k] = cur; patch[k] = it.x[k]; did = true; }
-      });
-      if (did) filled.push(it.label);
-    });
-    patch.f = nf; patch.vRec = null;
-    patch.vDone = Object.assign({}, s.vDone, { [n]: { filled, prev } });
-    this.setState(patch);
-  }
+  componentWillUnmount() { if (this._offImages) this._offImages(); if (this._offImageColors) this._offImageColors(); clearInterval(this._g); clearTimeout(this._t); clearTimeout(this._a); clearTimeout(this._st); window.removeEventListener('beforeunload', this._flush); }
 
   hexOk(h) { return /^#[0-9a-fA-F]{6}$/.test(h || ''); }
   rgb(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
   lum(h) { const c = this.rgb(h).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
-  ratio(a, b) { const l1 = this.lum(a), l2 = this.lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); }
   mix(h, t) { const c = this.rgb(h).map(v => Math.round(v * (1 - t))); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase(); }
-  minMix(h) { for (let t = 0; t <= 0.9; t += 0.01) { if (this.ratio(this.mix(h, t), '#FFFFFF') >= 4.5) return Math.round(t * 100); } return 90; }
-  hsl2hex(h, s, l) {
-    s /= 100; l /= 100;
-    const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
-    const f = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))));
-    return '#' + [f(0), f(8), f(4)].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
-  }
+  minMix(h) { for (let t = 0; t <= 0.9; t += 0.01) { if (contrast(this.mix(h, t), '#FFFFFF') >= 4.5) return Math.round(t * 100); } return 90; }
   hex2hsl(hex) {
     const [r, g, b] = this.rgb(hex).map(v => v / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
     let h = 0, s = 0;
@@ -159,20 +105,38 @@ export default class BrandApp extends Component {
     if (/bright|bold|vivid|pop|punch/.test(t)) { s += 15; hit = true; }
     if (/mute|soft|calm|dull|subtle|tone it down/.test(t)) { s -= 15; hit = true; }
     if (!hit) return null;
-    return this.hsl2hex(h, Math.max(0, Math.min(100, s)), Math.max(4, Math.min(96, l)));
+    return hslToHex([h, Math.max(0, Math.min(100, s)), Math.max(4, Math.min(96, l))]);
   }
 
   // The three directions come from the brief: each is a blend of one to three archetypes
   // (see generate.js and docs/archetypes.md). Cached until the brief inputs change.
+  // Keys are sorted because the server's database reorders them, and this is compared after a reload.
+  genInputs() { const s = this.state; return JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.keepC, s.avoidT, s.comps, s.refs, s.refTags, s.keep], (k, v) => v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v); }
+  // A project shows the directions stored with it (storeDirs), so photo searches and deploys don't change them.
   generated() {
-    const s = this.state;
+    const s = this.state, saved = s.dirs && s.dirs.v === GEN_VERSION ? s.dirs : null;
+    pinImages(saved && saved.images);
+    if (saved) return saved;
     // Photo colors arrive after the first render, so their version is part of the key.
-    const key = JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.keepC, s.avoidT, s.comps, s.refs, s.refTags, s.keep, imageColorsVersion()]);
+    const inputs = this.genInputs(), key = inputs + imageColorsVersion();
     if (this._genKey !== key) {
-      this._genKey = key;
+      this._genKey = key; this._genIn = inputs;
       this._gen = generateDirections(s, (hex, t) => this.adjust(hex, t));
     }
     return this._gen;
+  }
+  // Directions computed live are stored with the project once the photo searches and color reads
+  // they depend on have landed or failed, along with the searched photos they show.
+  // shortcut: a lookup still running after SETTLE_MS on these screens is given up on, and the directions are stored without its colors; Generate again brings them in.
+  storeDirs() {
+    const s = this.state;
+    const reset = () => { clearTimeout(this._st); this._st = null; this._late = false; };
+    if (!['out', 'meet', 'handoff'].includes(s.screen) || (s.dirs && s.dirs.v === GEN_VERSION)) return reset();
+    if (!this._st) this._st = setTimeout(() => { this._late = true; this.forceUpdate(); }, SETTLE_MS);
+    if ((isSearching() || readingColors()) && !this._late) return;
+    reset();
+    const g = this.generated(), images = shownImages(g.directions.flatMap(d => d.images.concat(d.imgPool).map(x => x[0])));
+    this.setState({ dirs: JSON.parse(JSON.stringify({ v: GEN_VERSION, in: this.genInputs(), directions: g.directions, recommended: g.recommended, images })) });
   }
   opts() {
     const list = this.generated().directions.slice();
@@ -180,69 +144,12 @@ export default class BrandApp extends Component {
     return list;
   }
 
-  artDefs() {
-    return {
-      brief: { name: 'Ferra_brand_brief.docx', kind: 'DOC', detail: 'Brand brief · 36 answers found', def: 'follow',
-        fol: 'Its answers fill the brief and are marked Imported. You confirm them.', ctx: 'Its answers show as Suggested drafts. Check each one before you generate.', short: '' },
-      logo: { name: 'ferra-logo-draft.png', kind: 'PNG', detail: 'Logo draft · colors found:', swatches: ['#3E1F0E', '#D8CFC4'], def: 'follow',
-        fol: 'Every option keeps this wordmark style (closest typeface: Anta) and Iron #3E1F0E as the primary. Both start locked.', ctx: 'Its colors and letterforms steer the options, but each option can move away from them.', short: 'the Anta wordmark and Iron #3E1F0E from your logo' },
-      deck: { name: 'pitch-deck-v3.pdf', kind: 'PDF', detail: 'Pitch deck · 14 slides · body set in IBM Plex Sans', def: 'context',
-        fol: 'Every option sets body text in IBM Plex Sans, and typography starts locked.', ctx: 'We read it for positioning and audience. Its fonts and colors are not reused.', short: 'IBM Plex Sans from your deck' },
-      mood: { name: 'mood-shots (4 images)', kind: 'IMG', detail: 'Mood images', def: 'context',
-        fol: 'Your images lead the reference imagery in every option, locked.', ctx: 'They guide the image searches. Your files are not shown on the moodboard.', short: 'your mood images' },
-      call: { name: 'kickoff-call-transcript.txt', kind: 'TXT', detail: 'Meeting transcript · 42 min', def: 'context',
-        fol: 'Decisions said on the call fill the brief as Imported.', ctx: 'We pull suggestions from the call. You decide what to keep.', short: 'decisions from the kickoff call' }
-    };
-  }
-  aspectDefs() {
-    return {
-      brief: [['audience', 'Audience', 'who it is for'], ['tone', 'Tone words', 'how it should feel'], ['refs', 'Brand references', 'brands it names']],
-      logo: [['colors', 'Colors', 'Iron and Sand'], ['letters', 'Letterforms', 'squared and geometric'], ['mark', 'Icon shape', 'the anvil mark']],
-      deck: [['fonts', 'Fonts', 'IBM Plex Sans'], ['colors', 'Colors', 'navy and white'], ['layout', 'Layouts', 'slide structure'], ['msg', 'Messaging', 'how it pitches']],
-      mood: [['colors', 'Colors', 'rust and sand tones'], ['texture', 'Textures', 'metal, sand, concrete'], ['subjects', 'Subjects', 'people at work']],
-      call: [['tone', 'How the founders talk', 'plain and direct'], ['decisions', 'Decisions', 'things agreed on the call']]
-    };
-  }
   keepBand() { const v = this.state.keep; return v < 25 ? 0 : v < 50 ? 1 : v < 75 ? 2 : 3; }
-  heard() {
-    const t = (this.state.opinion || '').toLowerCase(), prefs = {}, said = [];
-    t.split(/[.;!?,]|\bbut\b|\band\b/).forEach(cl => {
-      cl = cl.trim(); if (!cl) return;
-      const neg = /(don't|dont|do not|\bnot\b|\bno\b|avoid|hate|too |change|lose|ditch|drop|bit dark|off)/.test(cl);
-      const pos = !neg && /(like|love|keep|want|good|great|fine|works|close)/.test(cl);
-      if (!neg && !pos) return;
-      const v = neg ? 'avoid' : 'like', tops = [];
-      if (/colou?r|brown|palette|tone|warm/.test(cl)) tops.push([['logo.colors', 'mood.colors'], 'the colors']);
-      if (/letter|wordmark|lettering/.test(cl)) tops.push([['logo.letters'], 'the letterforms']);
-      if (/font|typeface|\btype\b/.test(cl)) tops.push([['deck.fonts'], 'the deck fonts']);
-      if (/photo|image|picture|mood|texture/.test(cl)) tops.push([['mood.texture'], 'the images']);
-      if (/icon|symbol|anvil|\bmark\b/.test(cl)) tops.push([['logo.mark'], 'the icon']);
-      tops.forEach(tp => { tp[0].forEach(k => { prefs[k] = v; }); const w = (v === 'like' ? 'keep ' : 'change ') + tp[1]; if (!said.includes(w)) said.push(w); });
-    });
-    return { prefs, said };
-  }
-  pref(id, key) { if (!this.state.arts.some(x => x.id === id) || this.artRole(id) !== 'context' || this.keepBand() === 3) return undefined; return this.heard().prefs[id + '.' + key]; }
-  artRole(id) {
-    if (!this.state.arts.some(x => x.id === id)) return null;
-    const b = this.keepBand();
-    if (id === 'brief') return b < 3 ? 'follow' : 'context';
-    if (id === 'logo' || id === 'deck' || id === 'mood') return b === 0 ? 'follow' : 'context';
-    return 'context';
-  }
   followOv() {
     const ov = [{}, {}, {}];
-    const logo = this.artRole('logo') === 'follow', deck = this.artRole('deck') === 'follow', mood = this.artRole('mood') === 'follow';
     const base = this.opts();
     ov.forEach((o, i) => {
       const lock = {};
-      if (logo) { o.wordFont = 'Anta'; lock.word = true; o.hex = [ '#3E1F0E', null, null, null, null ]; o.names = ['Iron']; o.swLock = [true]; }
-      if (deck) { o.body = 'IBM Plex Sans'; lock.type = true; }
-      if (mood) { o.images = base[i].images.map((x, k) => k < 2 ? ['Your image ' + (k + 1), 'Your upload', true] : [x[0], x[1], false]); }
-      if (!logo && this.pref('logo', 'colors') === 'like') { o.hex = ['#3E1F0E', null, null, null, null]; o.names = ['Iron']; }
-      if (!logo && this.pref('logo', 'letters') === 'like') o.wordFont = 'Anta';
-      if (!logo && this.pref('logo', 'letters') === 'avoid') { const w = base[i].words.findIndex(x => x[0] !== 'Anta'); if (base[i].words[0][0] === 'Anta') o.wordV = w; }
-      if (!deck && this.pref('deck', 'fonts') === 'like') o.body = 'IBM Plex Sans';
-      if (!deck && this.pref('deck', 'fonts') === 'avoid') { const t = base[i].types.findIndex(x => x[1] !== 'IBM Plex Sans' && x[0] !== 'IBM Plex Sans'); if (base[i].types[0].includes('IBM Plex Sans')) o.typeV = t; }
       const clean = base[i].voices.findIndex(v => !restrictedHits(this.state.banned, v).length);
       if (clean > 0) o.voiceV = clean;
       o.lock = lock;
@@ -264,9 +171,11 @@ export default class BrandApp extends Component {
     if (mod === 'palette') {
       const sw = ov.swLock || [], L = base.palettes.length, pv = ov.palV || 0, curPal = base.palettes[pv % L], idx = curPal.map((_, k) => k);
       if (idx.every(k => sw[k])) return null;
+      // Skip variants too short to hold every locked color, so a regenerate never drops one (the current variant always fits).
+      const need = idx.reduce((n, k) => sw[k] ? k + 1 : n, 0), nv = Array.from({ length: L }, (_, t) => (pv + t + 1) % L).find(v => base.palettes[v].length >= need);
       const hex = idx.map(k => sw[k] ? ((ov.hex && ov.hex[k] != null) ? ov.hex[k] : curPal[k][1]) : null);
       const names = idx.map(k => sw[k] ? ((ov.names && ov.names[k]) || curPal[k][0]) : null);
-      const p = { palV: (pv + 1) % L, hex, names };
+      const p = { palV: nv, hex, names };
       if (!ov.uiFixed) p.uiMix = null;
       return p;
     }
@@ -335,7 +244,7 @@ export default class BrandApp extends Component {
     }
     const accent = shown[uiIdx], accentName = names[uiIdx];
     const uiMix = ov.uiMix != null ? ov.uiMix : this.minMix(accent);
-    const ui = ov.uiFixed || this.mix(accent, uiMix / 100), uiR = this.ratio(ui, '#FFFFFF');
+    const ui = ov.uiFixed || this.mix(accent, uiMix / 100), uiR = contrast(ui, '#FFFFFF');
     const T = dk
       ? { light: darkO, surface: this.tint(darkO, 0.1), primary: surfaceO, ink: lightO, deep: this.mix(darkO, 0.35), card: this.tint(darkO, 0.14), onDeep: surfaceO, onPrimary: darkO }
       : { light: lightO, surface: surfaceO, primary: primaryO, ink: darkO, deep: darkO, card: '#FFFFFF', onDeep: surfaceO, onPrimary: '#FFFFFF' };
@@ -378,14 +287,14 @@ export default class BrandApp extends Component {
       const end = (tries.find(t => t.n <= 12) || tries[tries.length - 1]).e;
       gradientCss = 'linear-gradient(120deg, ' + bg + ' 0%, ' + hslToHex(end) + ' 100%)';
     }
-    const linkColor = !dk ? ui : (this.ratio(accent, T.light) >= 4.5 ? accent : this.tint(ui, 0.45));
+    const linkColor = !dk ? ui : (contrast(accent, T.light) >= 4.5 ? accent : this.tint(ui, 0.45));
     return Object.assign({
       i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, recommended: !!base.recommended, fit: base.fit || '', mix: base.mix || [], layers: base.layers || [], primaryReasons: base.primaryReasons || [], dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
       displayPkg: this.pkg(display), bodyPkg: this.pkg(body), colors, palNames: names.join(', '),
       darkName: names[darkIdx], darkO, accent, accentName,
-      accentText: this.ratio(accent, T.deep) >= 4.5 ? accent : (dk ? lightO : '#FFFFFF'),
-      onAccent: this.ratio(darkO, accent) >= this.ratio('#FFFFFF', accent) ? darkO : '#FFFFFF',
-      ui, uiMix, uiHover: this.mix(ui, 0.15), uiRatio: uiR.toFixed(2), uiDarkRatio: this.ratio(ui, darkO).toFixed(2), linkColor,
+      accentText: contrast(accent, T.deep) >= 4.5 ? accent : (dk ? lightO : '#FFFFFF'),
+      onAccent: contrast(darkO, accent) >= contrast('#FFFFFF', accent) ? darkO : '#FFFFFF',
+      ui, uiMix, uiHover: this.mix(ui, 0.15), uiRatio: uiR.toFixed(2), uiDarkRatio: contrast(ui, darkO).toFixed(2), linkColor,
       passLabel: uiR >= 4.5 ? 'Passes AA' : 'Fails AA', passBg: uiR >= 4.5 ? 'var(--color-ink)' : 'var(--color-coral)',
       darkRoles: [{ role: 'Background', name: names[darkIdx] }, { role: 'Text', name: lightName }, { role: 'Wordmark and headings', name: surfName }, { role: 'Buttons', name: 'UI primary' }],
       tone, toneArr, headline, micro: vv.micro, hits: restrictedHits(s.banned, { tone: toneArr, headline, micro: vv.micro }), reason: base.reason, match: base.match, tradeoff: base.tradeoff,
@@ -420,7 +329,7 @@ export default class BrandApp extends Component {
     const i = c.opt, about = { c, d: this.optionData(i), base: this.opts()[i], ov: this.state.ov[i] || {} };
     accounts.editPiece(pid, editContext(Object.assign({ f: this.state.f, tone: this.state.tone, banned: this.state.banned }, about)))
       .then(change => {
-        const prop = editProposal(Object.assign({ change, ratio: (a, b) => this.ratio(a, b) }, about));
+        const prop = editProposal(Object.assign({ change, ratio: contrast }, about));
         ensureFonts([prop.aFont].concat(prop.aType || []));
         done({ status: 'proposed', prop });
       })
@@ -448,7 +357,7 @@ export default class BrandApp extends Component {
     }
     if (c.sec === 'ui') {
       const step = /light|bright|soft/.test(t) ? -10 : 10, m = Math.max(0, Math.min(80, d.uiMix + step * (n + 1))), hex = this.mix(d.accent, m / 100);
-      return { kind: 'colors', summary: (step > 0 ? 'Darkened' : 'Lightened') + ' the UI primary. White text contrast goes from ' + d.uiRatio + ':1 to ' + this.ratio(hex, '#FFFFFF').toFixed(2) + ':1.',
+      return { kind: 'colors', summary: (step > 0 ? 'Darkened' : 'Lightened') + ' the UI primary. White text contrast goes from ' + d.uiRatio + ':1 to ' + contrast(hex, '#FFFFFF').toFixed(2) + ':1.',
         before: [d.ui], after: [hex], patch: { uiMix: m, uiFixed: hex } };
     }
     if (c.sec === 'word') {
@@ -533,7 +442,7 @@ export default class BrandApp extends Component {
     const sliders = [['warmth', 'Warm', 'Professional'], ['energy', 'Calm', 'Energetic'], ['serious', 'Playful', 'Serious']].map(([key, l, r]) => ({ key, l, r, val: s.sl[key], aria: l + ' to ' + r }));
     const avoidColors = s.avoidC.map(hex => ({ hex, aria: 'Remove ' + hex + ' from the avoid list', remove: () => set({ avoidC: s.avoidC.filter(x => x !== hex) }) }));
     const keepColors = (s.keepC || []).map(hex => ({ hex, aria: 'Remove ' + hex + ' from the keep list', remove: () => set({ keepC: s.keepC.filter(x => x !== hex) }) }));
-    const p = s.pk, pHex = this.hsl2hex(p.h, p.s, p.l), rad = p.h * Math.PI / 180;
+    const p = s.pk, pHex = hslToHex([p.h, p.s, p.l]), rad = p.h * Math.PI / 180;
     const pk = { open: p.open, mode: p.mode || 'avoid', l: p.l, hex: pHex, hexText: p.text !== null ? p.text : pHex,
       x: (50 + Math.sin(rad) * p.s / 2).toFixed(1) + '%', y: (50 - Math.cos(rad) * p.s / 2).toFixed(1) + '%' };
     const setPk = (patch) => set({ pk: Object.assign({}, s.pk, patch) });
@@ -546,8 +455,6 @@ export default class BrandApp extends Component {
     const addDomain = fromField('domainIn', 'domains');
     const swap = (i, j) => () => { if (j < 0 || j >= s.votes.length) return; const a = s.votes.slice(); const t = a[i]; a[i] = a[j]; a[j] = t; set({ votes: a }); };
     const votes = s.votes.map((v, i) => ({ rank: (i + 1) + '.', label: v, up: swap(i, i - 1), down: swap(i, i + 1), upAria: 'Move ' + v + ' up', downAria: 'Move ' + v + ' down', aria: 'Remove ' + v, remove: listRm('votes', i) }));
-    const toneAll = ['Sturdy', 'Industrial', 'Precise', 'Warm', 'Playful', 'Calm', 'Bold', 'Minimal'];
-    s.tone.forEach(t => { if (!toneAll.includes(t)) toneAll.push(t); });
     const taglines = s.taglines.map((t, i) => ({ text: t, set: listUpd('taglines', i), remove: listRm('taglines', i) }));
     const careChips = ['ROI', 'Growth', 'Efficiency', 'Reliability', 'Cost', 'Risk'].map(label => Object.assign({ label, on: s.buyerCares.includes(label), toggle: toggleIn('buyerCares', label) }, on(s.buyerCares.includes(label))));
     const comps = s.comps.map((c, i) => ({ name: c.name, url: c.url, color: c.color || '', setName: listUpd('comps', i, 'name'), setUrl: listUpd('comps', i, 'url'), setColor: (e) => listUpd('comps', i, 'color')({ target: { value: e.target.value.toUpperCase() } }), remove: listRm('comps', i) }));
@@ -573,13 +480,16 @@ export default class BrandApp extends Component {
       ['Brands admired', s.brandsA.length > 0, 2], ['Core problem', !!f.problem, 3], ['Differentiation', !!f.diff, 3]
     ];
     const missing = core.filter(c => !c[1]).length;
+    // Refinements Generate would discard; followOv() itself only sets an empty lock and voiceV.
+    const refined = s.comments.length > 0 || !!s.mixBase || s.ov.some(o => o && (Object.keys(o).some(k => k !== 'lock' && k !== 'voiceV') || Object.values(o.lock || {}).some(Boolean)));
     const coreChecks = core.map(([label, ok, st]) => ({ label, status: ok ? 'Answered' : 'Missing', bg: ok ? 'var(--color-grey-1)' : 'var(--color-ink)', fg: ok ? 'var(--color-ink)' : '#FFFFFF', go: () => set({ step: st }) }));
 
     const genLabels = ['Reading your answers', 'Locking what is decided', 'Generating three directions', 'Checking contrast and fonts', 'Pulling reference images'];
     const genSteps = genLabels.map((label, k) => ({ label, dot: k < s.genStep ? 'var(--color-action)' : (k === s.genStep ? 'var(--color-grey-2)' : 'var(--color-grey-1)'), fg: k <= s.genStep ? 'var(--color-ink)' : 'var(--color-grey-2)' }));
 
-    const cur = this.current();
-    const OPT = this.opts();
+    // Directions start photo searches and downloads, so they're only built on the screens that show them.
+    const cur = ['gen', 'out', 'meet', 'handoff'].includes(s.screen) ? this.current() : null;
+    const OPT = cur ? this.opts() : [];
     const optTabs = OPT.map((o, k) => ({ label: k === 3 ? 'Your mix' : 'Option ' + (k + 1), name: k === 3 ? 'Custom direction' : o.name, rec: !!o.recommended, on: s.option === k, bd: s.option === k ? 'var(--color-action)' : 'transparent', bg: s.option === k ? '#FFFFFF' : 'transparent', fg: s.option === k ? 'var(--color-ink)' : 'var(--color-ink)', pick: () => set({ option: k, edit: null, draft: null, view: 'dir' }) }));
 
     const SECTION_IDS = ['word', 'palette', 'ui', 'type', 'refs', 'preview', 'voice'];
@@ -594,44 +504,18 @@ export default class BrandApp extends Component {
     });
 
     const heights = ['40%', '65%', '50%', '85%', '60%', '75%', '45%'];
-    const bars = heights.map((h, k) => ({ h, c: k === 3 ? cur.accent : cur.primary }));
-    const typeScale = typeScaleOf(cur);
-    const VD = s.step <= 4 ? this.voiceData(s.step) : null;
-    const vWords = VD ? VD.transcript.split(' ') : [];
-    const vRec = !!(s.vRec && s.vRec.step === s.step);
-    const vDone = vRec ? null : s.vDone[s.step];
-    const voice = {
-      // Voice entry is out of scope for v1. Restore: s.screen === 'brief' && s.step <= 4
-      show: false, idle: !vRec && !vDone, rec: vRec, done: !!vDone,
-      section: VD ? VD.section : '', startAria: VD ? 'Start talking through ' + VD.section : 'Start talking',
-      prompts: VD ? VD.prompts : [], live: vRec ? (vWords.slice(0, s.vRec.shown).join(' ') || 'Start talking…') : '',
-      transcript: VD ? VD.transcript : '', filled: vDone ? vDone.filled.map(l => ({ label: l })) : [],
-      doneText: vDone ? (vDone.filled.length ? 'Filled ' + vDone.filled.length + ' answers from what you said. Check them below.' : 'Everything you mentioned was already filled in.') : '',
-      showT: s.showT, tLabel: s.showT ? 'Hide what you said' : 'Show what you said'
-    };
-    const startVoice = () => {
-      clearInterval(this._v); set({ vRec: { step: s.step, shown: 0 }, showT: false });
-      this._v = setInterval(() => {
-        const r = this.state.vRec; if (!r) { clearInterval(this._v); return; }
-        const total = this.voiceData(r.step).transcript.split(' ').length;
-        if (r.shown >= total) { clearInterval(this._v); return; }
-        this.setState({ vRec: { step: r.step, shown: r.shown + 2 } });
-      }, 140);
-    };
-    const stopVoice = () => { clearInterval(this._v); this.applyVoice(s.step); };
-    const cancelVoice = () => { clearInterval(this._v); set({ vRec: null }); };
-    const undoVoice = () => { const dn = s.vDone[s.step]; if (!dn) return; const patch = Object.assign({}, dn.prev); const vd = Object.assign({}, s.vDone); delete vd[s.step]; patch.vDone = vd; set(patch); };
-    const toggleT = () => set({ showT: !s.showT });
-    const avoided = s.avoidC.filter(h => cur.colors.some(c => c.show.toUpperCase() === h.toUpperCase()));
+    const bars = (cur ? heights : []).map((h, k) => ({ h, c: k === 3 ? cur.accent : cur.primary }));
+    const typeScale = cur && typeScaleOf(cur);
+    const avoided = s.avoidC.filter(h => cur && cur.colors.some(c => c.show.toUpperCase() === h.toUpperCase()));
     const oi = s.option, myC = s.comments.filter(c => c.opt === oi);
-    Object.keys(sec).forEach(id => {
+    if (cur) Object.keys(sec).forEach(id => {
       const locked = !!cur.locks[id];
       Object.assign(sec[id], cur.lk(locked, secNames[id].toLowerCase()), {
         regenFg: locked ? 'var(--color-grey-2)' : 'var(--color-ink)', regenBd: 'var(--color-grey-1)',
         regen: () => locked ? this.showToast(secNames[id] + ' is locked. Unlock it to regenerate.') : this.doRegen([id]),
         toggleLock: () => {
           const o = this.state.ov[oi] || {};
-          if (id === 'palette') { const v = !locked; this.setOvAt(oi, { swLock: [v, v, v, v, v], hex: cur.colors.map(c => c.show), names: cur.colors.map(c => c.name) }); }
+          if (id === 'palette') { const v = !locked; this.setOvAt(oi, { swLock: cur.colors.map(() => v), hex: cur.colors.map(c => c.show), names: cur.colors.map(c => c.name) }); }
           else if (id === 'refs') this.setOvAt(oi, { images: cur.imgs.map(x => [x[0], x[1], !locked]) });
           else if (id === 'ui') this.setOvAt(oi, { uiFixed: locked ? null : cur.ui, uiMix: cur.uiMix });
           else this.setOvAt(oi, { lock: Object.assign({}, o.lock, { [id]: !locked }) });
@@ -665,7 +549,7 @@ export default class BrandApp extends Component {
     const pinMap = { word: ['word', 'mark', 'Wordmark'], wordDark: ['word', 'dark', 'Wordmark on dark'], palUsage: ['palette', 'usage', 'Palette in use'], ui: ['ui', 'ui', 'UI primary'],
       typeDisplay: ['type', 'display', 'Header typeface'], typeBody: ['type', 'body', 'Body typeface'], preview: ['preview', 'preview', 'Product UI'], landing: ['preview', 'landing', 'Landing page'],
       voiceHead: ['voice', 'headline', 'Sample headline'], voiceTone: ['voice', 'tone', 'Interface copy'] };
-    [0, 1, 2, 3].forEach(k => { pinMap['img' + k] = ['refs', k, cur.imgs[k][0]]; });
+    if (cur) [0, 1, 2, 3].forEach(k => { pinMap['img' + k] = ['refs', k, cur.imgs[k][0]]; });
     const pins = {}, pinSel = {}; Object.keys(pinMap).forEach(k => { const v = pinMap[k]; pins[k] = () => this.startComment(v[0], v[1], v[2]); pinSel[k] = this.isPicked(v[0], v[1]); });
     const pieces = {};
     Object.keys(pinMap).forEach(k => {
@@ -679,77 +563,22 @@ export default class BrandApp extends Component {
 
     const mp = s.mixPick, ROWS = [['word', 'Wordmark'], ['palette', 'Palette'], ['type', 'Type'], ['refs', 'Imagery'], ['voice', 'Voice']];
     const pickCell = (row, k) => { const onn = mp[row] === k; return { on: onn, label: onn ? 'Picked' : 'Use this', bg: onn ? 'var(--color-action)' : '#FFFFFF', fg: onn ? '#FFFFFF' : 'var(--color-ink)', pick: () => set({ mixPick: Object.assign({}, mp, { [row]: k }) }) }; };
-    const cols = [0, 1, 2].map(k => {
+    const cols = (cur ? [0, 1, 2] : []).map(k => {
       const d = this.optionData(k), pk = {}; ROWS.forEach(r => { pk[r[0]] = pickCell(r[0], k); });
       return Object.assign({}, d, { rec: d.recommended, imgTop: d.imageCards.slice(0, 3), open: () => set({ option: k, view: 'dir' }), pk });
     });
     const mixSummary = ROWS.map(r => r[1] + ' from Option ' + (mp[r[0]] + 1)).join(' · ');
 
-    const AD = this.artDefs();
-    const setRole = (id, role) => set({ arts: s.arts.map(a => a.id === id ? Object.assign({}, a, { role }) : a) });
-    const updArt = (id, patch) => set({ arts: s.arts.map(a => a.id === id ? Object.assign({}, a, patch) : a) });
-    const ASP = this.aspectDefs();
-    const STARTERS = [['I like the', 'I like the '], ["I don't want the", "I don't want the "], ['Keep', 'Keep '], ['Ignore', 'Ignore ']];
-    const PH = { brief: 'For example: the audience section is outdated, use the call instead.', logo: "For example: I like the colors, but the letters feel too techy.",
-      deck: "For example: I like the confident headlines, I don't want the navy.", mood: "For example: I like the warm light in the photos, I don't want people in them.",
-      call: 'For example: only use what the founders agreed on in the last ten minutes.' };
-    const prefSum = (a) => {
-      const like = [], avoid = []; (ASP[a.id] || []).forEach(x => { const v = (a.asp || {})[x[0]]; if (v === 'like') like.push(x[1].toLowerCase()); if (v === 'avoid') avoid.push(x[1].toLowerCase()); });
-      const parts = []; if (like.length) parts.push('lean into its ' + like.join(' and ')); if (avoid.length) parts.push('stay away from its ' + avoid.join(' and '));
-      return { like, avoid, text: parts.join(', and ') };
-    };
-    const arts = s.arts.map(a => {
-      const d = AD[a.id], fo = a.role === 'follow';
-      return { name: d.name, kind: d.kind, detail: d.detail, swatches: (d.swatches || []).map(hex => ({ hex })),
-        isF: fo, isC: !fo, fBg: fo ? 'var(--color-action)' : 'transparent', fFg: fo ? '#FFFFFF' : 'var(--color-ink)', cBg: !fo ? 'var(--color-action)' : 'transparent', cFg: !fo ? '#FFFFFF' : 'var(--color-ink)',
-        effect: fo ? d.fol : d.ctx, roleAria: 'How to use ' + d.name, removeAria: 'Remove ' + d.name,
-        aspects: (ASP[a.id] || []).map(x => {
-          const cur = (a.asp || {})[x[0]] || 'neutral';
-          return { label: x[1], hint: x[2], aria: x[1] + ' from ' + d.name,
-            choices: [['like', 'Like'], ['neutral', 'Neutral'], ['avoid', 'Avoid']].map(c => ({ label: c[1], on: cur === c[0], bg: cur === c[0] ? 'var(--color-action)' : 'transparent', fg: cur === c[0] ? '#FFFFFF' : 'var(--color-ink)',
-              pick: () => updArt(a.id, { asp: Object.assign({}, a.asp, { [x[0]]: c[0] }) }) })) };
-        }),
-        noteId: 'note-' + a.id, note: a.note || '', placeholder: PH[a.id] || '',
-        setNote: (e) => updArt(a.id, { note: e.target.value }),
-        starters: STARTERS.map(t => ({ label: t[0], add: () => { const n = (a.note || '').trim(); updArt(a.id, { note: (n ? n + (/[.!?]$/.test(n) ? ' ' : ', ') : '') + (n ? t[1].charAt(0).toLowerCase() + t[1].slice(1) : t[1]) }); } })),
-        hasSum: !!(prefSum(a).text || (a.note || '').trim()),
-        sum: (prefSum(a).text ? "We'll " + prefSum(a).text + '. ' : '') + ((a.note || '').trim() ? 'Your note goes to the generator as written.' : ''),
-        setF: () => setRole(a.id, 'follow'), setC: () => setRole(a.id, 'context'), remove: () => set({ arts: s.arts.filter(x => x.id !== a.id) }) };
-    });
-    const addArts = () => {
-      const have = s.arts.map(a => a.id), add = Object.keys(AD).filter(id => !have.includes(id)).map(id => ({ id, role: AD[id].def }));
-      if (!add.length) { this.showToast('All the sample files are already added.'); return; }
-      set({ arts: s.arts.concat(add) });
-    };
-    const briefCtx = this.artRole('brief') === 'context';
-    const keepStops = [0, 1, 2, 3].map(k => ({ label: ['Keep', 'Evolve', 'Inspired by', 'Fresh'][k], on: false }));
-    const toBrief = () => {
-      const hasBrief = s.arts.some(a => a.id === 'brief');
-      if (s.path === 'brief' && hasBrief && !s.imported) set(Object.assign({ screen: 'brief', step: 1, imported: true }, this.sampleState()));
-      else set({ screen: 'brief', step: 1 });
-    };
-    const fol = s.arts.filter(a => this.artRole(a.id) === 'follow' && AD[a.id].short), ctxA = s.arts.filter(a => this.artRole(a.id) === 'context');
-    const HD = this.heard(), band = this.keepBand();
+    const band = this.keepBand();
     const BANDS = [['Keep exactly as is', 10, 'We keep your logo, colors, fonts, and images fixed and build the rest around them.'], ['Alter it slighty', 37, 'We keep what is recognizable and refresh the rest. Your notes decide what stays.'], ['Alter it a lot', 62, 'Your uploads set the mood, but every option can move away from them.'], ['Totally change it', 90, 'We only read your uploads for context. Expect three new directions.']];
-    const O_SAMPLE = 'I like the warm brown in the logo, but the letters feel too techy. The deck fonts are fine, and the photos are close but a bit dark.';
-    const oWords = O_SAMPLE.split(' ');
-    const toggleOpinionVoice = () => {
-      if (s.oRec) { clearInterval(this._o); const said = oWords.slice(0, Math.max(s.oRec.shown, oWords.length)).join(' '); set({ oRec: null, opinion: ((s.opinion || '').trim() + ' ' + said).trim() }); return; }
-      clearInterval(this._o); set({ oRec: { shown: 0 } });
-      this._o = setInterval(() => { const r0 = this.state.oRec; if (!r0) { clearInterval(this._o); return; } if (r0.shown >= oWords.length) { clearInterval(this._o); return; } this.setState({ oRec: { shown: r0.shown + 2 } }); }, 140);
-    };
 
     return {
       ...flowVals(this),
       ...projectVals(this),
-      voice, startVoice, stopVoice, cancelVoice, undoVoice, toggleT,
       isStart: s.screen === 'start', isBrief: s.screen === 'brief', isGen: s.screen === 'gen', isOut: s.screen === 'out',
-      toBrief,
+      toBrief: () => set({ screen: 'brief', step: 1 }),
       steps, stepNow: s.step, stepPct: (s.step / stepNames.length * 100) + '%', isS1: s.step === 1, isS2: s.step === 2, isS3: s.step === 3, isS4: s.step === 4, isS5: s.step === 5, notLast: s.step < 5,
       nextStep: () => set({ step: Math.min(5, s.step + 1) }),
-      showUpload: s.path === 'brief' && !s.imported, imported: s.imported, badge: s.imported && !s.confirmed,
-      doImport: () => set(Object.assign({ imported: true, arts: s.arts.some(a => a.id === 'brief') ? s.arts : [{ id: 'brief', role: 'follow' }].concat(s.arts) }, this.sampleState())),
-      confirmAll: () => set({ confirmed: true }), confirmLabel: s.confirmed ? 'Confirmed' : 'Confirm all',
       mockIntro: /^\[.*\]$/.test((f.desc || '').trim()) ? '' : f.desc,
       banned: s.banned, bannedChips, addBanned, bannedKey: onEnter(addBanned),
       f, onField: (e) => { const k = e.target.name; set({ f: Object.assign({}, s.f, { [k]: e.target.value }) }); },
@@ -776,21 +605,24 @@ export default class BrandApp extends Component {
         const h = (p.text && this.hexOk(p.text)) ? p.text.toUpperCase() : pHex, key = p.mode === 'keep' ? 'keepC' : 'avoidC', list = s[key] || [];
         set({ [key]: list.includes(h) ? list : list.concat([h]), pk: Object.assign({}, s.pk, { open: false, text: null }) });
       },
-      refsAdded: s.refs.length > 0, addRefs: () => set({ refs: ['Corten steel', 'Sand dune', 'Industrial stair', 'Neon sign'] }), refCards,
+      // The hosted build hides the four sample photos until real uploads exist; local demo keeps them.
+      refsAdded: s.refs.length > 0, addRefs: accounts.canFill ? null : () => set({ refs: ['Corten steel', 'Sand dune', 'Industrial stair', 'Neon sign'] }), refCards,
       coreChecks, hasMissing: missing > 0, genBg: missing > 0 ? 'var(--color-grey-2)' : 'var(--color-action)',
       readyText: missing > 0 ? missing + ' Core answers are missing. Generation unlocks when every Core answer has something, even rough.' : 'Every Core answer is filled. You are ready to generate.',
       fillSample: () => { const smp = this.sampleState(); const nf = Object.assign({}, smp.f); Object.keys(s.f).forEach(k => { if (s.f[k]) nf[k] = s.f[k]; }); const patch = { f: nf }; Object.keys(smp).forEach(k => { if (k === 'f') return; const cur = s[k]; const empty = Array.isArray(cur) ? cur.length === 0 : (cur && typeof cur === 'object' ? Object.keys(cur).length === 0 : !cur); if (empty) patch[k] = smp[k]; }); set(patch); },
       generate: () => {
         if (missing > 0) return;
-        set({ screen: 'gen', genStep: 0 }); clearInterval(this._g);
+        set({ screen: 'gen', genStep: 0, dirs: null }); clearInterval(this._g);
         this._g = setInterval(() => { const n = this.state.genStep + 1; if (n > 4) { clearInterval(this._g); const rec = this.generated().recommended || 0; this.setState({ screen: 'out', option: rec, mixPick: { word: rec, palette: rec, type: rec, refs: rec, voice: rec }, ov: this.followOv(), mixBase: null, comments: [], view: 'dir', draft: null, darkPrev: false, cmode: false, meeting: Object.assign({}, this.state.meeting, { marks: {}, notice: null, agreedRound: null }) }); } else { this.setState({ genStep: n }); } }, 650);
       },
       genSteps,
       backToBrief: () => set({ screen: 'brief', step: 5 }),
-      startOver: () => { clearInterval(this._g); clearInterval(this._v); clearTimeout(this._t); this.setState(Object.assign(JSON.parse(JSON.stringify(this._init)), { screen: 'welcome', user: s.user, projectId: s.projectId, projects: s.projects, saveStatus: s.saveStatus })); },
+      // The stored directions remember the answers they came from, so this also works after a reload.
+      canReturn: (s.dirs ? s.dirs.in : this._genIn) === this.genInputs(), backToResults: () => set({ screen: 'out' }), genLoses: refined,
+      startOver: () => { clearInterval(this._g); clearTimeout(this._t); this.setState(Object.assign(JSON.parse(JSON.stringify(this._init)), { screen: 'welcome', user: s.user, projectId: s.projectId, projects: s.projects, saveStatus: s.saveStatus })); },
       optTabs, allMenu: s.allMenu, toggleAll: () => set({ allMenu: !s.allMenu }),
       cur, wordUpper: (f.name || 'Name').toUpperCase(),
-      whyTitle: s.option === 3 ? 'About your custom mix' : (cur.recommended ? 'Why we recommend Option ' + (s.option + 1) : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
+      whyTitle: s.option === 3 ? 'About your custom mix' : (cur && cur.recommended ? 'Why we recommend Option ' + (s.option + 1) : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
       matchLabel: s.option === 3 ? 'Built from' : 'Matches your brief on',
       sec, fonts: ['Anta', 'Oxanium', 'Chakra Petch', 'Archivo Black', 'Archivo', 'Barlow', 'IBM Plex Sans', 'Work Sans'],
       setWordFont: (e) => this.lockOv('word', { wordFont: e.target.value, track: cur.track }), setTrack: (e) => this.lockOv('word', { track: Number(e.target.value), wordFont: cur.wordFont }),
@@ -806,17 +638,6 @@ export default class BrandApp extends Component {
         if (u.cid) patch.comments = s.comments.map(c => c.id === u.cid ? Object.assign({}, c, { status: 'proposed' }) : c);
         clearTimeout(this._t); set(patch);
       },
-      arts, hasArts: s.arts.length > 0, addArts,
-      badgeText: briefCtx ? 'Suggested' : 'Imported', importName: AD.brief.name,
-      importText: briefCtx ? '36 answers suggested. Fields marked Suggested are drafts, so check each one.' : '36 answers imported. Fields marked Imported came from your brief.',
-      hasFollowNote: s.arts.length > 0,
-      followNote: 'You chose "' + BANDS[band][0] + '".' + (fol.length ? ' Kept fixed: ' + fol.map(a => AD[a.id].short).join(', ') + '.' : ''),
-      contextNote: HD.said.length ? 'From your notes: ' + HD.said.join(', ') + '.' : ((s.opinion || '').trim() ? 'Your note: "' + s.opinion.trim() + '"' : ''),
-      opinion: s.opinion || '', setOpinion: (e) => set({ opinion: e.target.value }), oRec: !!s.oRec, oIdle: !s.oRec,
-      oLive: s.oRec ? (oWords.slice(0, s.oRec.shown).join(' ') || 'Listening…') : '', toggleOpinionVoice,
-      oMicBg: s.oRec ? 'var(--color-ink)' : 'var(--color-action)', oMicAria: s.oRec ? 'Stop and add what you said' : 'Talk about what you uploaded',
-      oMicText: s.oRec ? 'Listening… tap to stop' : 'Talk instead of typing',
-      hasHeard: HD.said.length > 0, heardText: HD.said.join(', ') + '.',
       keep: s.keep, keepPct: s.keep + '%', setKeep: (e) => set({ keep: Number(e.target.value) }),
       keepName: BANDS[band][0],
       keepStops: BANDS.map((bd, k) => ({ label: bd[0], on: band === k, bg: band === k ? 'var(--color-action)' : '#FFFFFF', fg: band === k ? '#FFFFFF' : 'var(--color-ink)', bd: band === k ? 'var(--color-action)' : 'var(--color-grey-1)', pick: () => set({ keep: bd[1] }) })),
@@ -826,7 +647,7 @@ export default class BrandApp extends Component {
       vCmpBg: s.view === 'cmp' ? 'var(--color-action)' : 'transparent', vCmpFg: s.view === 'cmp' ? '#FFFFFF' : 'var(--color-ink)',
       darkPrev: s.darkPrev, toggleDark: () => set({ darkPrev: !s.darkPrev }),
       darkBg: s.darkPrev ? 'var(--color-action)' : '#FFFFFF', darkFg: s.darkPrev ? '#FFFFFF' : 'var(--color-ink)',
-      bentoBg: s.darkPrev ? cur.light : 'transparent', bentoPad: s.darkPrev ? '14px' : '0',
+      bentoBg: s.darkPrev && cur ? cur.light : 'transparent', bentoPad: s.darkPrev ? '14px' : '0',
       cmode: s.cmode, toggleCmode: () => set({ cmode: !s.cmode, draft: null }),
       cmBg: s.cmode ? 'var(--color-action)' : '#FFFFFF', cmFg: s.cmode ? '#FFFFFF' : 'var(--color-ink)',
       cmodeLabel: 'Precise editing' + (openN ? ' · ' + openN : ''),
@@ -853,7 +674,7 @@ export default class BrandApp extends Component {
         });
       },
       cols, mixSummary, mixBtn: s.mixBase ? 'Update your mix' : 'Create custom direction', createMix: () => this.createMix(),
-      // Last, so its brief-review values replace the old mocked import's.
+      // Last, so the hosted build's brief-review values replace the local ones (fillSample).
       ...materialVals(this)
     };
   }

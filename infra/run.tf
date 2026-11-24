@@ -113,10 +113,10 @@ resource "google_cloud_run_v2_service" "app" {
     }
   }
 
-  # Cloud Build owns the image; Terraform owns everything else about the service. The other three
-  # are fields gcloud stamps on every deploy.
+  # Cloud Build owns the image and the revision's commit label; Terraform owns everything else about
+  # the service. client, client_version and scaling are fields gcloud stamps on every deploy.
   lifecycle {
-    ignore_changes = [template[0].containers[0].image, client, client_version, scaling]
+    ignore_changes = [template[0].containers[0].image, template[0].labels, client, client_version, scaling]
   }
 
   depends_on = [
@@ -143,9 +143,22 @@ resource "google_cloud_run_v2_service" "converter" {
     max_instance_request_concurrency = 1
     timeout                          = "180s"
 
+    # It needs no network at run time (fonts are in the image). Everything it sends goes into the
+    # network, where the tag's firewall rule (main.tf) drops it. Taking the tag from the rule also
+    # makes Terraform create the rule first.
+    vpc_access {
+      egress = "ALL_TRAFFIC"
+      network_interfaces {
+        network    = google_compute_network.app.name
+        subnetwork = google_compute_subnetwork.serverless.name
+        tags       = tolist(google_compute_firewall.converter_deny_egress.target_tags)
+      }
+    }
+
+    # One file per instance, so this is how many people can convert at once. Idle cost is still zero.
     scaling {
       min_instance_count = 0
-      max_instance_count = 2
+      max_instance_count = 5
     }
 
     containers {
@@ -163,7 +176,7 @@ resource "google_cloud_run_v2_service" "converter" {
   }
 
   lifecycle {
-    ignore_changes = [template[0].containers[0].image, client, client_version, scaling]
+    ignore_changes = [template[0].containers[0].image, template[0].labels, client, client_version, scaling]
   }
 
   depends_on = [google_project_service.required]

@@ -1,11 +1,13 @@
 # Test, build and deploy this git revision to Cloud Run.
-# Used by the manual Cloud Build trigger (pick a branch in the console) and by `gcloud builds submit`.
+# Used by the manual Cloud Build trigger (pick a branch in the console) and by scripts/deploy.sh.
 # Nothing deploys on push.
 substitutions:
   _REGION: us-central1
   _AR_REPOSITORY: kai
   _SERVICE: kai
   _CONVERTER_SERVICE: kai-converter
+  # Short commit hash, set by scripts/deploy.sh. Trigger builds fall back to $SHORT_SHA.
+  _COMMIT: ""
 
 steps:
   # Server tests, against a throwaway Postgres. A failure here stops the deploy.
@@ -44,15 +46,17 @@ steps:
       - -c
       - |
         image='${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/app'
+        commit='${_COMMIT}'
+        commit="$${commit:-$SHORT_SHA}"
         docker pull "$$image:cache" || true
         docker build \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           --cache-from "$$image:cache" \
           --tag "$$image:$BUILD_ID" \
+          --tag "$$image:$${commit:-$BUILD_ID}" \
           --tag "$$image:cache" \
           .
-        docker push "$$image:$BUILD_ID"
-        docker push "$$image:cache"
+        docker push --all-tags "$$image"
 
   # The converter (LibreOffice) is its own image, built from the converter folder.
   - id: build-converter
@@ -67,15 +71,17 @@ steps:
       - -c
       - |
         image='${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/converter'
+        commit='${_COMMIT}'
+        commit="$${commit:-$SHORT_SHA}"
         docker pull "$$image:cache" || true
         docker build \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           --cache-from "$$image:cache" \
           --tag "$$image:$BUILD_ID" \
+          --tag "$$image:$${commit:-$BUILD_ID}" \
           --tag "$$image:cache" \
           converter
-        docker push "$$image:$BUILD_ID"
-        docker push "$$image:cache"
+        docker push --all-tags "$$image"
 
   # Only the images change. Terraform owns the services' settings, so a deploy can't overwrite them.
   - id: deploy
@@ -87,15 +93,19 @@ steps:
       - pipefail
       - -c
       - |
+        commit='${_COMMIT}'
+        commit="$${commit:-$SHORT_SHA}"
         gcloud run services update '${_CONVERTER_SERVICE}' \
           --project '$PROJECT_ID' \
           --region '${_REGION}' \
           --image '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/converter:$BUILD_ID' \
+          --update-labels "commit=$${commit:-unknown}" \
           --quiet
         gcloud run services update '${_SERVICE}' \
           --project '$PROJECT_ID' \
           --region '${_REGION}' \
           --image '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/app:$BUILD_ID' \
+          --update-labels "commit=$${commit:-unknown}" \
           --quiet
 
 options:

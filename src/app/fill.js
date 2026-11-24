@@ -51,7 +51,6 @@ export function applyFill(state, fill) {
 
   patch.f = f;
   patch.sugg = sugg;
-  patch.confirmed = false;
   // Sections of the brief that stay folded until they have an answer.
   if (f.legal) patch.legalOpen = true;
   if (f.endWho || f.endCares) patch.endOn = true;

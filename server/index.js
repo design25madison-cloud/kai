@@ -25,7 +25,9 @@ if (!IAP_AUDIENCE && !DEV_USER_EMAIL) {
 }
 const identify = IAP_AUDIENCE ? iapIdentify(IAP_AUDIENCE) : async () => DEV_USER_EMAIL;
 
-const pool = new pg.Pool(); // Reads PGHOST, PGPORT, PGUSER, PGPASSWORD and PGDATABASE.
+// Reads PGHOST, PGPORT, PGUSER, PGPASSWORD and PGDATABASE. At most 3 instances x 5 stays under the
+// roughly 25 connections the database tier allows.
+const pool = new pg.Pool({ max: 5 });
 await pool.query(SCHEMA);
 
 // Uploads and filling the brief from materials need all three; without them those routes answer 503.

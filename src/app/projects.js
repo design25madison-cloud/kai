@@ -5,12 +5,13 @@ import accounts from "./store.js";
 // Interface state that belongs to this visit, not to the project, so it's never saved.
 const TRANSIENT = new Set([
   "user", "projectId", "projects", "saveStatus", "saveError", "authError", "authBusy",
-  "projectMenu", "renaming", "deleting", "deckBusy", "toast", "undo", "allMenu", "edit", "cmode", "draft", "genStep", "vRec", "oRec", "pk",
+  "projectMenu", "renaming", "deleting", "deckBusy", "toast", "undo", "allMenu", "edit", "cmode", "draft", "genStep", "pk",
   "files", "uploading", "fillBusy", "fillError",
 ]);
 // A project reopens on one of these. Generation is a moment, so it reopens on the brief's last step.
 const RESUMABLE = new Set(["welcome", "start", "brief", "out"]);
 const SAVE_DELAY = 700;
+const RETRY_DELAY = 5000;
 
 export function projectChanged(prev, next) {
   return Object.keys(next).some((k) => !TRANSIENT.has(k) && prev[k] !== next[k]);
@@ -37,26 +38,49 @@ function summary(app) {
 // Fresh interface state, keeping who's signed in.
 function fresh(app, patch) {
   clearInterval(app._g);
-  clearInterval(app._v);
   clearTimeout(app._t);
   return Object.assign(JSON.parse(JSON.stringify(app._init)), { user: app.state.user, projects: app.state.projects }, patch);
 }
 
 export function scheduleSave(app) {
+  // After a 409 this tab's copy is out of date, so it stops saving. While a retry waits, it saves the latest anyway.
+  if (app._version === null || (app._save && app.state.saveStatus === "error")) return;
   clearTimeout(app._save);
   app._save = setTimeout(() => saveNow(app), SAVE_DELAY);
   if (app.state.saveStatus !== "saving") app.setState({ saveStatus: "saving" });
 }
 
-export function saveNow(app) {
+// One save at a time, each sending the version the last one got back, so the server can refuse a stale tab.
+// Resolves to the error message when the save failed and will be retried: the work isn't safe to leave yet.
+export function saveNow(app, { closing = false } = {}) {
   clearTimeout(app._save);
   app._save = null;
   const { user, projectId } = app.state;
-  if (!user || !projectId) return Promise.resolve();
-  return accounts
-    .saveProject(user.id, projectId, snapshot(app.state), summary(app))
-    .then(() => app.setState({ saveStatus: "saved", saveError: "" }))
-    .catch((err) => app.setState({ saveStatus: "error", saveError: err.message }));
+  if (!user || !projectId || app._version === null) return Promise.resolve("");
+  // shortcut: the closing save can't wait for one in flight, so both carry the same version and the later one gets a 409; if that's the closing save, the last edits are lost. Merge on the server if that's ever reported.
+  if (app._saving && !closing) return (app._next = app._next || app._saving.then(() => { app._next = null; return saveNow(app); }));
+  const saving = accounts
+    .saveProject(user.id, projectId, snapshot(app.state), summary(app), app._version, closing)
+    .then((updatedAt) => {
+      app._version = updatedAt;
+      app.setState({ saveStatus: app._save || app._next ? "saving" : "saved", saveError: "" });
+      return "";
+    })
+    .catch((err) => {
+      if (err.status === 409 || err.status === 404) {
+        app._version = null;
+        app.setState({ saveStatus: "conflict", saveError: err.message });
+        app.showToast(err.message);
+        return "";
+      }
+      app._save = setTimeout(() => saveNow(app), RETRY_DELAY);
+      app.setState({ saveStatus: "error", saveError: err.message });
+      return err.message;
+    })
+    .finally(() => {
+      if (app._saving === saving) app._saving = null;
+    });
+  return (app._saving = saving);
 }
 
 function relativeTime(t) {
@@ -80,13 +104,17 @@ export function projectVals(app) {
   const open = (id) =>
     accounts
       .loadProject(user.id, id)
-      .then((p) => app.setState(fresh(app, { ...p.data, projectId: p.id, saveStatus: "saved" })))
+      .then((p) => {
+        app._version = p.updatedAt;
+        app.setState(fresh(app, { ...p.data, projectId: p.id, saveStatus: "saved" }));
+      })
       .catch(fail);
 
+  // Leaving after a failed save would drop the work, so stay and say why.
+  const stay = (failed) => app.showToast(`Your latest changes aren't saved yet. ${failed}`);
   const toProjects = () =>
     saveNow(app)
-      .then(() => accounts.listProjects(user.id))
-      .then((projects) => app.setState(fresh(app, { screen: "projects", projects })))
+      .then((failed) => failed ? stay(failed) : accounts.listProjects(user.id).then((projects) => app.setState(fresh(app, { screen: "projects", projects }))))
       .catch(fail);
 
   const cards = (s.projects || []).map((p) => ({
@@ -120,7 +148,7 @@ export function projectVals(app) {
   const listed = (s.projects || []).find((p) => p.id === s.projectId);
   const projectName = listed && listed.renamed ? listed.name : (s.f.name || "").trim() || "Untitled brand";
 
-  const saveLabel = { saving: "Saving…", saved: "Saved", error: "Couldn't save" }[s.saveStatus] || "";
+  const saveLabel = { saving: "Saving…", saved: "Saved", error: "Couldn't save", conflict: "Out of date, reload" }[s.saveStatus] || "";
 
   return {
     isAuth: s.screen === "auth",
@@ -138,16 +166,23 @@ export function projectVals(app) {
     cards,
     hasProjects: cards.length > 0,
     newProject: () => {
+      if (app._creating) return; // A double click would make two projects.
       const data = snapshot(fresh(app, { screen: "welcome" }));
-      accounts.createProject(user.id, data).then((p) => app.setState(fresh(app, { ...data, projectId: p.id, saveStatus: "saved" }))).catch(fail);
+      app._creating = accounts
+        .createProject(user.id, data)
+        .then((p) => {
+          app._version = p.updatedAt;
+          app.setState(fresh(app, { ...data, projectId: p.id, saveStatus: "saved" }));
+        })
+        .catch(fail)
+        .finally(() => (app._creating = null));
     },
     toProjects,
     logOut: () =>
-      saveNow(app)
-        .then(() => accounts.logOut())
-        .then(() => app.setState(fresh(app, { screen: "auth", user: null, projects: [] }))),
+      saveNow(app).then((failed) =>
+        failed ? stay(failed) : accounts.logOut().then(() => app.setState(fresh(app, { screen: "auth", user: null, projects: [] })))),
     projectName,
     saveLabel,
-    saveError: s.saveStatus === "error" ? s.saveError : "",
+    saveError: s.saveStatus === "error" || s.saveStatus === "conflict" ? s.saveError : "",
   };
 }

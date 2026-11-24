@@ -1,5 +1,5 @@
 import { DECK_SLIDES, deckTheme } from "../app/deck.js";
-import { referenceImage } from "../app/referenceImages.js";
+import { brokenImage, referenceImage } from "../app/referenceImages.js";
 
 // Slide geometry matches deck.js: a 13.333 × 7.5in slide, sizes in points on a 960pt width.
 const W = 13.333;
@@ -32,7 +32,7 @@ function Slide({ id, t }) {
             const img = referenceImage(label);
             return (
               <span key={k}>
-                {img ? <img className="slide__img" src={img.src} alt="" style={box(x, top, cw, ch)} /> : <Rect at={[x, top, cw, ch]} color={t.surface} />}
+                {img ? <img className="slide__img" src={img.src} alt="" onError={() => brokenImage(img.src)} style={box(x, top, cw, ch)} /> : <Rect at={[x, top, cw, ch]} color={t.surface} />}
                 <Text at={[x, top + ch + 0.15, cw, 0.3]} face={t.body} size={12} color={t.ink}>{label}</Text>
               </span>
             );

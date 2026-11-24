@@ -14,18 +14,23 @@ const K = 5;
 
 function readCache() {
   try {
-    return JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+    const cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+    // Older versions saved a failed load as [], which kept that photo out of palettes for good.
+    for (const src in cache) if (!cache[src].length) delete cache[src];
+    return cache;
   } catch {
     return {};
   }
 }
 const cache = typeof window === "undefined" ? {} : readCache(); // src → [{ hex, share }]
 const pending = new Set();
+const failed = new Set(); // Photos that wouldn't load or be read: skipped for this visit only, never saved.
 const wanted = new Set();
 const listeners = new Set();
 let version = 0;
 
 export const imageColorsVersion = () => version;
+export const readingColors = () => pending.size > 0;
 export function subscribe(fn) {
   listeners.add(fn);
   return () => listeners.delete(fn);
@@ -66,7 +71,7 @@ function kmeans(points) {
 }
 
 function sample(src) {
-  if (pending.has(src) || cache[src]) return;
+  if (pending.has(src) || cache[src] || failed.has(src)) return;
   pending.add(src);
   const img = new Image();
   img.crossOrigin = "anonymous";
@@ -82,11 +87,11 @@ function sample(src) {
       for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 200) points.push(toLab(data[i], data[i + 1], data[i + 2]));
       cache[src] = points.length ? kmeans(points) : [];
     } catch {
-      cache[src] = []; // The image wouldn't let us read its pixels; fall back to archetype accents.
+      failed.add(src); // The image wouldn't let us read its pixels; fall back to archetype accents.
     }
     finish(src);
   };
-  img.onerror = () => { cache[src] = []; finish(src); };
+  img.onerror = () => { failed.add(src); finish(src); };
   img.src = src;
 }
 
@@ -97,7 +102,7 @@ function finish(src) {
   listeners.forEach((fn) => fn());
 }
 
-// The main colors of a label's photo as [{ hex, lch, share }], or null until it's been read.
+// The main colors of a label's photo as [{ hex, lch, share }], or null until it's been read (or if it can't be).
 // Asking starts the read (and the photo search, if the label isn't resolved yet).
 export function imageColors(label) {
   const image = referenceImage(label);
