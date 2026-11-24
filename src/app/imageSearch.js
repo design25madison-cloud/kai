@@ -12,7 +12,7 @@
 const CACHE_KEY = "kai.images.v1";
 const WEEK = 7 * 24 * 3600 * 1000;
 const DAY = 24 * 3600 * 1000;
-const APP = "kai_prototype"; // Unsplash asks for this on every link back to them.
+const APP = "kai"; // Unsplash asks for the application's name (as registered with them) on every link back.
 
 const utm = (url) => `${url}${url.includes("?") ? "&" : "?"}utm_source=${APP}&utm_medium=referral`;
 
