@@ -6,7 +6,7 @@ export default function RefImage({ label }) {
   const image = referenceImage(label);
   return (
     <>
-      {image && <img className="ref-image" src={image.src} alt={label} loading="lazy" onError={() => brokenImage(image.src)} title={image.source === "Unsplash" ? `Photo by ${image.author} on Unsplash` : `${image.author}, ${image.license}`} />}
+      {image && <img key={image.src} className="ref-image" src={image.src} alt={label} loading="lazy" onError={() => brokenImage(image.src)} title={image.source === "Unsplash" ? `Photo by ${image.author} on Unsplash` : `${image.author}, ${image.license}`} />}
       <span className={image ? "ref-caption" : undefined}>{label}</span>
     </>
   );

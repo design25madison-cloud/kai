@@ -582,7 +582,7 @@ function explain(mix, rank, ctx, firstLead) {
   const rivals = L.competitors.length ? ` Steers clear of ${listOf(L.competitors.map((c) => c.name))}'s colors.` : "";
   layers.push({ layer: "Positioning", text: dialText + stance + rivals });
   if (L.profile) layers.push({ layer: "Audience", text: `For ${L.profile.label}: ${L.profile.effect}.` });
-  if (L.cue) layers.push({ layer: "Name", text: `"${L.cue.word}" in the name brings ${L.cue.gist} into the palette and imagery, and suggests ${L.cue.wordmark} for the wordmark.` });
+  if (L.cue) layers.push({ layer: "Name", text: `"${L.cue.word}" in the name brings ${L.cue.gist} into the ${ctx.cueInPalette ? "palette and imagery" : "imagery"}, and suggests ${L.cue.wordmark} for the wordmark.` });
   if (L.industry) match.unshift(L.industry.label.split(" and ")[0]);
   return { name: directionName(mix), reasonBody: `${opening} ${evidence} ${design}`, match: match.slice(0, 6), tradeoff, layers };
 }
@@ -667,7 +667,9 @@ function direction(mix, rank, offset, ctx, shown) {
   const voices = vs.map((v) => buildVoice(mix, v, ctx));
   // Photos not shown yet are ordered by how well they fit the palette, for Swap and Regenerate.
   const pool = rankByFit(imgPool, built[0].rows.map((r) => r[1]));
-  const text = explain(mix, rank, ctx, ctx.firstLead);
+  // The name's cue can be filtered out of the palette; buildPalette gives a "Name" reason only when it's in.
+  const cueInPalette = built[0].reasons.some((r) => r.layer === "Name");
+  const text = explain(mix, rank, { ...ctx, cueInPalette }, ctx.firstLead);
   return {
     ...text,
     mix: mix.map((m) => ({ id: m.id, name: ARCHETYPE_BY_ID[m.id].name, w: m.w })),
@@ -707,12 +709,12 @@ const labDist = (a, b) => {
 };
 const isWarm = (H) => H < 110 || H > 330; // OKLCH: reds, oranges, yellows
 
-function scoreDirection(d, mixPts, ctx) {
+function scoreDirection(d, mixPts, ctx, closest) {
   const pal = d.palettes[0], lch = pal.map((r) => hexToOklch(r[1]));
   const primary = lch[0], accents = lch.slice(4);
   const strong = [], weak = [];
   let pts = 2 * mixPts; // Personality: how well the archetypes fit the brief (0–2).
-  if (mixPts >= 0.9) strong.push({ w: 1.5, text: "fits the character of your brief most closely" });
+  if (mixPts >= 0.9) strong.push({ w: 1.5, text: `fits the character of your brief ${closest ? "most closely" : "closely"}` });
 
   // Seeds: kept colors should actually be in the palette.
   (ctx.seeds || []).forEach((sd) => {
@@ -857,7 +859,8 @@ export function generateDirections(state, adjust) {
   // Score the finished options and recommend the best fit. Ties keep the generated order.
   const top = ranked[0].pts || 1;
   const fitPts = (mix) => mix.reduce((n, m) => n + m.w * ((ranked.find((r) => r.id === m.id) || {}).pts || 0), 0) / top;
-  const scores = dirs.map((d, k) => scoreDirection(d, fitPts(picked[k]), ctx));
+  const fits = picked.map(fitPts), closest = fits.indexOf(Math.max(...fits));
+  const scores = dirs.map((d, k) => scoreDirection(d, fits[k], ctx, k === closest));
   const rec = scores.reduce((best, sc, k) => (sc.pts > scores[best].pts + 0.01 ? k : best), 0);
   dirs.forEach((d, k) => {
     d.recommended = k === rec;

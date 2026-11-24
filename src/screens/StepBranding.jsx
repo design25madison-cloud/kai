@@ -194,7 +194,8 @@ function ColorPicker({ vm }) {
           <div className="w-px-64px h-64px r-8px bd-1px-solid-line" style={{ background: vm.pk.hex }} />
           <div className="flex col gap-4px">
             <label className="t-12px" htmlFor="pk-hex">Hex</label>
-            <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} placeholder=" " />
+            <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} placeholder=" " aria-invalid={vm.pk.badHex} aria-describedby={vm.pk.badHex ? "pk-hex-err" : undefined} />
+            {vm.pk.badHex && <span className="t-12px c-ink-2" id="pk-hex-err" role="alert">Not a color code. Use # and six characters, like #1A2B3C.</span>}
           </div>
         </div>
         <div className="flex col gap-4px">
@@ -202,7 +203,7 @@ function ColorPicker({ vm }) {
           <input className="accent-ink" id="pk-l" type="range" min="5" max="95" value={vm.pk.l} onChange={vm.setPickL} />
         </div>
         <div className="flex gap-8px">
-          <button className="p-10px-16px r-pill bd-0 bg-action c-bg t-14px w-600" type="button" onClick={vm.addPicked}>{vm.pk.mode === "keep" ? "Add to keep list" : "Add to avoid list"}</button>
+          <button className="p-10px-16px r-pill bd-0 bg-action c-bg t-14px w-600" type="button" onClick={vm.addPicked} disabled={vm.pk.badHex}>{vm.pk.mode === "keep" ? "Add to keep list" : "Add to avoid list"}</button>
           <button className="p-10px-16px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.closePicker}>Cancel</button>
         </div>
       </div>

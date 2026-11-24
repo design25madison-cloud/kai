@@ -1,5 +1,5 @@
 import Breadcrumbs from "./Breadcrumbs.jsx";
-import { HomeLogo, SaveStatus } from "./ProjectChrome.jsx";
+import { HomeLogo, SaveStatus, useDismiss } from "./ProjectChrome.jsx";
 import { useState } from "react";
 import StepBranding from "./StepBranding.jsx";
 import StepCustomer from "./StepCustomer.jsx";
@@ -10,6 +10,7 @@ import StepReview from "./StepReview.jsx";
 export default function BriefScreen({ vm }) {
   // Which confirm is open: "start" (Start over) or "generate" (Generate would discard refinements).
   const [ask, setAsk] = useState(null);
+  const startRef = useDismiss(ask === "start", () => setAsk(null));
   return (
     <div className="flow-page gap-28px">
       {vm.sugCss && <style>{vm.sugCss}</style>}
@@ -18,7 +19,7 @@ export default function BriefScreen({ vm }) {
         <Breadcrumbs items={vm.crumbs} />
         <div className="flex items-center gap-16px">
           <SaveStatus vm={vm} />
-          <div className="relative">
+          <div className="relative" ref={startRef}>
             <button className="p-8px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={() => setAsk(ask === "start" ? null : "start")} aria-expanded={ask === "start"}>Start over</button>
             {ask === "start" && (
               <div className="menu menu--end">
@@ -63,7 +64,7 @@ export default function BriefScreen({ vm }) {
           </>
         )}
         {vm.isS5 && (
-          <button className="btn-cta" type="button" onClick={vm.genLoses && ask !== "generate" ? () => setAsk("generate") : vm.generate} disabled={vm.hasMissing} style={{ background: vm.genBg }}>{ask === "generate" ? "Generate anyway" : "Generate direction"}</button>
+          <button className="btn-cta" type="button" onClick={vm.genLoses && ask !== "generate" ? () => setAsk("generate") : vm.generate} disabled={vm.hasMissing} style={{ background: vm.genBg }}>{ask === "generate" ? "Generate anyway" : "Generate directions"}</button>
         )}
       </div>
     </div>

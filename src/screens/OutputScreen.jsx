@@ -2,7 +2,7 @@ import { useState } from "react";
 import CompareView from "./CompareView.jsx";
 import ExportMenu from "./ExportMenu.jsx";
 import ImagerySection from "./ImagerySection.jsx";
-import { AccountMenu, HomeLogo, SaveStatus } from "./ProjectChrome.jsx";
+import { AccountMenu, HomeLogo, SaveStatus, useDismiss } from "./ProjectChrome.jsx";
 import Moodboard from "./Moodboard.jsx";
 import PaletteSection from "./PaletteSection.jsx";
 import ProgressRail from "./ProgressRail.jsx";
@@ -15,6 +15,8 @@ import WordmarkSection from "./WordmarkSection.jsx";
 export default function OutputScreen({ vm }) {
   const [projectMenu, setProjectMenu] = useState(false);
   const [askStart, setAskStart] = useState(false);
+  const projectRef = useDismiss(projectMenu, () => { setProjectMenu(false); setAskStart(false); });
+  const exportRef = useDismiss(vm.allMenu, vm.toggleAll);
   // The rail gives way to the AI chat, which takes over the side of the screen.
   const showRail = vm.isDir && !vm.cmode;
   return (
@@ -25,7 +27,7 @@ export default function OutputScreen({ vm }) {
             <div className="results-header__crumb">
               <HomeLogo vm={vm} size="sm" />
               <span className="c-muted t-14px">/</span>
-              <div className="relative">
+              <div className="relative" ref={projectRef}>
                 <button className="crumb-btn" type="button" onClick={() => { setProjectMenu(!projectMenu); setAskStart(false); }} aria-expanded={projectMenu} aria-haspopup="menu">{vm.projectName}</button>
                 {projectMenu && (
                   <div className={askStart ? "menu menu--start project-menu" : "menu menu--start"}>
@@ -49,7 +51,7 @@ export default function OutputScreen({ vm }) {
               <SaveStatus vm={vm} />
             </div>
             <div className="results-header__actions">
-              <div className="relative">
+              <div className="relative" ref={exportRef}>
                 <button className="icon-btn" type="button" onClick={vm.toggleAll} aria-expanded={vm.allMenu} aria-label="Export page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4" /><path d="M7 9l5-5 5 5" /><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" /></svg></button>
                 {vm.allMenu && <ExportMenu menu={vm.exportMenu} />}
               </div>

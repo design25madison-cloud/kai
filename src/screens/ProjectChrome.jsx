@@ -1,5 +1,25 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import KaiLogo from "./KaiLogo.jsx";
+
+// Closes a menu on Escape or a press outside it. Put the returned ref on the element that wraps
+// both the menu and the button that opens it.
+export function useDismiss(open, close) {
+  const ref = useRef(null);
+  const latest = useRef(close);
+  latest.current = close;
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === "Escape") latest.current(); };
+    const onPress = (e) => { if (ref.current && !ref.current.contains(e.target)) latest.current(); };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPress);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPress);
+    };
+  }, [open]);
+  return ref;
+}
 
 // Inside a project, the logo leads back to the project list.
 export function HomeLogo({ vm, size = "md", className = "" }) {
@@ -27,8 +47,9 @@ export function SaveStatus({ vm }) {
 
 export function AccountMenu({ vm }) {
   const [open, setOpen] = useState(false);
+  const menu = useDismiss(open, () => setOpen(false));
   return (
-    <div className="relative">
+    <div className="relative" ref={menu}>
       <button className="icon-btn icon-btn--round" type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="menu" aria-label="Account">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <circle cx="12" cy="8" r="4" />

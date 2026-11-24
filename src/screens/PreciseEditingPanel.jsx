@@ -21,7 +21,7 @@ export default function PreciseEditingPanel({ vm }) {
           <div className="p-16px-18px bd-b-1px-solid-divider flex items-flex-start gap-12px">
             <div className="flex-1 flex col gap-2px">
               <span className="t-16px w-600">Precise editing</span>
-              <span className="t-12px c-muted">{vm.cur.label}: {vm.cur.name} · {vm.cmCount}</span>
+              <span className="t-12px c-muted">{vm.cur.title} · {vm.cmCount}</span>
             </div>
             <button className="w-px-32px h-32px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={vm.toggleCmode} aria-label="Close precise editing">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">

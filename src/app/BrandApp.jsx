@@ -74,6 +74,8 @@ export default class BrandApp extends Component {
   componentWillUnmount() { if (this._offImages) this._offImages(); if (this._offImageColors) this._offImageColors(); clearInterval(this._g); clearTimeout(this._t); clearTimeout(this._a); clearTimeout(this._st); window.removeEventListener('beforeunload', this._flush); }
 
   hexOk(h) { return /^#[0-9a-fA-F]{6}$/.test(h || ''); }
+  // Long answers are cut at a word where the screens use them as sample copy.
+  short(t, n) { t = (t || '').trim(); return t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t; }
   rgb(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
   lum(h) { const c = this.rgb(h).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
   mix(h, t) { const c = this.rgb(h).map(v => Math.round(v * (1 - t))); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase(); }
@@ -289,7 +291,7 @@ export default class BrandApp extends Component {
     }
     const linkColor = !dk ? ui : (contrast(accent, T.light) >= 4.5 ? accent : this.tint(ui, 0.45));
     return Object.assign({
-      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, recommended: !!base.recommended, fit: base.fit || '', mix: base.mix || [], layers: base.layers || [], primaryReasons: base.primaryReasons || [], dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
+      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, title: i === 3 ? 'Your mix' : 'Option ' + (i + 1) + ': ' + base.name, recommended: !!base.recommended, fit: base.fit || '', mix: base.mix || [], layers: base.layers || [], primaryReasons: base.primaryReasons || [], dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
       displayPkg: this.pkg(display), bodyPkg: this.pkg(body), colors, palNames: names.join(', '),
       darkName: names[darkIdx], darkO, accent, accentName,
       accentText: contrast(accent, T.deep) >= 4.5 ? accent : (dk ? lightO : '#FFFFFF'),
@@ -443,7 +445,7 @@ export default class BrandApp extends Component {
     const avoidColors = s.avoidC.map(hex => ({ hex, aria: 'Remove ' + hex + ' from the avoid list', remove: () => set({ avoidC: s.avoidC.filter(x => x !== hex) }) }));
     const keepColors = (s.keepC || []).map(hex => ({ hex, aria: 'Remove ' + hex + ' from the keep list', remove: () => set({ keepC: s.keepC.filter(x => x !== hex) }) }));
     const p = s.pk, pHex = hslToHex([p.h, p.s, p.l]), rad = p.h * Math.PI / 180;
-    const pk = { open: p.open, mode: p.mode || 'avoid', l: p.l, hex: pHex, hexText: p.text !== null ? p.text : pHex,
+    const pk = { open: p.open, mode: p.mode || 'avoid', l: p.l, hex: pHex, hexText: p.text !== null ? p.text : pHex, badHex: !!p.text && !this.hexOk(p.text),
       x: (50 + Math.sin(rad) * p.s / 2).toFixed(1) + '%', y: (50 - Math.cos(rad) * p.s / 2).toFixed(1) + '%' };
     const setPk = (patch) => set({ pk: Object.assign({}, s.pk, patch) });
     const listUpd = (key, i, field) => (e) => { const a = s[key].map(x => (typeof x === 'object' ? Object.assign({}, x) : x)); if (field) a[i][field] = e.target.value; else a[i] = e.target.value; set({ [key]: a }); };
@@ -579,7 +581,7 @@ export default class BrandApp extends Component {
       toBrief: () => set({ screen: 'brief', step: 1 }),
       steps, stepNow: s.step, stepPct: (s.step / stepNames.length * 100) + '%', isS1: s.step === 1, isS2: s.step === 2, isS3: s.step === 3, isS4: s.step === 4, isS5: s.step === 5, notLast: s.step < 5,
       nextStep: () => set({ step: Math.min(5, s.step + 1) }),
-      mockIntro: /^\[.*\]$/.test((f.desc || '').trim()) ? '' : f.desc,
+      mockIntro: /^\[.*\]$/.test((f.desc || '').trim()) ? '' : this.short(f.desc, 180), briefDesc: this.short(f.desc, 280), briefProblem: this.short(f.problem, 280),
       banned: s.banned, bannedChips, addBanned, bannedKey: onEnter(addBanned),
       f, onField: (e) => { const k = e.target.name; set({ f: Object.assign({}, s.f, { [k]: e.target.value }) }); },
       onSlider: (e) => { const k = e.target.name; set({ sl: Object.assign({}, s.sl, { [k]: Number(e.target.value) }) }); },
@@ -602,13 +604,14 @@ export default class BrandApp extends Component {
       setPickL: (e) => setPk({ l: Number(e.target.value), text: null }),
       setPickHex: (e) => { const v = e.target.value; if (this.hexOk(v)) { const hsl = this.hex2hsl(v); setPk({ h: hsl[0], s: hsl[1], l: hsl[2], text: v }); } else { setPk({ text: v }); } },
       addPicked: () => {
+        if (p.text && !this.hexOk(p.text)) return; // The button is disabled too; this covers Enter.
         const h = (p.text && this.hexOk(p.text)) ? p.text.toUpperCase() : pHex, key = p.mode === 'keep' ? 'keepC' : 'avoidC', list = s[key] || [];
         set({ [key]: list.includes(h) ? list : list.concat([h]), pk: Object.assign({}, s.pk, { open: false, text: null }) });
       },
       // The hosted build hides the four sample photos until real uploads exist; local demo keeps them.
       refsAdded: s.refs.length > 0, addRefs: accounts.canFill ? null : () => set({ refs: ['Corten steel', 'Sand dune', 'Industrial stair', 'Neon sign'] }), refCards,
       coreChecks, hasMissing: missing > 0, genBg: missing > 0 ? 'var(--color-grey-2)' : 'var(--color-action)',
-      readyText: missing > 0 ? missing + ' Core answers are missing. Generation unlocks when every Core answer has something, even rough.' : 'Every Core answer is filled. You are ready to generate.',
+      readyText: missing > 0 ? (missing === 1 ? '1 Core answer is missing' : missing + ' Core answers are missing') + '. Generation unlocks when every Core answer has something, even rough.' : 'Every Core answer is filled. You are ready to generate.',
       fillSample: () => { const smp = this.sampleState(); const nf = Object.assign({}, smp.f); Object.keys(s.f).forEach(k => { if (s.f[k]) nf[k] = s.f[k]; }); const patch = { f: nf }; Object.keys(smp).forEach(k => { if (k === 'f') return; const cur = s[k]; const empty = Array.isArray(cur) ? cur.length === 0 : (cur && typeof cur === 'object' ? Object.keys(cur).length === 0 : !cur); if (empty) patch[k] = smp[k]; }); set(patch); },
       generate: () => {
         if (missing > 0) return;
@@ -624,7 +627,8 @@ export default class BrandApp extends Component {
       cur, wordUpper: (f.name || 'Name').toUpperCase(),
       whyTitle: s.option === 3 ? 'About your custom mix' : (cur && cur.recommended ? 'Why we recommend Option ' + (s.option + 1) : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
       matchLabel: s.option === 3 ? 'Built from' : 'Matches your brief on',
-      sec, fonts: ['Anta', 'Oxanium', 'Chakra Petch', 'Archivo Black', 'Archivo', 'Barlow', 'IBM Plex Sans', 'Work Sans'],
+      // The fonts in use lead the list: a select whose value isn't among its options shows the first option instead.
+      sec, fonts: [...new Set([...(cur ? [cur.wordFont, cur.display, cur.body] : []), 'Anta', 'Oxanium', 'Chakra Petch', 'Archivo Black', 'Archivo', 'Barlow', 'IBM Plex Sans', 'Work Sans'])],
       setWordFont: (e) => this.lockOv('word', { wordFont: e.target.value, track: cur.track }), setTrack: (e) => this.lockOv('word', { track: Number(e.target.value), wordFont: cur.wordFont }),
       setUiMix: (e) => { const v = Number(e.target.value); this.setOv({ uiMix: v, uiFixed: this.mix(cur.accent, v / 100) }); },
       setDisplay: (e) => this.lockOv('type', { display: e.target.value, body: cur.body }), setBody: (e) => this.lockOv('type', { body: e.target.value, display: cur.display }),

@@ -1,5 +1,5 @@
 import KaiLogo from "./KaiLogo.jsx";
-import { AccountMenu } from "./ProjectChrome.jsx";
+import { AccountMenu, useDismiss } from "./ProjectChrome.jsx";
 
 function RenameField({ card }) {
   // Clicking away without a new name cancels: a rename marks the name as chosen, so the brief no longer names the project.
@@ -28,6 +28,7 @@ function RenameField({ card }) {
 }
 
 function ProjectCard({ card }) {
+  const menu = useDismiss(card.menuOpen, card.toggleMenu);
   return (
     <li className="project-card">
       <button className="project-card__thumb" type="button" onClick={card.open} aria-label={`Open ${card.name}`}>
@@ -40,7 +41,7 @@ function ProjectCard({ card }) {
           )}
           <span className="project-card__meta">{card.meta}</span>
         </div>
-        <div className="relative">
+        <div className="relative" ref={menu}>
           <button className="project-card__more" type="button" onClick={card.toggleMenu} aria-expanded={card.menuOpen} aria-haspopup="menu" aria-label={`More actions for ${card.name}`}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" />

@@ -52,3 +52,19 @@ test("directions survive JSON unchanged", () => {
     assert.deepStrictEqual(JSON.parse(JSON.stringify(directions)), directions, label);
   }
 });
+
+test("the explanation only claims what the result shows", () => {
+  let cues = 0;
+  for (const [label, state] of [...briefs, ["ember", brief({ name: "Ember & Vine", industry: "food" })], ["river", brief({ name: "Riverbend", industry: "finance" }, ["Playful", "Bold"])]]) {
+    const { directions } = generateDirections(state, () => null);
+    assert.ok(directions.filter((d) => /most closely/.test(d.fit)).length <= 1, `${label}: more than one option fits "most closely"`);
+    for (const d of directions) {
+      const claim = d.layers.find((l) => l.layer === "Name");
+      if (!claim) continue;
+      cues++;
+      // The name is credited with the palette only when buildPalette says it used it.
+      assert.equal(/palette and imagery/.test(claim.text), d.primaryReasons.some((r) => r.layer === "Name"), `${label}: ${claim.text}`);
+    }
+  }
+  assert.ok(cues > 0, "no brief had a name cue");
+});

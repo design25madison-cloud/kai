@@ -8,7 +8,7 @@ export default function WelcomeScreen({ vm }) {
   return (
     <div className="welcome">
       <HomeLogo vm={vm} className="page-logo" />
-      <h1 className="welcome__title">Lets get started</h1>
+      <h1 className="welcome__title">Let's get started</h1>
       <div className="welcome__options">
         {options.map((o) => (
           <button key={o.title} className="start-option" type="button" onClick={o.pick}>
