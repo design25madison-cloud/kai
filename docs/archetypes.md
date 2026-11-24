@@ -692,7 +692,8 @@ Palettes move from one Accent role to an accent set of 1–3 colors:
 - **Rate limits:** Unsplash demo keys allow 50 requests an hour. Production approval raises this to 5,000. Results should be cached per brief.
 
 **Built (Nov 9, 2026)** in `src/app/imageSearch.js`:
-- **Order:** hand-picked photos (`referenceImages.json`) first, then Unsplash, then Commons.
+- **Order:** Unsplash first, with a quality bar (short edge at least 1600 px, no paid Unsplash+ photos). Hand-picked Commons photos (`referenceImages.json`), then Commons search, are used only when Unsplash has nothing that clears the bar or there's no key. See `docs/imagery-instructions.md`.
+- **Not literal (Nov 23, 2026):** photos carry the brand's mood, never the company's work, workplace, equipment, products or industry. The industry photo slot was removed, and literal subjects are filtered out.
 - **Search scope:** only labels actually on screen or exported are searched.
 - **Caching:** results are cached in the browser for a week. Misses, and results found before a key existed, are kept for a day only.
 - **Download notice:** sent to Unsplash when a photo is locked, or exported to PDF or PowerPoint.

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { after, mock, test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
@@ -18,7 +19,7 @@ globalThis.fetch = async (url) => {
   if (net.fail) throw new TypeError("Failed to fetch");
   const q = new URL(url, "http://x").searchParams.get("query") || "x", id = q.replace(/\W/g, "") + net.set;
   // Shaped and sized like a real Unsplash answer, so the stored size measured below is realistic.
-  const photo = { id, urls: { regular: `https://images.unsplash.com/photo-1501785888041-${id}?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=${ixid}&ixlib=rb-4.0.3&q=80&w=1080` },
+  const photo = { id, width: 4000, height: 3000, urls: { regular: `https://images.unsplash.com/photo-1501785888041-${id}?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=${ixid}&ixlib=rb-4.0.3&q=80&w=1080` },
     user: { name: "Photographer Name", links: { html: "https://unsplash.com/@photographer" } }, links: { html: `https://unsplash.com/photos/some-photo-${id}`, download_location: `https://api.unsplash.com/photos/${id}/download?ixid=${ixid}` } };
   return { ok: true, status: 200, json: async () => ({ results: [photo] }) };
 };
@@ -87,8 +88,11 @@ test("directions are stored once the photos they read have landed, and another v
   assert.deepEqual(shown(reopened), before, "the stored palettes are shown");
   const css = b.exports.tokensCss(reopened.current(), b.exports.ALL_SECTIONS);
   assert.ok(before[reopened.state.option].every((hex) => css.includes(hex)), "exports use the stored palette");
-  const label = labels[0];
+  const label = labels.find((l) => !b.refs.curatedImage(l)); // One with no hand-picked photo to fall back on.
   assert.equal(b.refs.referenceImage(label).src, first.dirs.images[label].src, "the stored photo is shown, not the new search result");
+  // A hand-picked photo the project showed (so no search result was stored for it) stays, though Unsplash has one now.
+  const picked = Object.keys(JSON.parse(readFileSync(ROOT + "src/app/referenceImages.json", "utf8"))).find((l) => !first.dirs.images[l]);
+  assert.equal(b.refs.referenceImage(picked).source, "Wikimedia Commons");
   // A stored photo that no longer loads falls back to searching again.
   b.refs.brokenImage(first.dirs.images[label].src);
   await until(() => b.refs.referenceImage(label) && /-\w+2\?/.test(b.refs.referenceImage(label).src), "the photo to be searched again");

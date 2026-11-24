@@ -17,7 +17,7 @@ import { curatedImage } from "./referenceImages.js";
 
 export { hexToOklch, oklchToHex };
 import { restrictedHits } from "./language.js";
-import { AUDIENCES, audienceOf, competitorColorsOf, industryOf, nameCuesOf, stanceOf } from "./layers.js";
+import { AUDIENCES, audienceOf, competitorColorsOf, industryOf, isLiteral, nameCuesOf, stanceOf } from "./layers.js";
 
 // ---------- Color helpers ----------
 
@@ -462,10 +462,11 @@ function buildImages(mix, offset, shown, ctx, rank) {
     const rotated = list.slice(start).concat(list.slice(0, start));
     return rotated.filter((l) => !shown.has(l)).concat(rotated.filter((l) => shown.has(l)));
   };
-  // Category: skip images that are the industry's clichés.
+  // Imagery carries the brand, not the business: skip anything that pictures a workplace,
+  // equipment or product, and anything that pictures the founder's own industry.
   const L = ctx.layers;
   const cliche = (label) => L.industry && L.industry.cliches.some((c) => label.toLowerCase().includes(c));
-  const queues = mix.map((m, k) => order(ARCHETYPE_BY_ID[m.id], k).filter((l) => !cliche(l)));
+  const queues = mix.map((m, k) => order(ARCHETYPE_BY_ID[m.id], k).filter((l) => !cliche(l) && !isLiteral(l)));
   const taken = mix.map(() => 0);
   const seen = new Set(), images = [];
   for (let slot = 0; slot < 6; slot++) {
@@ -476,8 +477,8 @@ function buildImages(mix, offset, shown, ctx, rank) {
       if (label) { seen.add(label); images.push(label); taken[k]++; break; }
     }
   }
-  // Name and category each place one photo: the name's cue on the moodboard, the industry's world
-  // in the imagery set. Options take turns through them so they don't repeat.
+  // The name's cue places one photo on the moodboard (its meaning, as a material or landscape).
+  // Options take turns through its subjects so they don't repeat.
   const place = (slot, list) => {
     if (!list || !list.length) return;
     const label = list[rank % list.length];
@@ -487,8 +488,7 @@ function buildImages(mix, offset, shown, ctx, rank) {
     images[slot] = label;
     seen.add(label);
   };
-  place(3, L.cue && L.cue.images);
-  place(4, L.industry && L.industry.images);
+  place(3, L.cue && L.cue.images.filter((l) => !isLiteral(l)));
   const pool = [...new Set(queues.flat())].filter((l) => !seen.has(l));
   images.slice(0, 4).forEach((l) => shown.add(l));
   const src = (label) => [label, curatedImage(label) ? "Wikimedia Commons" : "Search"];

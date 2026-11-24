@@ -1,6 +1,7 @@
 // Finds a reference photo for an image label ("Forest canopy", "Server aisle"…).
 //
-// Order: Unsplash first (through the dev server, which holds the key), then Wikimedia Commons.
+// Order: Unsplash first (through the dev server, which holds the key). Wikimedia Commons is only
+// used when Unsplash has no result that clears the quality bar below, or there's no key.
 // Results are cached in this browser for a week, because Unsplash demo keys allow only 50
 // searches an hour. A label with no result is retried after a day. The hosted server also
 // remembers each search for a week and shares it between everyone (server/app.js).
@@ -10,11 +11,13 @@
 // - Every photo is credited with links to the photographer and source.
 // - Commons: only freely licensed files. Anything non-commercial or no-derivatives is skipped.
 
-const CACHE_KEY = "kai.images.v1";
+const CACHE_KEY = "kai.images.v2"; // v2: Unsplash-first with a quality bar
 const WEEK = 7 * 24 * 3600 * 1000;
 const DAY = 24 * 3600 * 1000;
 const APP = "kai"; // Unsplash asks for the application's name (as registered with them) on every link back.
 
+const MIN_SHORT_EDGE_UNSPLASH = 1600; // px
+const MIN_WIDTH_COMMONS = 1600; // px, for the fallback
 const utm = (url) => `${url}${url.includes("?") ? "&" : "?"}utm_source=${APP}&utm_medium=referral`;
 // Links come from Unsplash and Commons data, so anything else (javascript:, data:…) is dropped.
 // Commons often gives license links as http://creativecommons.org; those are upgraded, since
@@ -55,7 +58,8 @@ async function fromUnsplash(term) {
   }
   if (!res.ok) return null;
   const json = await res.json();
-  const p = (json.results || [])[0];
+  // Quality bar: big enough to use full-bleed, and not an Unsplash+ (paid) photo.
+  const p = (json.results || []).find((r) => !r.premium && !r.plus && Math.min(r.width, r.height) >= MIN_SHORT_EDGE_UNSPLASH);
   if (!p) return null;
   return {
     source: "Unsplash",
@@ -83,7 +87,7 @@ async function fromCommons(term) {
   const params = new URLSearchParams({
     action: "query", format: "json", origin: "*",
     generator: "search", gsrsearch: `${term} filetype:bitmap`, gsrnamespace: "6", gsrlimit: "10",
-    prop: "imageinfo", iiprop: "url|extmetadata|mime", iiurlwidth: "1200",
+    prop: "imageinfo", iiprop: "url|extmetadata|mime|size", iiurlwidth: "1200",
     iiextmetadatafilter: "LicenseShortName|LicenseUrl|Artist|NonFree",
   });
   const res = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`);
@@ -94,6 +98,7 @@ async function fromCommons(term) {
     const meta = info?.extmetadata || {};
     const license = meta.LicenseShortName?.value || "";
     if (!info || !/^image\/(jpeg|png)$/.test(info.mime)) continue;
+    if ((info.width || 0) < MIN_WIDTH_COMMONS) continue; // Too small to hold up in a moodboard
     if (meta.NonFree?.value || !freeLicense(license)) continue;
     return {
       source: "Wikimedia Commons",
@@ -129,11 +134,13 @@ function fresh(entry) {
 // Photos an open project stored with its directions, by label, so it keeps the same picture and
 // credit after a search would find another (BrandApp.generated()). One that fails to load is
 // searched for again instead.
-let pinned = {};
+let pinned = null;
 const broken = new Set();
 export function pinImages(map) {
-  pinned = map || {};
+  pinned = map || null;
 }
+// The usable photo an open project stored for a label, or null. Undefined when no stored project is open.
+export const pinnedImage = (label) => (pinned ? (pinned[label] && !broken.has(pinned[label].src) ? pinned[label] : null) : undefined);
 export function brokenImage(src) {
   if (broken.has(src)) return;
   broken.add(src);
@@ -146,8 +153,8 @@ export const cachedImage = (label) => (cache[label] && cache[label].image) || nu
 // Returns the cached photo for a label, or null while it's being looked up (or if none exists).
 // A miss starts a lookup; subscribers hear when it lands.
 export function searchedImage(label) {
-  const pin = pinned[label];
-  if (pin && !broken.has(pin.src)) return pin;
+  const pin = pinnedImage(label);
+  if (pin) return pin;
   const entry = cache[label];
   if (fresh(entry)) return entry.image;
   if (!pending.has(label) && typeof window !== "undefined") {
