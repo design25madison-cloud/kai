@@ -57,6 +57,19 @@ test("a brand's colors, fonts and words land in the template", async () => {
   assert.ok((await slideWith(zip, "guide-voice")).xml.includes("Built to &lt;last&gt;."));
 });
 
+test("a long wordmark shrinks to stay on one line of the cover", async () => {
+  // Found on the hosted site: a seven-letter name in a wide typeface wrapped onto two lines.
+  const size = async (word) => {
+    const zip = await applyBrand(await open(), { ...brand, word }, { sections: [], photos: [] });
+    const box = (await slideWith(zip, 'typeface="Anta"')).xml.match(new RegExp(`<p:sp>(?:(?!</p:sp>)[\\s\\S])*?<a:t>${word}</a:t>`))[0];
+    assert.match(box, /<a:bodyPr[^>]* wrap="none"/);
+    return +box.match(/<a:rPr[^>]* sz="(\d+)"/)[1];
+  };
+  const short = await size("ABC"), long = await size("NORTHERNLIGHTS");
+  assert.ok(long < short, `${long} < ${short}`);
+  assert.ok(long >= 1000);
+});
+
 test("the palette spreads evenly for the colors a brand has", async () => {
   const box = (xml, name) => shape(xml, name).match(/<a:off x="(\d+)"[^>]*\/>\s*<a:ext cx="(\d+)"/).slice(1).map(Number);
   const raw = (await slideWith(await open(), 'name="guide-palette"')).xml;

@@ -67,6 +67,17 @@ const boxOf = (block) => {
 const moveTo = (block, x, w) => block.replace(BOX, (all, x0, y, w0, h) => `<a:off x="${Math.round(x)}" y="${y}"/><a:ext cx="${Math.round(w)}" cy="${h}"/>`);
 
 function wordmark(xml, t) {
+  // The wordmark stays on one line, and a long one gets a smaller size so it fits its box.
+  // shortcut: letter width is guessed at 0.9 of the size (a wide bold typeface), so narrow
+  // typefaces come out smaller than they need to. Measure the real font if that matters.
+  xml = mapShapes(xml, (name, block) => {
+    const box = boxOf(block);
+    if (!box || !block.includes("{{wordmark}}") || !block.includes('typeface="KAI Wordmark"')) return;
+    const fit = Math.floor(((box.w / 12700 / t.word.length - t.track) / 0.9) * 100); // 12700 units per point
+    return block
+      .replace(/<a:bodyPr\b([^>]*?)(\/?)>/, (all, attrs, close) => `<a:bodyPr${attrs.replace(/ wrap="[^"]*"/, "")} wrap="none"${close}>`)
+      .replace(/(<a:rPr\b[^>]*? sz=")(\d+)"/g, (all, start, sz) => `${start}${Math.min(+sz, Math.max(fit, 1000))}"`);
+  });
   // Letter spacing is in hundredths of a point, on the run that uses the wordmark font.
   return xml
     .replace(/<a:(rPr|defRPr|endParaRPr)\b([^>]*)>((?:(?!<\/a:\1>)[\s\S])*?typeface="KAI Wordmark")/g, (all, tag, attrs, rest) => {
