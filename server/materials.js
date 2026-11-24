@@ -29,6 +29,7 @@ export const MAX_FILES = 10;
 export const MAX_BYTES = 25 * 1024 * 1024;
 export const MAX_TEXT = 100000;
 export const FILLS_PER_DAY = 20;
+export const PDFS_PER_DAY = 50;
 
 // Accepted file types: what Gemini reads directly, plus the two the converter turns into PDF.
 // The first bytes are checked too, so a renamed file is refused.
@@ -156,6 +157,23 @@ export function addMaterialsRoutes(api, { pool, cloud }) {
     ]);
     if (rows[0]) await removeObjects(cloud, [rows[0].object, rows[0].pdf_object].filter(Boolean));
     res.json({});
+  });
+
+  // The PDF export: the browser builds the brand's deck (src/app/deck.js) and sends it here, and the
+  // converter turns it into a PDF with the brand fonts it has installed. Nothing is stored.
+  api.post("/deck-pdf", express.raw({ type: () => true, limit: MAX_BYTES }), async (req, res) => {
+    if (!cloud) throw fail(503, "PDF export isn't set up on this server.");
+    if (!Buffer.isBuffer(req.body) || !KINDS.pptx.magic.every((b, i) => req.body[i] === b)) throw fail(400, "That isn't a deck.");
+    await spend(pool, req.email, "pdf", PDFS_PER_DAY, "PDF exports");
+    let pdf;
+    try {
+      pdf = await cloud.toPdf(req.body, "pptx");
+    } catch (err) {
+      console.error("Deck PDF failed", err.message);
+      await refund(pool, req.email, "pdf");
+      throw fail(502, "The PDF couldn't be made. Try again, or export the PowerPoint instead.");
+    }
+    res.type("application/pdf").send(pdf);
   });
 
   // Reads the project's files and the pasted notes, and returns suggested brief answers.

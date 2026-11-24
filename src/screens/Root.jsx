@@ -5,7 +5,6 @@ import HandoffScreen from "./HandoffScreen.jsx";
 import MeetingScreen from "./MeetingScreen.jsx";
 import OutputScreen from "./OutputScreen.jsx";
 import PreciseEditingPanel from "./PreciseEditingPanel.jsx";
-import PrintView from "./PrintView.jsx";
 import ProjectsScreen from "./ProjectsScreen.jsx";
 import SplashScreen from "./SplashScreen.jsx";
 import StartScreen from "./StartScreen.jsx";
@@ -29,7 +28,6 @@ export default function Root({ vm }) {
         {vm.isHandoff && <HandoffScreen vm={vm} />}
         {vm.hasToast && <Toast vm={vm} />}
       </div>
-      {vm.showPrint && <PrintView vm={vm} />}
     </div>
   );
 }

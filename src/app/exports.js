@@ -192,11 +192,17 @@ export function claudeMd({ d, f, avoidC, avoidT, banned = [], domains, agreedRou
 }
 
 export function handoffFiles(input) {
-  return [{ id: "claude", name: "CLAUDE.md", desc: "Brand rules that AI coding tools read from a project folder", mime: "text/markdown", content: claudeMd(input) }];
+  const { d } = input;
+  return [
+    { id: "claude", name: "CLAUDE.md", desc: "Brand rules that AI coding tools read from a project folder", mime: "text/markdown", content: claudeMd(input) },
+    { id: "css", name: "tokens.css", desc: "Color, UI primary, and font variables", mime: "text/css", content: tokensCss(d) },
+    { id: "json", name: "tokens.json", desc: "The same tokens as structured data, plus the type scale", mime: "application/json", content: tokensJson(d) },
+    { id: "fonts", name: "fonts.md", desc: "Install commands, embed link, and CSS stacks", mime: "text/markdown", content: fontsGuide(d) },
+  ];
 }
 
 export function downloadFile(name, content, mime) {
-  const url = URL.createObjectURL(new Blob([content], { type: mime + ";charset=utf-8" }));
+  const url = URL.createObjectURL(content instanceof Blob ? content : new Blob([content], { type: mime + ";charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;
   a.download = name;

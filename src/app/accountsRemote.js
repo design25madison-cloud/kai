@@ -61,5 +61,12 @@ export const uploadFile = (id, file) =>
 export const deleteFile = (id, fileId) => api(`/projects/${id}/files/${fileId}`, { method: "DELETE" });
 // With `brief` (the answers so far), the server drafts the unanswered ones instead.
 export const fillBrief = (id, text, brief) => api(`/projects/${id}/fill`, send("POST", { text, brief }));
+// The PDF export: sends the finished deck, gets the same slides back as a PDF (a Blob).
+export async function deckPdf(deck) {
+  const res = await fetch("/api/deck-pdf", { method: "POST", body: deck, headers: { "Content-Type": "application/octet-stream" } }).catch(() => null);
+  if (!res) throw new Error("Couldn't reach the server. Reload the page to sign in again.");
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "The PDF couldn't be made. Try again.");
+  return res.blob();
+}
 // Precise editing: one piece, one request, one proposed change (server/edit.js).
 export const editPiece = (id, edit) => api(`/projects/${id}/edit`, send("POST", edit));

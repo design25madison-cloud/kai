@@ -151,7 +151,7 @@ export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
   app.use((err, req, res, next) => {
     const status = err.status || err.statusCode || 500;
     if (status >= 500) console.error(err);
-    const tooLarge = req.path.endsWith("/files") ? "That's over the size limit (25 MB per file)." : "That's too much to save at once.";
+    const tooLarge = /\/(files|deck-pdf)$/.test(req.path) ? "That's over the size limit (25 MB per file)." : "That's too much to save at once.";
     const message = err.type === "entity.too.large" ? tooLarge : err.message;
     res.status(status).json({ error: status >= 500 && !err.expose ? "Something went wrong on the server." : message });
   });

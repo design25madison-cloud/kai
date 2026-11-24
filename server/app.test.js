@@ -246,3 +246,13 @@ test("a failed AI call says why and doesn't count against the daily limit", asyn
   assert.equal((await call(ben, "POST", `/projects/${id}/fill`, { text: "We sell steel." })).status, 200);
   assert.equal(await uses(), 1);
 });
+
+test("a deck comes back as a PDF, and only a deck is accepted", async () => {
+  const send = (user, bytes) => fetch(`${base}/deck-pdf`, { method: "POST", headers: { "x-test-user": user, "Content-Type": "application/octet-stream" }, body: bytes });
+  const ok = await send(ana, PPTX);
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get("content-type"), "application/pdf");
+  assert.equal(Buffer.from(await ok.arrayBuffer()).toString(), "%PDF-converted");
+  assert.equal((await send(ana, PDF)).status, 400);
+  assert.equal((await send("", PPTX)).status, 401);
+});

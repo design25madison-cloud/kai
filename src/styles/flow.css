@@ -322,37 +322,3 @@
     border-top: 1px solid var(--color-divider);
   }
 }
-
-/* PDF */
-.print-view {
-  display: none;
-}
-@media print {
-  @page {
-    size: A4 landscape;
-    margin: 12mm;
-  }
-  * {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .screen {
-    display: none;
-  }
-  .print-view {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-  .print-view button,
-  .print-view input,
-  .print-view select {
-    display: none;
-  }
-  .print-view section {
-    break-inside: avoid;
-  }
-  .print-view > section:first-child {
-    break-after: page;
-  }
-}

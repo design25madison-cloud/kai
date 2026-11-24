@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { FONTS, editContext, editProposal } from "./edits.js";
 
@@ -32,4 +33,10 @@ test("a change becomes a proposal that locks what it touched", () => {
 
   const word = editProposal({ c: { sec: "word" }, d, base, ov: { lock: { type: true } }, change: { summary: "Wider.", font: "Anta", track: 6 } });
   assert.deepEqual(word.patch, { wordFont: "Anta", track: 6, lock: { type: true, word: true } });
+});
+
+test("the converter installs every typeface a direction can use", () => {
+  // converter/fonts.txt is what the PDF export can show. Add a typeface to an archetype, add it there.
+  const installed = readFileSync(new URL("../../converter/fonts.txt", import.meta.url), "utf8").trim().split("\n");
+  assert.deepEqual(installed, FONTS);
 });

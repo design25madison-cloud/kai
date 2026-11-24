@@ -1,0 +1,49 @@
+Alfa Slab One
+Anton
+Archivo
+Archivo Black
+Archivo Narrow
+Bagel Fat One
+Barlow
+Barlow Condensed
+Barlow Semi Condensed
+Big Shoulders Display
+Bodoni Moda
+Bricolage Grotesque
+Cormorant
+Cormorant Garamond
+DM Sans
+DM Serif Display
+EB Garamond
+Exo 2
+Figtree
+Fraunces
+Fredoka
+IBM Plex Sans
+Instrument Sans
+Inter Tight
+Jost
+Karla
+Lato
+Libre Caslon Display
+Lilita One
+Manrope
+Newsreader
+Nunito
+Nunito Sans
+Oswald
+Outfit
+Playfair Display
+Plus Jakarta Sans
+Quicksand
+Rubik
+Saira
+Sora
+Source Sans 3
+Source Serif 4
+Space Grotesk
+Space Mono
+Syne
+Unbounded
+Work Sans
+Young Serif

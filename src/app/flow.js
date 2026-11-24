@@ -3,7 +3,9 @@
 // The model: a direction is reviewed in rounds. In each round the group marks every module
 // Agreed or Needs work. Not agreed means back to picks: agreed modules lock, so regenerating
 // only touches what is still open, and the round count goes up. Agreed means handoff.
-import { ALL_SECTIONS, claudeMd, downloadFile, handoffFiles } from "./exports.js";
+import accounts from "./store.js";
+import { buildDeck, deckFileName } from "./deck.js";
+import { ALL_SECTIONS, claudeMd, downloadFile, fontsGuide, handoffFiles, tokensCss, tokensJson } from "./exports.js";
 
 export const MODULES = [
   ["word", "Wordmark"],
@@ -86,17 +88,40 @@ const EXPORT_SECTIONS = [
 ];
 
 // Each format, the sections that have something to put in it, and how to build the file.
-// v1 exports CLAUDE.md only. The PDF, PowerPoint, token and font guide builders are still in
-// exports.js and deck.js, unused.
 const EXPORT_FORMATS = [
+  // The PDF is the deck, converted on the server, so it needs the hosted version.
+  { id: "pdf", label: accounts.canFill ? "PDF" : "PDF (hosted version only)", uses: ALL_SECTIONS, hosted: true },
+  { id: "pptx", label: "PowerPoint", uses: ALL_SECTIONS },
   { id: "claude", label: "CLAUDE.md", uses: ["word", "palette", "ui", "type", "refs", "voice"], name: "CLAUDE.md", mime: "text/markdown", build: (i) => claudeMd(i) },
+  { id: "css", label: "CSS tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.css", mime: "text/css", build: (i) => tokensCss(i.d, i.sections) },
+  { id: "json", label: "JSON tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.json", mime: "application/json", build: (i) => tokensJson(i.d, i.sections) },
+  { id: "fonts", label: "Font guide", uses: ["word", "type"], name: "fonts.md", mime: "text/markdown", build: (i) => fontsGuide(i.d, i.sections) },
 ];
+
+// The deck always has its layouts; the selected sections decide which brand guide slides follow.
+// kind "pdf" sends the finished deck to the server, which answers with the same slides as a PDF.
+function exportDeck(app, sections, kind = "pptx") {
+  if (app._deckBusy) return;
+  app._deckBusy = true;
+  app.setState({ allMenu: false, deckBusy: true });
+  return buildDeck(app.current(), app.state.f, sections)
+    .then(async ({ blob, t }) => {
+      const name = deckFileName(t, kind);
+      downloadFile(name, kind === "pdf" ? await accounts.deckPdf(blob) : blob);
+      app.showToast(name + " downloaded.");
+    })
+    .catch((err) => app.showToast(kind === "pdf" && err.message ? err.message : "Couldn't build the deck. Try again."))
+    .finally(() => {
+      app._deckBusy = false;
+      app.setState({ deckBusy: false });
+    });
+}
 
 function exportVals(app) {
   const s = app.state;
   const sel = s.exportSel;
-  const usable = (f) => f.uses.some((id) => sel.includes(id));
-  // Projects saved before the trim may still hold a removed format.
+  const usable = (f) => f.uses.some((id) => sel.includes(id)) && (!f.hosted || accounts.canFill);
+  // A saved project may hold a format that no longer exists.
   const current = EXPORT_FORMATS.find((f) => f.id === s.exportFormat) || EXPORT_FORMATS[0];
   const set = (patch) => app.setState(patch);
   return {
@@ -112,6 +137,7 @@ function exportVals(app) {
     canRun: usable(current),
     run: () => {
       if (!usable(current)) return;
+      if (current.id === "pdf" || current.id === "pptx") return exportDeck(app, sel, current.id);
       const content = current.build({ d: app.current(), f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, banned: s.banned, domains: s.domains, agreedRound: s.meeting.agreedRound, sections: sel, tone: s.tone, comps: s.comps, alts: s.alts, taglines: s.taglines });
       downloadFile(current.name, content, current.mime);
       set({ allMenu: false });
@@ -144,12 +170,12 @@ export function flowVals(app) {
     crumbs: onboardingCrumbs(app),
     isMeet,
     isHandoff,
-    showPrint: isOut || isHandoff,
-    printSel: s.printSel,
     openMeeting,
     meetingLabel: meeting.log.length ? `Back to meeting · Round ${meeting.round}` : "Take to meeting",
     roundNotice: isOut ? meeting.notice : null,
     exportMenu: exportVals(app),
+    exportDeck: () => exportDeck(app, ALL_SECTIONS),
+    deckBusy: !!s.deckBusy,
     dismissNotice: () => set({ meeting: Object.assign({}, meeting, { notice: null }) }),
   };
   if (!isMeet && !isHandoff) return base;
@@ -267,6 +293,7 @@ export function flowVals(app) {
           app.showToast("Couldn't copy. Use Download instead.");
         }
       },
+      printPdf: () => exportDeck(app, ALL_SECTIONS, "pdf"),
       reopen,
     };
   }

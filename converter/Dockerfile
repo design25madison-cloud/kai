@@ -6,6 +6,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+# The brand typefaces, so a deck converted to PDF shows them instead of a stand-in font.
+COPY fonts.txt fonts.mjs ./
+RUN node fonts.mjs fonts.txt /usr/share/fonts/truetype/kai && fc-cache -f
+
 COPY server.js ./
 USER node
 CMD ["node", "server.js"]

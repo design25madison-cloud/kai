@@ -25,7 +25,7 @@ export default class BrandApp extends Component {
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
       arts: [], view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
       mixPick: { word: 0, palette: 0, type: 0, refs: 0, voice: 0 }, mixBase: null, keep: 40, opinion: '', oRec: null,
-      meeting: newMeeting(), handoffFile: 'claude', printSel: ALL_SECTIONS, exportSel: ALL_SECTIONS, exportFormat: 'claude'
+      meeting: newMeeting(), handoffFile: 'claude', exportSel: ALL_SECTIONS, exportFormat: 'claude'
     };
     this.state.vRec = null; this.state.vDone = {}; this.state.showT = false;
     Object.assign(this.state, { user: accounts.currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
@@ -396,10 +396,6 @@ export default class BrandApp extends Component {
   }
   current() { return this.optionData(this.state.option); }
 
-  printDirection(sections) {
-    if (sections.includes('mood') || sections.includes('refs')) markImagesUsed(this.current().imgs.map(x => x[0]));
-    this.setState({ printSel: sections, allMenu: false }, () => window.print());
-  }
 
   startComment(sec, target, label) {
     const d = this.state.draft || { items: [], text: '' }, items0 = d.items || [];

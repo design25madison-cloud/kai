@@ -1,0 +1,32 @@
+# Runs the tests on every pull request, and on pushes to main and carson-dev, so an edited deck
+# template (src/assets/deck-template.pptx) is checked before anyone merges it.
+# It only reports. Nothing deploys from here: see cloudbuild.yaml, which runs the same tests.
+name: Tests
+on:
+  pull_request:
+  push:
+    branches: [main, carson-dev]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 2s --health-timeout 5s --health-retries 15
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
