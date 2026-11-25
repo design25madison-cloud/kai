@@ -9,6 +9,7 @@ const pool = new pg.Pool();
 const run = randomUUID();
 const ana = `ana-${run}@test`;
 const ben = `ben-${run}@test`;
+const cy = `cy-${run}@test`;
 let server, base;
 
 // Stands in for Google Cloud: a bucket in memory, a converter and a model that answer on cue.
@@ -37,7 +38,7 @@ before(async () => {
   base = `http://localhost:${server.address().port}/api`;
 });
 after(async () => {
-  await pool.query("delete from projects where owner in ($1, $2)", [ana, ben]);
+  await pool.query("delete from projects where owner in ($1, $2, $3)", [ana, ben, cy]);
   await pool.query("delete from fills where owner in ($1, $2)", [ana, ben]);
   await pool.query("delete from unsplash_searches where url like $1", [`%${run}%`]);
   server.close();
@@ -117,6 +118,49 @@ test("a save over a version the tab didn't see is refused", async () => {
 
   await call(ana, "DELETE", `/projects/${id}`);
   assert.equal((await put({ v: 3 }, first.body.updatedAt)).status, 404);
+});
+
+test("a save of only where the person was keeps the edited time and the version", async () => {
+  const { id } = (await call(ana, "POST", "/projects", { data: { v: 0, screen: "brief" } })).body;
+  await pool.query("update projects set updated_at = now() - interval '1 minute' where id = $1", [id]);
+  const seen = (await call(ana, "GET", `/projects/${id}`)).body.updatedAt;
+  const put = (data, updatedAt, edited) => call(ana, "PUT", `/projects/${id}`, { data, summary: { where: data.screen }, updatedAt, edited });
+
+  const moved = await put({ v: 0, screen: "out" }, seen, false);
+  assert.deepEqual([moved.status, moved.body.updatedAt], [200, seen]);
+  const loaded = (await call(ana, "GET", `/projects/${id}`)).body;
+  assert.deepEqual([loaded.updatedAt, loaded.where, loaded.data.screen], [seen, "out", "out"]);
+  // An edit still moves the version on, and the old version is then refused, moved or not.
+  const edited = await put({ v: 1, screen: "out" }, seen);
+  assert.ok(edited.body.updatedAt > seen);
+  assert.equal((await put({ v: 0, screen: "brief" }, seen, false)).status, 409);
+});
+
+test("a new brand left untouched for a week goes when the list loads; anything a person made stays", async () => {
+  const make = async () => (await call(cy, "POST", "/projects", { data: { screen: "welcome" } })).body;
+  const [left, moved, answered, directions, renamed, uploaded, copied, recent] = await Promise.all(Array.from({ length: 8 }, make));
+  // Back-date the edited ones first, so their edits land a minute after they were made.
+  await pool.query("update projects set created_at = now() - interval '1 minute', updated_at = now() - interval '1 minute' where owner = $1", [cy]);
+  const put = async (p, data, edited) => call(cy, "PUT", `/projects/${p.id}`, { data, updatedAt: (await call(cy, "GET", `/projects/${p.id}`)).body.updatedAt, edited });
+  assert.equal((await put(moved, { screen: "start" }, false)).status, 200); // Only where they were.
+  assert.equal((await put(answered, { screen: "brief", f: { name: "Ferra" } })).status, 200);
+  assert.equal((await put(directions, { screen: "out", dirs: { directions: [] } })).status, 200);
+  await call(cy, "POST", `/projects/${renamed.id}/rename`, { name: "Ferra" });
+  assert.equal((await upload(cy, uploaded.id, "deck.pdf", PDF)).status, 200);
+  const copy = (await call(cy, "POST", `/projects/${copied.id}/duplicate`)).body;
+  // A week and a day pass for all but the recent one; how long after creating each was edited stays.
+  await pool.query("update projects set created_at = created_at - interval '8 days', updated_at = updated_at - interval '8 days' where owner = $1 and id <> $2", [cy, recent.id]);
+
+  const listed = (await call(cy, "GET", "/projects")).body.map((p) => p.id);
+  const stays = [answered, directions, renamed, uploaded, copied, copy, recent].map((p) => p.id);
+  assert.deepEqual([...listed].sort(), [...stays].sort());
+  const gone = (await pool.query("select id from projects where id = any($1)", [[left.id, moved.id]])).rows;
+  assert.deepEqual(gone, []);
+  // Someone else's untouched projects are never touched by this person's list.
+  const theirs = (await call(ben, "POST", "/projects", { data: {} })).body;
+  await pool.query("update projects set created_at = now() - interval '8 days', updated_at = now() - interval '8 days' where id = $1", [theirs.id]);
+  await call(cy, "GET", "/projects");
+  assert.equal((await call(ben, "GET", `/projects/${theirs.id}`)).status, 200);
 });
 
 test("bad input is refused", async () => {

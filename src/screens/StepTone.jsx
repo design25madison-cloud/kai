@@ -2,12 +2,12 @@ import { Fragment } from "react";
 
 export default function StepTone({ vm }) {
   return (
-    <div className="flex col gap-24px">
+    <div className="flex col gap-24px" onBlur={vm.trimField}>
       <div className="flex col gap-4px">
         <h2 className="m-0 t-22px w-600">Tone</h2>
       </div>
       <div className="flex col gap-8px">
-        <span className="t-13px">Tone or qualities the name should convey</span>
+        <span className="t-13px flex gap-8px items-center">Tone or qualities the name should convey<span className="t-12px c-ink-2">Required</span></span>
         <div className="flex gap-8px wrap">
           {vm.toneChips.map((c, i_) => (
             <Fragment key={i_}>
@@ -16,9 +16,10 @@ export default function StepTone({ vm }) {
           ))}
         </div>
         <div className="flex gap-8px maxw-420px">
-          <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
+          <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-toneIn" name="toneIn" value={vm.f.toneIn} onChange={vm.onField} aria-label="Add your own quality" placeholder="Add your own" />
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={vm.addTone}>Add</button>
         </div>
+        {vm.toneHint && <p className="m-0 t-13px c-ink-2">{vm.toneHint}</p>}
       </div>
       <div className="flex col gap-16px">
         <span className="t-13px">Emotional tone</span>

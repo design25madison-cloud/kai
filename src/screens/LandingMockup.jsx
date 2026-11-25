@@ -1,62 +1,6 @@
+import { mockCopy } from "../app/mockCopy.js";
 import { brokenImage, referenceImage } from "../app/referenceImages.js";
 import DashboardMockup from "./DashboardMockup.jsx";
-
-export const LANDING_COPY = {
-  nav: ["Home", "Products", "Resources", "Pricing"],
-  navActions: ["Log in", "Sign up"],
-  fallbackIntro: "One place for your team to plan the work, track it, and see what needs attention next.",
-  heroButtons: ["Demo", "Sign up"],
-  proofLabel: "Join 4,000+ companies already growing",
-  proof: ["Northline", "Halden Co.", "Corvid", "Mesa Works", "Tallis", "Ostrava"],
-  featuresTitle: "The only view you'll ever need. Simple.",
-  featuresIntro: "Every project, owner, and deadline in one place, so nobody has to go looking.",
-  features: [
-    ["Share one workspace", "Whether you have a team of 2 or 200, everyone stays on the same page and in the loop."],
-    ["Get instant answers", "Find the status of any project in seconds, without asking around."],
-    ["Report in one click", "Send a clean update to your team without building another deck."],
-    ["Bring in your partners", "Give vendors and customers a clear view of the work they're part of."],
-    ["Connect your tools", "Works with the systems you already use, so nothing gets entered twice."],
-    ["Talk to real people", "Our team is on hand to help you set up, roll out, and keep going."],
-  ],
-  cta: ["Give us a shot", "Set up your first project this week and see the whole picture by Friday.", "Learn more", "Get started"],
-  tabsEyebrow: "Features",
-  tabsTitle: "Everything your team needs to stay on schedule",
-  tabsIntro: "Plan the work, track it, and see what needs attention next.",
-  tabs: [
-    ["See it all", "Every project, owner, and deadline on one page."],
-    ["Catch it early", "Anything slipping rises to the top before it becomes a problem."],
-    ["Share it fast", "Send a clean update to your team in a couple of clicks."],
-  ],
-  learnMore: "Learn more",
-  pricingEyebrow: "Upgrade",
-  pricingTitle: "Pricing that grows with you",
-  pricingIntro: "Simple plans for teams of every size. No hidden fees.",
-  billed: "Billed annually.",
-  plans: [
-    ["Basic plan", "$10/mth", ["Access to all basic features", "Basic reporting and analytics", "Up to 10 individual users", "20GB individual data each user", "Basic chat and email support"]],
-    ["Business plan", "$20/mth", ["200+ integrations", "Advanced reporting", "Up to 20 individual users", "40GB individual data each user", "Priority chat and email support"]],
-  ],
-  planAction: "Get started",
-  quote: "We replaced three spreadsheets and a weekly status call in our first month.",
-  quoteName: "Renee Wells",
-  quoteRole: "Operations Lead, Halden Co.",
-  closingTitle: ["No long-term contracts.", "No catches."],
-  closingIntro: "Start with one project. Add the rest of your team when you're ready.",
-  newsletterTitle: "Join our newsletter",
-  newsletterIntro: "We'll send you a short update once a month.",
-  emailPlaceholder: "Enter your email",
-  subscribe: "Subscribe",
-  footer: [
-    ["Product", ["Overview", "Features", "Solutions", "Tutorials", "Pricing", "Releases"]],
-    ["Company", ["About us", "Careers", "Press", "News", "Media kit", "Contact"]],
-    ["Resources", ["Blog", "Newsletter", "Events", "Help centre", "Tutorials", "Support"]],
-    ["Use cases", ["Startups", "Enterprise", "Government", "Operations", "Marketplaces", "Field teams"]],
-    ["Social", ["Twitter", "LinkedIn", "Facebook", "GitHub", "AngelList", "Dribbble"]],
-    ["Legal", ["Terms", "Privacy", "Cookies", "Licenses", "Settings", "Contact"]],
-  ],
-  newBadge: "New",
-  rights: "All rights reserved.",
-};
 
 // The template stays the same for every brand. Each direction's lead archetype sets how it wears it
 // (its corners, weight, and which color the hero sits on); see `look` in archetypes.js. These
@@ -97,7 +41,7 @@ const STAR = "M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 
 
 export default function LandingMockup({ vm, expanded = true }) {
   const c = vm.cur;
-  const copy = LANDING_COPY;
+  const copy = mockCopy(vm.f.industry).landing;
   const look = c.look || LOOKS[c.name] || DEFAULT_LOOK;
   const photo = (k) => c.imgs[k % c.imgs.length][0];
   const eyebrow = c.tone.map((t) => `${t.yes}.`).join(" ");
@@ -141,7 +85,7 @@ export default function LandingMockup({ vm, expanded = true }) {
 
         <div className="mock-hero__text">
           <span className="mock-hero__eyebrow">{eyebrow}</span>
-          <h3 className="mock-hero__title">{c.headline}</h3>
+          <h3 className="mock-hero__title">{vm.mockHeadline || c.headline}</h3>
           <p className="mock-hero__intro">{vm.mockIntro || copy.fallbackIntro}</p>
           <div className="mock-hero__buttons">
             <span className="mock-btn mock-btn--lg mock-btn--hero"><Icon path={PLAY} />{copy.heroButtons[0]}</span>
@@ -309,7 +253,7 @@ export default function LandingMockup({ vm, expanded = true }) {
                 <div key={heading} className="mock-footer__col">
                   <span className="mock-footer__head">{heading}</span>
                   {links.map((x) => (
-                    <span key={x} className="mock-footer__link">{x}{x === "Solutions" && <span className="mock-footer__badge">{copy.newBadge}</span>}</span>
+                    <span key={x} className="mock-footer__link">{x}{x === copy.newLink && <span className="mock-footer__badge">{copy.newBadge}</span>}</span>
                   ))}
                 </div>
               ))}

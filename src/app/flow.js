@@ -89,9 +89,10 @@ const EXPORT_SECTIONS = [
 
 // Each format, the sections that have something to put in it, and how to build the file.
 const EXPORT_FORMATS = [
-  // The PDF is the deck, converted on the server, so it needs the hosted version.
-  { id: "pdf", label: accounts.canFill ? "PDF" : "PDF (hosted version only)", uses: ALL_SECTIONS, hosted: true },
-  { id: "pptx", label: "PowerPoint", uses: ALL_SECTIONS },
+  // all: the PowerPoint is the whole deck, so it takes every section whatever is ticked.
+  // The PDF is that deck, converted on the server, so it needs the hosted version.
+  { id: "pdf", label: accounts.canFill ? "PDF" : "PDF (hosted version only)", uses: ALL_SECTIONS, hosted: true, all: true },
+  { id: "pptx", label: "PowerPoint", uses: ALL_SECTIONS, all: true },
   { id: "claude", label: "CLAUDE.md", uses: ["word", "palette", "ui", "type", "refs", "voice"], name: "CLAUDE.md", mime: "text/markdown", build: (i) => claudeMd(i) },
   { id: "css", label: "CSS tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.css", mime: "text/css", build: (i) => tokensCss(i.d, i.sections) },
   { id: "json", label: "JSON tokens", uses: ["word", "palette", "ui", "type"], name: "tokens.json", mime: "application/json", build: (i) => tokensJson(i.d, i.sections) },
@@ -120,24 +121,32 @@ function exportDeck(app, sections, kind = "pptx") {
 function exportVals(app) {
   const s = app.state;
   const sel = s.exportSel;
-  const usable = (f) => f.uses.some((id) => sel.includes(id)) && (!f.hosted || accounts.canFill);
+  const usable = (f) => (f.all || f.uses.some((id) => sel.includes(id))) && (!f.hosted || accounts.canFill);
   // A saved project may hold a format that no longer exists.
-  const current = EXPORT_FORMATS.find((f) => f.id === s.exportFormat) || EXPORT_FORMATS[0];
+  // PDF is the default (state starts on "pdf"); local mode has no PDF, so it falls back to PowerPoint.
+  const current = EXPORT_FORMATS.find((f) => f.id === s.exportFormat && (!f.hosted || accounts.canFill)) || EXPORT_FORMATS.find((f) => !f.hosted);
   const set = (patch) => app.setState(patch);
+  // Only while the menu is open: current() would build directions on screens that have none.
+  const d = s.allMenu ? app.current() : null;
+  // A format that takes every section shows them all ticked and locked. The person's own ticks are
+  // kept in exportSel, so they come back with another format.
+  const locked = !!current.all, shown = locked ? ALL_SECTIONS : sel;
   return {
+    direction: d && (d.i === 3 ? "Your mix (custom direction)" : d.title),
+    locked,
     allOn: sel.length === ALL_SECTIONS.length,
     toggleAll: () => set({ exportSel: sel.length === ALL_SECTIONS.length ? [] : ALL_SECTIONS }),
     sections: EXPORT_SECTIONS.map(([id, label]) => ({
       id,
       label,
-      on: sel.includes(id),
+      on: shown.includes(id),
       toggle: () => set({ exportSel: ALL_SECTIONS.filter((x) => (x === id ? !sel.includes(id) : sel.includes(x))) }),
     })),
     formats: EXPORT_FORMATS.map((f) => ({ id: f.id, label: f.label, on: f === current, disabled: !usable(f), pick: () => set({ exportFormat: f.id }) })),
     canRun: usable(current),
     run: () => {
       if (!usable(current)) return;
-      if (current.id === "pdf" || current.id === "pptx") return exportDeck(app, sel, current.id);
+      if (current.id === "pdf" || current.id === "pptx") return exportDeck(app, shown, current.id);
       const content = current.build({ d: app.current(), f: s.f, avoidC: s.avoidC, avoidT: s.avoidT, banned: s.banned, domains: s.domains, agreedRound: s.meeting.agreedRound, sections: sel, tone: s.tone, comps: s.comps, alts: s.alts, taglines: s.taglines });
       downloadFile(current.name, content, current.mime);
       set({ allMenu: false });

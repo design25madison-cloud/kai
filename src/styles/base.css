@@ -7,8 +7,11 @@
   h1,h2{font-family:var(--font-heading)}
   h1{font-weight:600;letter-spacing:-.02em}
   input,select,textarea,button{font:inherit;color:inherit}
+  /* Fields shrink with their row instead of holding it at their default width. */
+  input,select,textarea{min-width:0}
   button{cursor:pointer}
-  button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--color-action);outline-offset:2px}
+  /* Focus is ink, not coral: coral also marks errors. */
+  button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--color-ink);outline-offset:2px}
   .tile{display:block;border-radius:var(--radius-min);overflow:hidden}
   .pick{position:absolute;inset:0;z-index:3;width:100%;height:100%;border:2px dashed var(--color-faint);border-radius:inherit;background:transparent;cursor:copy;padding:0}
   .dial{-webkit-appearance:none;appearance:none;background:transparent;height:28px;cursor:pointer}

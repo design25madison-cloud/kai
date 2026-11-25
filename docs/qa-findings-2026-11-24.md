@@ -11,9 +11,36 @@ Status words:
 - **By design**: the app does what the code intends; the question is whether the design is right.
 - **Reported**: seen by a tester, cause not traced.
 
-Fixed the same day: 8, 11, 21, 24, 25, 26, the doubled title in 15, and two of the three claims in 4
-(the name cue and "fits most closely"). Finding 5 was left: the same rule that writes the audience
-line also sets the palette's contrast target, so changing it changes palettes.
+## Status after the fix rounds
+
+Fixed: every finding except the ones listed below.
+
+Left on purpose:
+- 13: the meeting and handoff screens stay unreachable. The designers removed the "Take to meeting"
+  button on Nov 2 (commit `5051dcb`), so it was not brought back.
+
+Open, with the designers:
+- 9, 10: photo mood and variety. Their unpushed photo work covers this.
+- Archetype content: without a tagline the mockup headline, the voice samples and one trade-off line
+  ("In B2B it needs...") still read like software.
+- 7 (rest): two questions on the Tone step ("What feature gets users to try it first", the "aha
+  moment") still read like software. The Customer step and the suggested words now follow the
+  industry; that wording is in `src/app/briefCopy.js` for review.
+
+Not reproduced: the clipboard write in 39.
+
+Changes the designers should look at, because they alter what KAI generates:
+- The first color to keep is the primary exactly as typed, and every kept color is read.
+- "Color direction" understands color names.
+- Each of the three options takes its own route for surface, neutrals and accents (tonal,
+  opposite temperature, high contrast), so parchment-style surfaces set by the archetype mostly go,
+  a cool brief gets one warm-neutral option, and photos no longer tint the neutrals.
+- A customer description with no keyword sets no audience (no AAA contrast target, no cautious
+  executive profile).
+- Sans or Serif now decides the type pair; Warm or Cool steers palette temperature.
+
+Small, by design: an empty project nobody touched is removed after 7 days; a cancelled AI edit still
+counts against the daily limit; PDF and PowerPoint always export every section.
 
 Not covered: file exports (nothing was downloaded), file uploads, the meeting and handoff screens
 (unreachable, see 13), and real phones (narrow sizes were emulated).

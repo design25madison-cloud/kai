@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { FONTS, editContext, editProposal } from "./edits.js";
+import { FONTS, editContext, editProposal, honestAAA } from "./edits.js";
 
 const d = {
   colors: [{ name: "Forest", show: "#245A46" }, { name: "Sand", show: "#F8F1E8" }, { name: "Amber", show: "#DA9B4E" }],
@@ -39,4 +39,12 @@ test("the converter installs every typeface a direction can use", () => {
   // converter/fonts.txt is what the PDF export can show. Add a typeface to an archetype, add it there.
   const installed = readFileSync(new URL("../../converter/fonts.txt", import.meta.url), "utf8").trim().split("\n");
   assert.deepEqual(installed, FONTS);
+});
+
+test("an AAA claim is restated with the real ratio once the primary no longer reaches it", () => {
+  const audience = "For field and operational users, white text on the primary reaches AAA (7:1).";
+  assert.equal(honestAAA(audience, 7.4), audience);
+  assert.equal(honestAAA(audience, 4.912), "For field and operational users, white text on the primary is 4.91:1, short of AAA (7:1).");
+  assert.equal(honestAAA("For field users: pushed contrast to AAA and kept the voice plain.", 4.5), "For field users: aimed for AAA contrast (white text on the primary is now 4.50:1) and kept the voice plain.");
+  assert.equal(honestAAA("Reads warm.", 2), "Reads warm.");
 });

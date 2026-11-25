@@ -4,14 +4,16 @@ import { ALL_SECTIONS, typeScaleOf } from "./exports.js";
 import accounts from "./store.js";
 import { ensureFonts } from "./fonts.js";
 import { flowVals, newMeeting } from "./flow.js";
-import { GEN_VERSION, contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
+import { GEN_VERSION, colorName, contrast, generateDirections, hexToHsl, hslToHex } from "./generate.js";
 import { isSearching, markImagesUsed, pinImages, shownImages, subscribe as onImages } from "./referenceImages.js";
 import { INDUSTRIES } from "./layers.js";
+import { briefCopy } from "./briefCopy.js";
 import { imageColorsVersion, readingColors, subscribe as onImageColors } from "./imageColors.js";
 import { restrictedHits } from "./language.js";
-import { projectChanged, projectVals, saveNow, scheduleSave } from "./projects.js";
+import { followAddress, projectChanged, projectVals, saveNow, scheduleSave, syncAddress } from "./projects.js";
 import { loadMaterials, materialVals } from "./materials.js";
-import { editContext, editProposal } from "./edits.js";
+import { editContext, editProposal, honestAAA } from "./edits.js";
+import { blank } from "./fill.js";
 
 const SETTLE_MS = 30000;
 
@@ -27,7 +29,7 @@ export default class BrandApp extends Component {
       genStep: 0, option: 0, edit: null, allMenu: false, toast: '', undo: null, ov: [{}, {}, {}],
       view: 'dir', darkPrev: false, cmode: false, comments: [], draft: null, cid: 0,
       mixPick: { word: 0, palette: 0, type: 0, refs: 0, voice: 0 }, mixBase: null, keep: 40,
-      meeting: newMeeting(), handoffFile: 'claude', exportSel: ALL_SECTIONS, exportFormat: 'claude'
+      meeting: newMeeting(), handoffFile: 'claude', exportSel: ALL_SECTIONS, exportFormat: 'pdf'
     };
     Object.assign(this.state, { user: accounts.currentUser(), projectId: null, projects: [], saveStatus: 'saved', saveError: '', authError: '', authBusy: false, projectMenu: null, renaming: null, deleting: null });
     // Materials: pasted notes and which answers were suggested from them are saved with the project; the rest is per visit.
@@ -40,6 +42,7 @@ export default class BrandApp extends Component {
     if (s.screen !== prev.screen || s.step !== prev.step || s.view !== prev.view) window.scrollTo(0, 0);
     // Autosave: any change to the open project saves shortly after the last edit.
     if (s.projectId && s.projectId === prev.projectId && projectChanged(prev, s)) scheduleSave(this);
+    syncAddress(this, prev);
     if (s.screen === 'start' && (prev.screen !== 'start' || prev.projectId !== s.projectId)) loadMaterials(this);
     this.storeDirs();
   }
@@ -67,11 +70,14 @@ export default class BrandApp extends Component {
     // Closing the tab mid-change still saves it.
     this._flush = () => { if (this._save) saveNow(this, { closing: true }); };
     window.addEventListener('beforeunload', this._flush);
+    // Back, Forward and pasted links change the address; the app follows it.
+    this._follow = () => followAddress(this);
+    window.addEventListener('hashchange', this._follow);
     // Reference photos arrive from image search after the first render; redraw when they do.
     this._offImages = onImages(() => this.forceUpdate());
     this._offImageColors = onImageColors(() => this.forceUpdate());
   }
-  componentWillUnmount() { if (this._offImages) this._offImages(); if (this._offImageColors) this._offImageColors(); clearInterval(this._g); clearTimeout(this._t); clearTimeout(this._a); clearTimeout(this._st); window.removeEventListener('beforeunload', this._flush); }
+  componentWillUnmount() { if (this._offImages) this._offImages(); if (this._offImageColors) this._offImageColors(); clearInterval(this._g); clearTimeout(this._t); clearTimeout(this._a); clearTimeout(this._st); window.removeEventListener('beforeunload', this._flush); window.removeEventListener('hashchange', this._follow); }
 
   hexOk(h) { return /^#[0-9a-fA-F]{6}$/.test(h || ''); }
   // Long answers are cut at a word where the screens use them as sample copy.
@@ -103,8 +109,8 @@ export default class BrandApp extends Component {
     if (/warm/.test(t)) { h = this.hueToward(h, 30, 14); s += 8; hit = true; }
     if (/cool|cold|blue/.test(t)) { h = this.hueToward(h, 210, 16); hit = true; }
     if (/light|pale|airy/.test(t)) { l += 10; hit = true; }
-    if (/dark|deep|rich/.test(t)) { l -= 10; hit = true; }
-    if (/bright|bold|vivid|pop|punch/.test(t)) { s += 15; hit = true; }
+    if (/dark|deep|rich|charred/.test(t)) { l -= 10; hit = true; }
+    if (/bright|bold|vivid|pop|punch|electric/.test(t)) { s += 15; hit = true; }
     if (/mute|soft|calm|dull|subtle|tone it down/.test(t)) { s -= 15; hit = true; }
     if (!hit) return null;
     return hslToHex([h, Math.max(0, Math.min(100, s)), Math.max(4, Math.min(96, l))]);
@@ -113,7 +119,8 @@ export default class BrandApp extends Component {
   // The three directions come from the brief: each is a blend of one to three archetypes
   // (see generate.js and docs/archetypes.md). Cached until the brief inputs change.
   // Keys are sorted because the server's database reorders them, and this is compared after a reload.
-  genInputs() { const s = this.state; return JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.keepC, s.avoidT, s.comps, s.refs, s.refTags, s.keep], (k, v) => v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v); }
+  // avoidIn is text still being typed, not an answer, so it is left out.
+  genInputs() { const s = this.state; return JSON.stringify([s.f, s.tone, s.sl, s.looks, s.avoidC, s.keepC, s.avoidT, s.comps, s.refs, s.refTags, s.keep], (k, v) => k === 'avoidIn' ? undefined : v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v); }
   // A project shows the directions stored with it (storeDirs), so photo searches and deploys don't change them.
   generated() {
     const s = this.state, saved = s.dirs && s.dirs.v === GEN_VERSION ? s.dirs : null;
@@ -146,7 +153,6 @@ export default class BrandApp extends Component {
     return list;
   }
 
-  keepBand() { const v = this.state.keep; return v < 25 ? 0 : v < 50 ? 1 : v < 75 ? 2 : 3; }
   followOv() {
     const ov = [{}, {}, {}];
     const base = this.opts();
@@ -161,34 +167,64 @@ export default class BrandApp extends Component {
 
   setOvAt(i, patch) { const ov = this.state.ov.slice(); while (ov.length <= i) ov.push({}); ov[i] = Object.assign({}, ov[i], patch); this.setState({ ov }); }
   setOv(patch) { this.setOvAt(this.state.option, patch); }
-  lockOv(mod, patch) { const ov = this.state.ov[this.state.option] || {}; this.setOv(Object.assign({}, patch, { lock: Object.assign({}, ov.lock, { [mod]: true }) })); }
+  lockOv(mod, what, patch) { const ov = this.state.ov[this.state.option] || {}; this.handEdit(this.state.option, mod, what, Object.assign({}, patch, { lock: Object.assign({}, ov.lock, { [mod]: true }) })); }
+  // A hand edit locks its part and offers Undo. Several edits in a row to one part (typing a hex,
+  // dragging a slider) undo together, back to before the first.
+  handEdit(i, part, what, patch) {
+    const u = this.state.undo, prev = u && u.i === i && u.part === part ? u.prev : (this.state.ov[i] || {});
+    this.setOvAt(i, patch);
+    this.showToast(what + ' changed. Locked because you edited it.', { i, prev, part });
+  }
   showToast(msg, undo) {
     clearTimeout(this._t);
     this.setState({ toast: msg, undo: undo || null, allMenu: false });
     this._t = setTimeout(() => this.setState({ toast: '', undo: null }), undo ? 6000 : 2600);
   }
 
+  // A patch for ov that regenerates one module; null when the module is locked, false when no
+  // variant would show anything other than what is shown now.
   regenPatch(i, mod, ov) {
-    const base = this.opts()[i], lock = ov.lock || {};
+    const base = this.opts()[i], lock = ov.lock || {}, J = JSON.stringify;
+    // The next variant after `from` that shows something new: not what is shown now, and not the
+    // same as an earlier variant, so repeated presses go through every different result once.
+    const step = (list, from, res, now, ok = () => true) => {
+      const L = list.length, key = (v) => J(res(v)), first = new Map();
+      for (let v = 0; v < L; v++) if (ok(v) && !first.has(key(v))) first.set(key(v), v);
+      for (let t = 1; t <= L; t++) { const v = (from + t) % L; if (first.get(key(v)) === v && key(v) !== J(now)) return v; }
+      return false;
+    };
     if (mod === 'palette') {
-      const sw = ov.swLock || [], L = base.palettes.length, pv = ov.palV || 0, curPal = base.palettes[pv % L], idx = curPal.map((_, k) => k);
+      const sw = ov.swLock || [], L = base.palettes.length, pv = (ov.palV || 0) % L, curPal = base.palettes[pv], idx = curPal.map((_, k) => k);
       if (idx.every(k => sw[k])) return null;
-      // Skip variants too short to hold every locked color, so a regenerate never drops one (the current variant always fits).
-      const need = idx.reduce((n, k) => sw[k] ? k + 1 : n, 0), nv = Array.from({ length: L }, (_, t) => (pv + t + 1) % L).find(v => base.palettes[v].length >= need);
       const hex = idx.map(k => sw[k] ? ((ov.hex && ov.hex[k] != null) ? ov.hex[k] : curPal[k][1]) : null);
       const names = idx.map(k => sw[k] ? ((ov.names && ov.names[k]) || curPal[k][0]) : null);
+      // Skip variants too short to hold every locked color, so a regenerate never drops one.
+      const need = idx.reduce((n, k) => sw[k] ? k + 1 : n, 0);
+      const nv = step(base.palettes, pv, (v) => base.palettes[v].map((c, k) => (hex[k] != null ? hex[k] : c[1]).toUpperCase()),
+        curPal.map((c, k) => ((ov.hex && ov.hex[k] != null) ? ov.hex[k] : c[1]).toUpperCase()), (v) => base.palettes[v].length >= need);
+      if (nv === false) return false;
       const p = { palV: nv, hex, names };
       if (!ov.uiFixed) p.uiMix = null;
       return p;
     }
-    if (mod === 'word') { if (lock.word) return null; return { wordV: ((ov.wordV || 0) + 1) % base.words.length, wordFont: null, track: null }; }
-    if (mod === 'type') { if (lock.type) return null; return { typeV: ((ov.typeV || 0) + 1) % base.types.length, display: null, body: null }; }
+    if (mod === 'word') {
+      if (lock.word) return null;
+      const from = (ov.wordV || 0) % base.words.length, wv = base.words[from];
+      const v = step(base.words, from, (k) => base.words[k].slice(0, 2), [ov.wordFont || wv[0], ov.track != null ? ov.track : wv[1]]);
+      return v === false ? false : { wordV: v, wordFont: null, track: null };
+    }
+    if (mod === 'type') {
+      if (lock.type) return null;
+      const from = (ov.typeV || 0) % base.types.length, tv = base.types[from];
+      const v = step(base.types, from, (k) => base.types[k].slice(0, 2), [ov.display || tv[0], ov.body || tv[1]]);
+      return v === false ? false : { typeV: v, display: null, body: null };
+    }
     if (mod === 'voice') {
       if (lock.voice) return null;
-      const n = base.voices.length, from = ov.voiceV || 0;
-      let next = (from + 1) % n;
-      for (let k = 1; k <= n; k++) { const c = (from + k) % n; if (!restrictedHits(this.state.banned, base.voices[c]).length) { next = c; break; } }
-      return { voiceV: next, tone: null, headline: null };
+      const V = base.voices, from = (ov.voiceV || 0) % V.length, vv = V[from];
+      const clean = (k) => !restrictedHits(this.state.banned, V[k]).length, anyClean = V.some((_, k) => clean(k));
+      const v = step(V, from, (k) => V[k], Object.assign({}, vv, { tone: ov.tone || vv.tone, headline: ov.headline || vv.headline }), (k) => !anyClean || clean(k));
+      return v === false ? false : { voiceV: v, tone: null, headline: null };
     }
     if (mod === 'refs') {
       const imgs = (ov.images || base.images.map(x => [x[0], x[1], false])).map(x => x.slice());
@@ -200,24 +236,28 @@ export default class BrandApp extends Component {
         while (imgs.some(x => x[0] === p[0]) && guard < pool.length) { n++; p = pool[n % pool.length]; guard++; }
         imgs[k] = [p[0], p[1], false]; n++;
       });
+      // The pool steps on with imgN, so this is the same only when no unused photo is left.
+      if (J(imgs.map(x => x[0])) === J((ov.images || base.images).map(x => x[0]))) return false;
       return { images: imgs, imgN: n };
     }
     return null;
   }
   doRegen(mods) {
     const s = this.state, i = s.option, prev = s.ov[i] || {};
-    let ov = Object.assign({}, prev); const done = [], kept = [];
+    let ov = Object.assign({}, prev); const done = [], kept = [], same = [];
     const NM = { word: 'wordmark', palette: 'palette', type: 'typography', refs: 'imagery', voice: 'voice' };
-    mods.forEach(m => { const p = this.regenPatch(i, m, ov); if (p) { ov = Object.assign({}, ov, p); done.push(NM[m]); } else kept.push(NM[m]); });
-    if (!done.length) { this.showToast('Everything is locked. Unlock a section to regenerate it.'); return; }
+    mods.forEach(m => { const p = this.regenPatch(i, m, ov); if (p) { ov = Object.assign({}, ov, p); done.push(NM[m]); } else (p === false ? same : kept).push(NM[m]); });
+    const part = (same.includes('palette') && (prev.swLock || []).some(Boolean)) || (same.includes('imagery') && (prev.images || []).some(x => x[2]));
+    const name = this.opts()[i].name, none = same.length ? ' No other ' + same.join(' or ') + ' to show' + (part ? ' with what you locked.' : '.') : '';
+    if (!done.length) { this.showToast(same.length ? none.slice(1) : 'Everything is locked. Unlock a section to regenerate it.'); return; }
     const all = s.ov.slice(); while (all.length <= i) all.push({}); all[i] = ov;
     this.setState({ ov: all });
-    const name = this.opts()[i].name;
-    this.showToast('New ' + done.join(', ') + ' within ' + name + '.' + (kept.length ? ' Kept locked: ' + kept.join(', ') + '.' : ''), { i, prev });
+    this.showToast('New ' + done.join(', ') + ' within ' + name + '.' + (kept.length ? ' Kept locked: ' + kept.join(', ') + '.' : '') + none, { i, prev });
   }
 
-  optionData(i) {
-    const s = this.state, O = this.opts(), base = O[i], ov = s.ov[i] || {}, lock = ov.lock || {}, dk = !!s.darkPrev;
+  // light: Compare shows the options as they are; the dark preview covers only the direction view.
+  optionData(i, light) {
+    const s = this.state, O = this.opts(), base = O[i], ov = s.ov[i] || {}, lock = ov.lock || {}, dk = !!s.darkPrev && !light;
     const SHUT = 'M8 11V7a4 4 0 0 1 8 0v4', OPEN = 'M8 11V7a4 4 0 0 1 7.6-1.6';
     const lk = (on, what) => ({ locked: !!on, lockBg: on ? 'var(--color-action)' : '#FFFFFF', lockFg: on ? '#FFFFFF' : 'var(--color-ink)', shackle: on ? SHUT : OPEN, lockAria: (on ? 'Unlock ' : 'Lock ') + what });
     const pal = base.palettes[(ov.palV || 0) % base.palettes.length], swLock = ov.swLock || [];
@@ -228,12 +268,13 @@ export default class BrandApp extends Component {
     const colors = pal.map((c, k) => Object.assign({
       name: names[k], role: c[2], ratio: c[3], text: hexes[k], show: shown[k],
       label: this.lum(shown[k]) > 0.35 ? 'var(--color-ink)' : '#FFFFFF', aria: names[k] + ' hex value',
-      pinC: pin('palette', k, names[k]), pinAria: 'Add ' + names[k] + ' to precise editing', picked: this.isPicked('palette', k),
-      setHex: (e) => { const h = hexes.slice(); h[k] = e.target.value; const l = swLock.slice(); l[k] = true; this.setOvAt(i, { hex: h, swLock: l }); },
+      pinC: pin('palette', k, names[k]), pinAria: 'Add ' + names[k] + ' to the AI edit', picked: this.isPicked('palette', k),
+      // A typed color gets a name that fits it; a half-typed one keeps the last name.
+      setHex: (e) => { const v = e.target.value, h = hexes.slice(), nm = names.slice(), l = swLock.slice(); h[k] = v; l[k] = true; if (this.hexOk(v)) nm[k] = colorName(hexToHsl(v)); this.handEdit(i, 'palette' + k, c[2] + ' color', { hex: h, names: nm, swLock: l }); },
       toggleLock: () => { const l = swLock.slice(); l[k] = !l[k]; const h = hexes.slice(); const nm = names.slice(); this.setOvAt(i, { swLock: l, hex: h, names: nm }); }
     }, lk(swLock[k], names[k])));
     const at = (role) => base.palettes[0].findIndex(c => c[2] === role);
-    const primaryO = shown[at('Primary')], surfaceO = shown[at('Surface')], lightO = shown[at('Neutral light')];
+    const primaryO = shown[at('Primary')], surfaceO = shown[at('Surface')], lightO = shown[at('Neutral light')], primaryR = contrast(primaryO, '#FFFFFF');
     const darkIdx = shown.reduce((m, h, k) => this.lum(h) < this.lum(shown[m]) ? k : m, 0), darkO = shown[darkIdx];
     // UI primary is tuned from the first accent, unless it would have to be darkened so far it
     // loses its color (yellows go olive). Then the accent that holds up best is used, or the primary
@@ -246,7 +287,9 @@ export default class BrandApp extends Component {
     }
     const accent = shown[uiIdx], accentName = names[uiIdx];
     const uiMix = ov.uiMix != null ? ov.uiMix : this.minMix(accent);
-    const ui = ov.uiFixed || this.mix(accent, uiMix / 100), uiR = contrast(ui, '#FFFFFF');
+    const ui = ov.uiFixed || this.mix(accent, uiMix / 100), uiR = contrast(ui, '#FFFFFF'), uiDR = contrast(ui, darkO);
+    // Rounded down, so a ratio just under a threshold never shows as reaching it.
+    const two = (r) => (Math.floor(r * 100) / 100).toFixed(2);
     const T = dk
       ? { light: darkO, surface: this.tint(darkO, 0.1), primary: surfaceO, ink: lightO, deep: this.mix(darkO, 0.35), card: this.tint(darkO, 0.14), onDeep: surfaceO, onPrimary: darkO }
       : { light: lightO, surface: surfaceO, primary: primaryO, ink: darkO, deep: darkO, card: '#FFFFFF', onDeep: surfaceO, onPrimary: '#FFFFFF' };
@@ -257,13 +300,13 @@ export default class BrandApp extends Component {
     const toneArr = ov.tone || vv.tone, headline = ov.headline || vv.headline;
     const tone = toneArr.map((t, k) => ({
       yes: t[0], no: t[1], editing: s.edit === 'voice' && s.option === i,
-      setYes: (e) => { const tt = toneArr.map(x => x.slice()); tt[k][0] = e.target.value; this.setOvAt(i, { tone: tt, lock: Object.assign({}, lock, { voice: true }) }); },
-      setNo: (e) => { const tt = toneArr.map(x => x.slice()); tt[k][1] = e.target.value; this.setOvAt(i, { tone: tt, lock: Object.assign({}, lock, { voice: true }) }); }
+      setYes: (e) => { const tt = toneArr.map(x => x.slice()); tt[k][0] = e.target.value; this.handEdit(i, 'voice', 'Voice', { tone: tt, lock: Object.assign({}, lock, { voice: true }) }); },
+      setNo: (e) => { const tt = toneArr.map(x => x.slice()); tt[k][1] = e.target.value; this.handEdit(i, 'voice', 'Voice', { tone: tt, lock: Object.assign({}, lock, { voice: true }) }); }
     }));
     const imgs = ov.images || base.images.map(x => [x[0], x[1], false]);
     const imageCards = imgs.map((im, k) => ({
       label: im[0], source: im[1], locked: !!im[2], pinBd: im[2] ? 'var(--color-action)' : 'var(--color-grey-1)',
-      pinC: pin('refs', k, im[0]), pinAria: 'Add ' + im[0] + ' to precise editing', picked: this.isPicked('refs', k),
+      pinC: pin('refs', k, im[0]), pinAria: 'Add ' + im[0] + ' to the AI edit', picked: this.isPicked('refs', k),
       swap: () => {
         const pool = base.imgPool.concat(base.images); let n = ov.imgN || 0, p = pool[n % pool.length], g = 0;
         while (imgs.some(x => x[0] === p[0]) && g < pool.length) { n++; p = pool[n % pool.length]; g++; }
@@ -290,16 +333,23 @@ export default class BrandApp extends Component {
       gradientCss = 'linear-gradient(120deg, ' + bg + ' 0%, ' + hslToHex(end) + ' 100%)';
     }
     const linkColor = !dk ? ui : (contrast(accent, T.light) >= 4.5 ? accent : this.tint(ui, 0.45));
+    // Most primaryReasons explain how the generated primary was reached, so they go once it's edited by hand.
+    // The audience row is about contrast, which honestAAA restates for the new color.
+    const honest = (rows) => (rows || []).map(r => Object.assign({}, r, { text: honestAAA(r.text, primaryR) }));
     return Object.assign({
-      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, title: i === 3 ? 'Your mix' : 'Option ' + (i + 1) + ': ' + base.name, recommended: !!base.recommended, fit: base.fit || '', mix: base.mix || [], layers: base.layers || [], primaryReasons: base.primaryReasons || [], dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
+      i, label: i === 3 ? 'Your mix' : 'Option ' + (i + 1), name: base.name, title: i === 3 ? 'Your mix' : 'Option ' + (i + 1) + ': ' + base.name, recommended: !!base.recommended, fit: base.fit || '', mix: base.mix || [], layers: honest(base.layers), primaryReasons: honest(base.primaryReasons).filter(r => r.layer === 'Audience' || primaryO === pal[at('Primary')][1].toUpperCase()), dial: base.dial, look, gradient: base.gradient || 'none', gradientCss, wordFont, track, trackPx: track + 'px', display, body,
       displayPkg: this.pkg(display), bodyPkg: this.pkg(body), colors, palNames: names.join(', '),
       darkName: names[darkIdx], darkO, accent, accentName,
       accentText: contrast(accent, T.deep) >= 4.5 ? accent : (dk ? lightO : '#FFFFFF'),
       onAccent: contrast(darkO, accent) >= contrast('#FFFFFF', accent) ? darkO : '#FFFFFF',
-      ui, uiMix, uiHover: this.mix(ui, 0.15), uiRatio: uiR.toFixed(2), uiDarkRatio: contrast(ui, darkO).toFixed(2), linkColor,
+      ui, uiMix, uiHover: this.mix(ui, 0.15), uiRatio: two(uiR), uiDarkRatio: two(uiDR), linkColor,
       passLabel: uiR >= 4.5 ? 'Passes AA' : 'Fails AA', passBg: uiR >= 4.5 ? 'var(--color-ink)' : 'var(--color-coral)',
+      darkPassLabel: uiDR >= 3 ? 'Passes AA' : 'Fails AA', darkPassBg: uiDR >= 3 ? 'var(--color-ink)' : 'var(--color-coral)',
+      // WCAG AA: 4.5:1 for the button's white text, 3:1 for the button's edge against the page.
+      uiWarn: uiR < 4.5 ? 'White text on this button is ' + two(uiR) + ':1, below the 4.5:1 that AA needs for text.' : '',
+      uiDarkWarn: uiDR < 3 ? 'In dark mode the button is ' + two(uiDR) + ':1 against ' + names[darkIdx] + ', below the 3:1 that AA needs for a button edge.' : '',
       darkRoles: [{ role: 'Background', name: names[darkIdx] }, { role: 'Text', name: lightName }, { role: 'Wordmark and headings', name: surfName }, { role: 'Buttons', name: 'UI primary' }],
-      tone, toneArr, headline, micro: vv.micro, hits: restrictedHits(s.banned, { tone: toneArr, headline, micro: vv.micro }), reason: base.reason, match: base.match, tradeoff: base.tradeoff,
+      tone, toneArr, headline, setHeadline: (e) => this.handEdit(i, 'voice', 'Voice', { headline: e.target.value, lock: Object.assign({}, lock, { voice: true }) }), micro: vv.micro, hits: restrictedHits(s.banned, { tone: toneArr, headline, micro: vv.micro }), reason: base.reason, match: base.match, tradeoff: base.tradeoff,
       imgs, imageCards, img0: imgs[0][0], img1: imgs[1][0], img2: imgs[2][0], img3: imgs[3][0], word: (this.state.f.name || 'Name').toUpperCase(),
       locks: { word: !!lock.word, palette: pal.every((_, k) => swLock[k]), ui: !!ov.uiFixed, type: !!lock.type, voice: !!lock.voice, refs: imgs.every(x => x[2]) },
       lk
@@ -318,18 +368,19 @@ export default class BrandApp extends Component {
   updComment(id, patch) { this.setState({ comments: this.state.comments.map(c => c.id === id ? Object.assign({}, c, patch) : c) }); }
   // On the hosted version the server's AI proposes the change. `npm run dev` has no server, so
   // there it falls back to the keyword rules in propose().
-  // this._asking holds the requests in flight ("project:comment"). A comment saved as 'thinking' with
-  // no request behind it (the page was closed mid-answer) can then be retried instead of sticking.
+  // this._asking maps the requests in flight ("project:comment") to their AbortController. A comment
+  // saved as 'thinking' with no request behind it (the page was closed mid-answer) can then be retried
+  // instead of sticking.
   applyAI(id) {
     const c = this.state.comments.find(x => x.id === id); if (!c) return;
-    const pid = this.state.projectId, key = pid + ':' + id, asking = this._asking || (this._asking = new Set());
-    // An answer that arrives after another project was opened is dropped.
-    const done = (patch) => { asking.delete(key); if (this.state.projectId === pid) this.updComment(id, patch); };
-    asking.add(key);
-    this.updComment(id, { status: 'thinking', error: null });
+    const pid = this.state.projectId, key = pid + ':' + id, asking = this._asking || (this._asking = new Map()), ctl = new AbortController();
+    // An answer to a cancelled or retried request, or one that arrives after another project was opened, is dropped.
+    const done = (patch) => { if (asking.get(key) !== ctl) return; asking.delete(key); if (this.state.projectId === pid) this.updComment(id, patch); };
+    asking.set(key, ctl);
+    this.updComment(id, { status: 'thinking', error: null, started: Date.now() });
     if (!accounts.canFill) { this._a = setTimeout(() => { const cc = this.state.comments.find(x => x.id === id); done(cc ? { status: 'proposed', prop: this.propose(cc) } : {}); }, 1100); return; }
     const i = c.opt, about = { c, d: this.optionData(i), base: this.opts()[i], ov: this.state.ov[i] || {} };
-    accounts.editPiece(pid, editContext(Object.assign({ f: this.state.f, tone: this.state.tone, banned: this.state.banned }, about)))
+    accounts.editPiece(pid, editContext(Object.assign({ f: this.state.f, tone: this.state.tone, banned: this.state.banned }, about)), ctl.signal)
       .then(change => {
         const prop = editProposal(Object.assign({ change, ratio: contrast }, about));
         ensureFonts([prop.aFont].concat(prop.aType || []));
@@ -342,7 +393,14 @@ export default class BrandApp extends Component {
     const prev = this.state.ov[c.opt] || {};
     this.setOvAt(c.opt, c.prop.patch);
     this.updComment(id, { status: 'applied' });
-    this.showToast('Comment ' + c.num + ' applied and locked.', { i: c.opt, prev, cid: id });
+    this.showToast('AI edit ' + c.num + ' applied and locked.', { i: c.opt, prev, cid: id });
+  }
+  // Stops waiting. The server still counts the request: the AI call may already have run.
+  cancelAI(id) {
+    const key = this.state.projectId + ':' + id, ctl = this._asking && this._asking.get(key);
+    if (this._asking) this._asking.delete(key);
+    if (ctl) ctl.abort();
+    this.updComment(id, { status: 'open', error: 'Cancelled.' });
   }
   propose(c) {
     const i = c.opt, base = this.opts()[i], ov = this.state.ov[i] || {}, lock = ov.lock || {}, d = this.optionData(i), t = this.norm(c.text), n = c.tries || 0;
@@ -399,8 +457,17 @@ export default class BrandApp extends Component {
     }
     return { kind: 'text', summary: 'No change suggested.', bText: '', aText: '', patch: {} };
   }
-  createMix() {
-    const s = this.state, mp = s.mixPick, O = this.opts();
+  // Each part of a direction as the mix copies it, so the mix can tell when its source option has changed since.
+  mixParts(d) { return { word: [d.wordFont, d.track], palette: d.colors.map(c => c.show), type: [d.display, d.body], refs: d.imgs.map(x => x[0]), voice: [d.toneArr, d.headline] }; }
+  // The parts of the mix whose option differs now from when the mix was made. dd: optionData of options 1 to 3.
+  mixStale(dd) {
+    const from = this.state.mixBase && this.state.mixBase.from; if (!from) return [];
+    return Object.keys(from.parts).filter(k => JSON.stringify(this.mixParts(dd[from.picks[k]])[k]) !== JSON.stringify(from.parts[k]));
+  }
+  // mp: which option each part comes from; "Update your mix" on the mix passes the picks it was made with.
+  createMix(mp) {
+    const s = this.state, O = this.opts(), had = !!s.mixBase;
+    mp = mp || s.mixPick;
     const dd = [0, 1, 2].map(k => this.optionData(k));
     const uniq = (a) => a.filter((x, k) => a.findIndex(y => JSON.stringify(y) === JSON.stringify(x)) === k);
     const pd = dd[mp.palette], wd = dd[mp.word], td = dd[mp.type], vd = dd[mp.voice], rd = dd[mp.refs];
@@ -413,13 +480,15 @@ export default class BrandApp extends Component {
       images: rd.imgs.map(x => [x[0], x[1]]), imgPool: O[mp.refs].imgPool,
       reason: 'Your own combination: the wordmark from ' + L(mp.word) + ', the palette from ' + L(mp.palette) + ', typography from ' + L(mp.type) + ', imagery from ' + L(mp.refs) + ', and the voice from ' + L(mp.voice) + '. Regenerating a section stays within the direction that piece came from.',
       match: ['Wordmark · ' + L(mp.word), 'Palette · ' + L(mp.palette), 'Type · ' + L(mp.type), 'Imagery · ' + L(mp.refs), 'Voice · ' + L(mp.voice)],
-      tradeoff: 'Pieces from different directions can clash. Check the UI preview and the moodboard to see them together.'
+      tradeoff: 'Pieces from different directions can clash. Check the UI preview and the moodboard to see them together.',
+      from: { picks: mp, parts: {} }
     };
+    Object.keys(mp).forEach(k => { mixBase.from.parts[k] = this.mixParts(dd[mp[k]])[k]; });
     const ov = s.ov.slice(0, 3); while (ov.length < 3) ov.push({});
     ov[3] = { swLock: pd.colors.map(c => c.locked), uiFixed: pd.locks.ui ? pd.ui : null, images: rd.imgs.map(x => x.slice()),
       lock: { word: wd.locks.word, type: td.locks.type, voice: vd.locks.voice } };
-    this.setState({ mixBase, ov, option: 3, view: 'dir', edit: null });
-    this.showToast('Created your custom direction. It is now the Your mix tab.');
+    this.setState({ mixBase, ov, mixPick: mp, option: 3, view: 'dir', edit: null });
+    this.showToast(had ? 'Updated your mix from its options.' : 'Created your custom direction. It is now the Your mix tab.');
   }
 
   renderVals() {
@@ -427,15 +496,18 @@ export default class BrandApp extends Component {
     const set = (patch) => this.setState(patch);
     const toggleIn = (key, v) => () => { const a = s[key]; set({ [key]: a.includes(v) ? a.filter(x => x !== v) : a.concat([v]) }); };
     const on = (b) => b ? { bg: 'var(--color-action)', fg: '#FFFFFF' } : { bg: '#FFFFFF', fg: 'var(--color-ink)' };
-
+    // Moving between brief steps drops competitor rows left blank.
+    const goStep = (n, then) => { const comps = s.comps.filter(c => !blank([c.name, c.url, c.color].join(''))); this.setState(Object.assign({ step: n }, comps.length < s.comps.length ? { comps } : {}), then); };
 
     const stepNames = ['General', 'Branding', 'Customer', 'Tone', 'Review'];
     const steps = stepNames.map((label, k) => {
       const n = k + 1;
-      return { label, current: s.step === n ? 'step' : undefined, pick: () => set({ step: n }) };
+      return { label, current: s.step === n ? 'step' : undefined, pick: () => goStep(n) };
     });
 
-    const toneChips = (s.tone.filter(t => !['Sturdy', 'Industrial', 'Precise', 'Warm', 'Playful', 'Calm', 'Bold', 'Minimal'].includes(t))).concat(['Sturdy', 'Industrial', 'Precise', 'Warm', 'Playful', 'Calm', 'Bold', 'Minimal']).map(label => Object.assign({ label, on: s.tone.includes(label), toggle: toggleIn('tone', label) }, on(s.tone.includes(label))));
+    // Customer and Tone wording follows who the industry sells to; picked words outside the list stay shown.
+    const copy = briefCopy(f.industry);
+    const toneChips = s.tone.filter(t => !copy.tone.includes(t)).concat(copy.tone).map(label => Object.assign({ label, on: s.tone.includes(label), toggle: toggleIn('tone', label) }, on(s.tone.includes(label))));
     const treatChips = ['Gradients', 'Neon', 'All caps', 'Drop shadows', 'Pill buttons'].map(label => Object.assign({ label, on: s.avoidT.includes(label), toggle: toggleIn('avoidT', label) }, on(s.avoidT.includes(label))));
     const lookPairs = [['Warm', 'Cool'], ['Serif', 'Sans'], ['Ornate', 'Minimal'], ['Soft', 'Geometric']].map(([a, b], k) => ({
       a, b, onA: s.looks[k] === 'a', onB: s.looks[k] === 'b', bdA: s.looks[k] === 'a' ? 'var(--color-action)' : 'var(--color-grey-1)', bdB: s.looks[k] === 'b' ? 'var(--color-action)' : 'var(--color-grey-1)',
@@ -455,10 +527,15 @@ export default class BrandApp extends Component {
     const deliv = s.deliv.map((d, i) => ({ type: d.type, setType: listUpd('deliv', i, 'type'), remove: listRm('deliv', i) }));
     const domains = s.domains.map((d, i) => ({ label: d, aria: 'Remove ' + d, remove: listRm('domains', i) }));
     const addDomain = fromField('domainIn', 'domains');
+    // Visuals to avoid stay one comma-separated answer in f.avoidOther, which the server fill and exports read.
+    const avoidList = (f.avoidOther || '').split(',').map(x => x.trim()).filter(Boolean);
+    const setAvoid = (list, extra) => set({ f: Object.assign({}, s.f, { avoidOther: list.join(', ') }, extra) });
+    const avoidVisuals = avoidList.map((label, i) => ({ label, aria: 'Remove ' + label, remove: () => setAvoid(avoidList.filter((_, j) => j !== i)) }));
+    const addAvoid = () => { const v = (f.avoidIn || '').trim(); if (v) setAvoid(avoidList.concat([v]), { avoidIn: '' }); };
     const swap = (i, j) => () => { if (j < 0 || j >= s.votes.length) return; const a = s.votes.slice(); const t = a[i]; a[i] = a[j]; a[j] = t; set({ votes: a }); };
     const votes = s.votes.map((v, i) => ({ rank: (i + 1) + '.', label: v, up: swap(i, i - 1), down: swap(i, i + 1), upAria: 'Move ' + v + ' up', downAria: 'Move ' + v + ' down', aria: 'Remove ' + v, remove: listRm('votes', i) }));
     const taglines = s.taglines.map((t, i) => ({ text: t, set: listUpd('taglines', i), remove: listRm('taglines', i) }));
-    const careChips = ['ROI', 'Growth', 'Efficiency', 'Reliability', 'Cost', 'Risk'].map(label => Object.assign({ label, on: s.buyerCares.includes(label), toggle: toggleIn('buyerCares', label) }, on(s.buyerCares.includes(label))));
+    const careChips = s.buyerCares.filter(c => !copy.cares.includes(c)).concat(copy.cares).map(label => Object.assign({ label, on: s.buyerCares.includes(label), toggle: toggleIn('buyerCares', label) }, on(s.buyerCares.includes(label))));
     const comps = s.comps.map((c, i) => ({ name: c.name, url: c.url, color: c.color || '', setName: listUpd('comps', i, 'name'), setUrl: listUpd('comps', i, 'url'), setColor: (e) => listUpd('comps', i, 'color')({ target: { value: e.target.value.toUpperCase() } }), remove: listRm('comps', i) }));
     const bannedChips = s.banned.map((w, i) => ({ label: w, aria: 'Remove ' + w, remove: listRm('banned', i) }));
     const addBanned = fromField('bannedIn', 'banned');
@@ -476,15 +553,21 @@ export default class BrandApp extends Component {
       return Object.assign({ label, avoid, tag: avoid ? 'Avoid' : 'Admire', removeAria: 'Remove ' + label, toggle: () => set({ refTags: Object.assign({}, s.refTags, { [label]: !avoid }) }), remove: () => set({ refs: s.refs.filter(x => x !== label) }) }, on(avoid));
     });
 
+    // [label, the answer as text, its step, the field to focus there]
     const core = [
-      ['Working name', !!f.name, 1], ['Company description', !!f.desc, 1], ['Domains secured', s.domains.length > 0, 1], ['Name meaning', !!f.meaning, 2], ['Tone of the name', s.tone.length > 0, 4],
-      ['Look and feel', Object.keys(s.looks).length > 0, 2], ['Colors or treatments to avoid', s.avoidC.length + s.avoidT.length > 0, 2],
-      ['Brands admired', s.brandsA.length > 0, 2], ['Core problem', !!f.problem, 3], ['Differentiation', !!f.diff, 3]
+      ['Working name', f.name, 1, 'f-name'], ['Company description', f.desc, 1, 'f-desc'], ['Domains secured', s.domains.join(', '), 1, 'f-domainIn'], ['Name meaning', f.meaning, 2, 'f-meaning'], ['Tone of the name', s.tone.join(', '), 4, 'f-toneIn'],
+      ['Look and feel', Object.keys(s.looks).sort().map(k => lookPairs[k][s.looks[k]]).join(', '), 2], ['Colors or treatments to avoid', s.avoidC.concat(s.avoidT).join(', '), 2],
+      ['Brands admired', s.brandsA.map(b => b.name).join(', '), 2, 'f-ba'], ['Core problem', f.problem, 3, 'f-problem'], ['Differentiation', f.diff, 3, 'f-diff']
     ];
-    const missing = core.filter(c => !c[1]).length;
+    const missing = core.filter(c => blank(c[1])).length;
     // Refinements Generate would discard; followOv() itself only sets an empty lock and voiceV.
     const refined = s.comments.length > 0 || !!s.mixBase || s.ov.some(o => o && (Object.keys(o).some(k => k !== 'lock' && k !== 'voiceV') || Object.values(o.lock || {}).some(Boolean)));
-    const coreChecks = core.map(([label, ok, st]) => ({ label, status: ok ? 'Answered' : 'Missing', bg: ok ? 'var(--color-grey-1)' : 'var(--color-ink)', fg: ok ? 'var(--color-ink)' : '#FFFFFF', go: () => set({ step: st }) }));
+    const checkRow = ([label, val, st, id], optional) => {
+      const ok = !blank(val), quiet = ok || optional;
+      return { label, preview: ok ? this.short(val, 60) : '', status: ok ? 'Answered' : optional ? 'Optional' : 'Missing', bg: quiet ? 'var(--color-grey-1)' : 'var(--color-ink)', fg: quiet ? 'var(--color-ink)' : '#FFFFFF',
+        action: ok ? 'Edit' : 'Add', aria: (ok ? 'Edit ' : 'Add ') + label.toLowerCase(), go: () => goStep(st, () => { const el = id && document.getElementById(id); if (el) el.focus(); }) };
+    };
+    const coreChecks = core.map(c => checkRow(c)).concat([checkRow(['Visuals to avoid', f.avoidOther, 2, 'f-avoidIn'], true)]);
 
     const genLabels = ['Reading your answers', 'Locking what is decided', 'Generating three directions', 'Checking contrast and fonts', 'Pulling reference images'];
     const genSteps = genLabels.map((label, k) => ({ label, dot: k < s.genStep ? 'var(--color-action)' : (k === s.genStep ? 'var(--color-grey-2)' : 'var(--color-grey-1)'), fg: k <= s.genStep ? 'var(--color-ink)' : 'var(--color-grey-2)' }));
@@ -540,7 +623,10 @@ export default class BrandApp extends Component {
           error: c.error || '', idle: c.status === 'thinking' && !asked(c) ? "This edit didn't finish." : '',
           // Rejected summaries go back to the AI, so "Try another version" proposes something else.
           reject: () => this.updComment(c.id, { status: 'open', prop: null, tries: (c.tries || 0) + 1, rejected: (c.rejected || []).concat(p.summary || []).slice(-3) }),
-          isApplied: c.status === 'applied', where: secNames[c.sec] === c.label ? c.label : secNames[c.sec] + ' · ' + c.label, href: '#sec-' + c.sec
+          isApplied: c.status === 'applied', where: secNames[c.sec] === c.label ? c.label : secNames[c.sec] + ' · ' + c.label, href: '#sec-' + c.sec,
+          started: c.started || Date.now(), cancel: () => this.cancelAI(c.id),
+          // Removing takes the request off the list; an applied change stays (Undo or Regenerate changes it).
+          remove: () => { this.setState({ comments: this.state.comments.filter(x => x.id !== c.id) }); this.showToast(c.status === 'applied' ? 'Removed from the list. The change stays.' : 'Removed from the list.'); }
         };
     };
     SECTION_IDS.forEach(id => {
@@ -566,13 +652,14 @@ export default class BrandApp extends Component {
     const mp = s.mixPick, ROWS = [['word', 'Wordmark'], ['palette', 'Palette'], ['type', 'Type'], ['refs', 'Imagery'], ['voice', 'Voice']];
     const pickCell = (row, k) => { const onn = mp[row] === k; return { on: onn, label: onn ? 'Picked' : 'Use this', bg: onn ? 'var(--color-action)' : '#FFFFFF', fg: onn ? '#FFFFFF' : 'var(--color-ink)', pick: () => set({ mixPick: Object.assign({}, mp, { [row]: k }) }) }; };
     const cols = (cur ? [0, 1, 2] : []).map(k => {
-      const d = this.optionData(k), pk = {}; ROWS.forEach(r => { pk[r[0]] = pickCell(r[0], k); });
+      const d = this.optionData(k, true), pk = {}; ROWS.forEach(r => { pk[r[0]] = pickCell(r[0], k); });
       return Object.assign({}, d, { rec: d.recommended, imgTop: d.imageCards.slice(0, 3), open: () => set({ option: k, view: 'dir' }), pk });
     });
     const mixSummary = ROWS.map(r => r[1] + ' from Option ' + (mp[r[0]] + 1)).join(' · ');
+    // On the mix, each part whose option has changed since the mix was made says so.
+    const mixStale = {};
+    if (s.option === 3) this.mixStale(cols).forEach(k => { mixStale[k] = 'Option ' + (s.mixBase.from.picks[k] + 1) + "'s " + secNames[k].toLowerCase() + ' has changed since you made this mix.'; });
 
-    const band = this.keepBand();
-    const BANDS = [['Keep exactly as is', 10, 'We keep your logo, colors, fonts, and images fixed and build the rest around them.'], ['Alter it slighty', 37, 'We keep what is recognizable and refresh the rest. Your notes decide what stays.'], ['Alter it a lot', 62, 'Your uploads set the mood, but every option can move away from them.'], ['Totally change it', 90, 'We only read your uploads for context. Expect three new directions.']];
 
     return {
       ...flowVals(this),
@@ -580,21 +667,28 @@ export default class BrandApp extends Component {
       isStart: s.screen === 'start', isBrief: s.screen === 'brief', isGen: s.screen === 'gen', isOut: s.screen === 'out',
       toBrief: () => set({ screen: 'brief', step: 1 }),
       steps, stepNow: s.step, stepPct: (s.step / stepNames.length * 100) + '%', isS1: s.step === 1, isS2: s.step === 2, isS3: s.step === 3, isS4: s.step === 4, isS5: s.step === 5, notLast: s.step < 5,
-      nextStep: () => set({ step: Math.min(5, s.step + 1) }),
-      mockIntro: /^\[.*\]$/.test((f.desc || '').trim()) ? '' : this.short(f.desc, 180), briefDesc: this.short(f.desc, 280), briefProblem: this.short(f.problem, 280),
+      nextStep: () => goStep(Math.min(5, s.step + 1)),
+      mockIntro: /^\[.*\]$/.test((f.desc || '').trim()) ? '' : this.short(f.desc, 180),
+      // The person's own working tagline reads truer in the mockup hero than the archetype's sample headline.
+      mockHeadline: this.short(s.taglines.find(t => (t || '').trim() && !/^\[.*\]$/.test(t.trim())), 80), briefDesc: this.short(f.desc, 280), briefProblem: this.short(f.problem, 280),
       banned: s.banned, bannedChips, addBanned, bannedKey: onEnter(addBanned),
       f, onField: (e) => { const k = e.target.name; set({ f: Object.assign({}, s.f, { [k]: e.target.value }) }); },
+      // On each brief step's wrapper: a text answer loses its outer spaces when focus leaves it.
+      trimField: (e) => { const k = e.target.name, v = s.f[k]; if (typeof v === 'string' && v !== v.trim()) set({ f: Object.assign({}, s.f, { [k]: v.trim() }) }); },
+      avoidVisuals, avoidKey: onEnter(addAvoid),
       onSlider: (e) => { const k = e.target.name; set({ sl: Object.assign({}, s.sl, { [k]: Number(e.target.value) }) }); },
       deliv, addDeliv: () => set({ deliv: s.deliv.concat([{ type: 'Logo' }]) }),
       domains, domainKey: onEnter(addDomain), votes, addVote: fromField('voteIn', 'votes'),
       legalOpen: s.legalOpen, toggleLegal: () => set({ legalOpen: !s.legalOpen }), legalLabel: s.legalOpen ? 'Hide legal name' : 'Different legal name?',
-      addTone: fromField('toneIn', 'tone'), taglines, addTagline: () => set({ taglines: s.taglines.concat(['']) }),
-      brandGroups, careChips, comps, industries: INDUSTRIES, addComp: () => set({ comps: s.comps.concat([{ name: '', url: '' }]) }), alts, altKey: onEnter(fromField('altIn', 'alts')),
-      endOn: s.endOn, endOff: !s.endOn, toggleEnd: () => set({ endOn: !s.endOn }), endLabel: s.endOn ? 'Included' : 'Add end user', endBg: s.endOn ? 'var(--color-action)' : '#FFFFFF', endFg: s.endOn ? '#FFFFFF' : 'var(--color-ink)',
+      addTone: fromField('toneIn', 'tone'), toneHint: s.tone.length > 5 ? 'Three to five words give the clearest direction. More tend to cancel out.' : '', taglines, addTagline: () => set({ taglines: s.taglines.concat(['']) }),
+      brandGroups, careChips, briefWords: copy, comps, compHint: s.comps.length > 5 ? 'Five main competitors are enough. Each one with a color narrows the palette.' : '', industries: INDUSTRIES, addComp: () => set({ comps: s.comps.concat([{ name: '', url: '' }]) }), alts, altKey: onEnter(fromField('altIn', 'alts')),
+      endOn: s.endOn, endOff: !s.endOn, toggleEnd: () => set({ endOn: !s.endOn }), endLabel: s.endOn ? 'Included' : 'Add', endBg: s.endOn ? 'var(--color-action)' : '#FFFFFF', endFg: s.endOn ? '#FFFFFF' : 'var(--color-ink)',
       sigOpen: s.sigOpen, toggleSig: () => set({ sigOpen: !s.sigOpen }), sigLabel: s.sigOpen ? 'Hide early signals' : 'Add early signals of success (optional)',
       domainShown: s.domains[0] || 'yourname.com',
       toneChips, treatChips, lookPairs, sliders, avoidColors, keepColors, pk,
-      openPicker: (mode = 'avoid') => setPk({ open: !(p.open && (p.mode || 'avoid') === mode), mode, text: null }), closePicker: () => setPk({ open: false }),
+      // The generator builds on the first three keep colors only (seeds in generate.js).
+      // Opens on a neutral grey, not whatever was last picked.
+      openPicker: (mode = 'avoid') => setPk({ open: !(p.open && (p.mode || 'avoid') === mode), mode, text: null, h: 0, s: 0, l: 50 }), closePicker: () => setPk({ open: false }),
       pickWheel: (e) => {
         const r = e.currentTarget.getBoundingClientRect(), dx = e.clientX - r.left - r.width / 2, dy = e.clientY - r.top - r.height / 2;
         const sat = Math.min(100, Math.round(Math.sqrt(dx * dx + dy * dy) / (r.width / 2) * 100));
@@ -611,7 +705,7 @@ export default class BrandApp extends Component {
       // The hosted build hides the four sample photos until real uploads exist; local demo keeps them.
       refsAdded: s.refs.length > 0, addRefs: accounts.canFill ? null : () => set({ refs: ['Corten steel', 'Sand dune', 'Industrial stair', 'Neon sign'] }), refCards,
       coreChecks, hasMissing: missing > 0, genBg: missing > 0 ? 'var(--color-grey-2)' : 'var(--color-action)',
-      readyText: missing > 0 ? (missing === 1 ? '1 Core answer is missing' : missing + ' Core answers are missing') + '. Generation unlocks when every Core answer has something, even rough.' : 'Every Core answer is filled. You are ready to generate.',
+      readyText: missing > 0 ? (missing === 1 ? '1 required answer is missing' : missing + ' required answers are missing') + '. Generation unlocks when every required answer has something, even rough.' : 'Every required answer is filled. You are ready to generate.',
       fillSample: () => { const smp = this.sampleState(); const nf = Object.assign({}, smp.f); Object.keys(s.f).forEach(k => { if (s.f[k]) nf[k] = s.f[k]; }); const patch = { f: nf }; Object.keys(smp).forEach(k => { if (k === 'f') return; const cur = s[k]; const empty = Array.isArray(cur) ? cur.length === 0 : (cur && typeof cur === 'object' ? Object.keys(cur).length === 0 : !cur); if (empty) patch[k] = smp[k]; }); set(patch); },
       generate: () => {
         if (missing > 0) return;
@@ -622,16 +716,22 @@ export default class BrandApp extends Component {
       backToBrief: () => set({ screen: 'brief', step: 5 }),
       // The stored directions remember the answers they came from, so this also works after a reload.
       canReturn: (s.dirs ? s.dirs.in : this._genIn) === this.genInputs(), backToResults: () => set({ screen: 'out' }), genLoses: refined,
+      // Stored directions made from other answers: still viewable, but Generate is what brings them up to date.
+      oldDirs: !!s.dirs && s.dirs.in !== this.genInputs(), hasMix: !!s.mixBase,
       startOver: () => { clearInterval(this._g); clearTimeout(this._t); this.setState(Object.assign(JSON.parse(JSON.stringify(this._init)), { screen: 'welcome', user: s.user, projectId: s.projectId, projects: s.projects, saveStatus: s.saveStatus })); },
       optTabs, allMenu: s.allMenu, toggleAll: () => set({ allMenu: !s.allMenu }),
       cur, wordUpper: (f.name || 'Name').toUpperCase(),
+      // A wordmark never breaks inside a word: it shrinks until its longest word fits its box (a .word-box
+      // parent). 0.8em is a wide capital letter. Spacing is in em, so it shrinks with the letters, and the
+      // same space is added in front, since spacing trails every letter and would pull the word off centre.
+      wordFit: (px, trackPx) => { const n = Math.max(...(f.name || 'Name').trim().split(/\s+/).map(w => w.length)), t = (parseFloat(trackPx) || 0) / px, em = t.toFixed(3) + 'em'; return { fontSize: `min(${px}px, calc(100cqi / ${(n * (0.8 + t) + t).toFixed(2)}))`, letterSpacing: em, paddingLeft: em, textAlign: 'center', overflowWrap: 'normal' }; },
       whyTitle: s.option === 3 ? 'About your custom mix' : (cur && cur.recommended ? 'Why we recommend Option ' + (s.option + 1) : 'How Option ' + (s.option + 1) + ' compares to the recommendation'),
       matchLabel: s.option === 3 ? 'Built from' : 'Matches your brief on',
       // The fonts in use lead the list: a select whose value isn't among its options shows the first option instead.
       sec, fonts: [...new Set([...(cur ? [cur.wordFont, cur.display, cur.body] : []), 'Anta', 'Oxanium', 'Chakra Petch', 'Archivo Black', 'Archivo', 'Barlow', 'IBM Plex Sans', 'Work Sans'])],
-      setWordFont: (e) => this.lockOv('word', { wordFont: e.target.value, track: cur.track }), setTrack: (e) => this.lockOv('word', { track: Number(e.target.value), wordFont: cur.wordFont }),
-      setUiMix: (e) => { const v = Number(e.target.value); this.setOv({ uiMix: v, uiFixed: this.mix(cur.accent, v / 100) }); },
-      setDisplay: (e) => this.lockOv('type', { display: e.target.value, body: cur.body }), setBody: (e) => this.lockOv('type', { body: e.target.value, display: cur.display }),
+      setWordFont: (e) => this.lockOv('word', 'Wordmark', { wordFont: e.target.value, track: cur.track }), setTrack: (e) => this.lockOv('word', 'Wordmark', { track: Number(e.target.value), wordFont: cur.wordFont }),
+      setUiMix: (e) => { const v = Number(e.target.value); this.handEdit(s.option, 'ui', 'UI primary', { uiMix: v, uiFixed: this.mix(cur.accent, v / 100) }); },
+      setDisplay: (e) => this.lockOv('type', 'Typography', { display: e.target.value, body: cur.body }), setBody: (e) => this.lockOv('type', 'Typography', { body: e.target.value, display: cur.display }),
       avoidNote: avoided.length ? 'Warning: ' + avoided.join(', ') + ' is on your avoid list.' : '',
       bars, typeScale, hasToast: !!s.toast, toast: s.toast,
       hasUndo: !!(s.undo && s.toast),
@@ -642,9 +742,6 @@ export default class BrandApp extends Component {
         if (u.cid) patch.comments = s.comments.map(c => c.id === u.cid ? Object.assign({}, c, { status: 'proposed' }) : c);
         clearTimeout(this._t); set(patch);
       },
-      keep: s.keep, keepPct: s.keep + '%', setKeep: (e) => set({ keep: Number(e.target.value) }),
-      keepName: BANDS[band][0],
-      keepStops: BANDS.map((bd, k) => ({ label: bd[0], on: band === k, bg: band === k ? 'var(--color-action)' : '#FFFFFF', fg: band === k ? '#FFFFFF' : 'var(--color-ink)', bd: band === k ? 'var(--color-action)' : 'var(--color-grey-1)', pick: () => set({ keep: bd[1] }) })),
       isDir: s.view === 'dir', isCmp: s.view === 'cmp', 
       viewDir: () => set({ view: 'dir' }), viewCmp: () => set({ view: 'cmp', edit: null, draft: null }),
       vDirBg: s.view === 'dir' ? 'var(--color-action)' : 'transparent', vDirFg: s.view === 'dir' ? '#FFFFFF' : 'var(--color-ink)',
@@ -654,7 +751,7 @@ export default class BrandApp extends Component {
       bentoBg: s.darkPrev && cur ? cur.light : 'transparent', bentoPad: s.darkPrev ? '14px' : '0',
       cmode: s.cmode, toggleCmode: () => set({ cmode: !s.cmode, draft: null }),
       cmBg: s.cmode ? 'var(--color-action)' : '#FFFFFF', cmFg: s.cmode ? '#FFFFFF' : 'var(--color-ink)',
-      cmodeLabel: 'Precise editing' + (openN ? ' · ' + openN : ''),
+      cmodeLabel: 'AI edits' + (openN ? ' · ' + openN : ''),
       regenAll: () => this.doRegen(['word', 'palette', 'type', 'refs', 'voice']),
       cm, pins, pinSel, pieces, allCm, draftItems, hasDraftItems: dItems.length > 0, noDraftItems: dItems.length === 0,
       panelPad: s.cmode ? '380px' : '0', cmCount: myC.length === 1 ? '1 edit' : myC.length + ' edits',
@@ -667,17 +764,20 @@ export default class BrandApp extends Component {
         if (!d.items.length) { this.showToast('Click a piece of the moodboard to add it first.'); return; }
         if (!d.text.trim()) { this.showToast('Say what you want changed.'); return; }
         let id = s.cid;
-        const add = d.items.map((it, k) => { id++; return { id, num: myC.length + k + 1, opt: oi, sec: it.sec, target: it.target, label: it.label, text: d.text.trim(), status: 'thinking', tries: 0 }; });
+        const last = myC.reduce((n, c) => Math.max(n, c.num || 0), 0); // Counting would repeat a number once one is removed from the list.
+        const add = d.items.map((it, k) => { id++; return { id, num: last + k + 1, opt: oi, sec: it.sec, target: it.target, label: it.label, text: d.text.trim(), status: 'thinking', tries: 0, started: Date.now() }; });
         set({ comments: s.comments.concat(add), cid: id, draft: { items: [], text: '' } });
         // Marked as asked right away, so they read "working" while they wait their turn.
-        const asking = this._asking || (this._asking = new Set());
+        const asking = this._asking || (this._asking = new Map());
         add.forEach((c, k) => {
           const key = s.projectId + ':' + c.id;
-          asking.add(key);
-          setTimeout(() => { if (this.state.projectId === s.projectId) this.applyAI(c.id); else asking.delete(key); }, k * 450);
+          asking.set(key, null);
+          // One cancelled while it waited its turn is not sent.
+          setTimeout(() => { if (this.state.projectId === s.projectId && asking.has(key)) this.applyAI(c.id); else asking.delete(key); }, k * 450);
         });
       },
       cols, mixSummary, mixBtn: s.mixBase ? 'Update your mix' : 'Create custom direction', createMix: () => this.createMix(),
+      mixStale, updateMix: () => this.createMix(s.mixBase.from.picks),
       // Last, so the hosted build's brief-review values replace the local ones (fillSample).
       ...materialVals(this)
     };

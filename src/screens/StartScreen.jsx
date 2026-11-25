@@ -7,7 +7,7 @@ export default function StartScreen({ vm }) {
   return (
     <div className="upload flow-page">
       <HomeLogo vm={vm} className="page-logo" />
-      <Breadcrumbs items={vm.crumbs} />
+      <Breadcrumbs items={[{ label: "Your projects", go: vm.toProjects }, ...vm.crumbs]} />
       <div className="upload__head">
         <h1 className="upload__title">Input project context</h1>
         <p className="upload__intro">

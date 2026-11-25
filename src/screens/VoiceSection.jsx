@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import PieceActions from "./PieceActions.jsx";
+import PieceActions, { MixStale } from "./PieceActions.jsx";
 
 export default function VoiceSection({ vm }) {
   return (
@@ -17,6 +17,7 @@ export default function VoiceSection({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-13px" type="button" onClick={vm.sec.voice.toggleEdit} aria-pressed={vm.sec.voice.editing} style={{ background: vm.sec.voice.editBg, color: vm.sec.voice.editFg }}>{vm.sec.voice.editLabel}</button>
         </div>
       </div>
+      <MixStale vm={vm} part="voice" />
       {vm.cur.hits.length > 0 && <span className="language-flag">Uses a restricted word: {vm.cur.hits.join(", ")}. Regenerate or edit it.</span>}
       {vm.banned.length > 0 && vm.cur.hits.length === 0 && <span className="language-note">Not used: {vm.banned.join(", ")}</span>}
       <div className="three">
@@ -38,14 +39,18 @@ export default function VoiceSection({ vm }) {
       <div className="two">
         <div className="relative p-18px r-10px bd-1px-solid-line flex col gap-6px">
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.voiceHead} aria-pressed={vm.pinSel.voiceHead} aria-label="Comment on the sample headline" />
+            <button className="pick" type="button" onClick={vm.pins.voiceHead} aria-pressed={vm.pinSel.voiceHead} aria-label="Add the sample headline to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.voiceHead} />
           <span className="t-12px c-muted">Sample headline</span>
+          {/* The headline is its own text: editing the words above doesn't rewrite it. */}
+          {vm.sec.voice.editing && (
+            <input className="p-8px r-pill bd-1px-solid-grey-2 t-14px" value={vm.cur.headline} onChange={vm.cur.setHeadline} aria-label="Sample headline" placeholder=" " />
+          )}
           <span className="t-24px w-600 pr-36px" style={{ fontFamily: `'${vm.cur.display}', sans-serif` }}>{vm.cur.headline}</span>
         </div>
         <div className="relative p-18px r-10px bd-1px-solid-line flex col gap-6px">
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.voiceTone} aria-pressed={vm.pinSel.voiceTone} aria-label="Comment on the tone" />
+            <button className="pick" type="button" onClick={vm.pins.voiceTone} aria-pressed={vm.pinSel.voiceTone} aria-label="Add the interface line to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.voiceTone} />
           <span className="t-12px c-muted">Sample interface line</span>
           <span className="t-18px pr-36px" style={{ fontFamily: `'${vm.cur.body}', sans-serif` }}>{vm.cur.micro}</span>

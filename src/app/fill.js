@@ -12,7 +12,8 @@ const SLIDER_DEFAULT = { warmth: 50, energy: 50, serious: 50 };
 const STARTS_AS = { "f.who": "operator", sl: SLIDER_DEFAULT };
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const blank = (v) => v == null || v === "" || (typeof v === "object" && !Object.keys(v).length);
+// No answer yet: nothing, only spaces, or an empty list or object. The brief's Core checks use it too.
+export const blank = (v) => v == null || (typeof v === "string" ? !v.trim() : typeof v === "object" && !Object.keys(v).length);
 
 const valueAt = (state, key) => (key.startsWith("f.") ? (state.f || {})[key.slice(2)] : state[key]);
 

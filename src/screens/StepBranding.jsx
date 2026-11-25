@@ -3,11 +3,11 @@ import RefImage from "./RefImage.jsx";
 
 export default function StepBranding({ vm }) {
   return (
-    <div className="flex col gap-24px">
+    <div className="flex col gap-24px" onBlur={vm.trimField}>
       <h2 className="m-0 t-22px w-600">Branding</h2>
       <div className="flex col gap-8px">
         <div className="flex justify-space-between items-center">
-          <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin{vm.sug.meaning && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+          <label className="t-13px flex gap-8px items-center" htmlFor="f-meaning">Name meaning, metaphor, or origin<span className="t-12px c-ink-2">Required</span>{vm.sug.meaning && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         </div>
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-meaning" name="meaning" value={vm.f.meaning} onChange={vm.onField} rows="2" placeholder="Where does the name come from?" />
       </div>
@@ -28,7 +28,7 @@ export default function StepBranding({ vm }) {
         <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-grey-2 bg-bg t-14px" type="button" onClick={vm.addTagline}>Add tagline</button>
       </div>
       <div className="flex col gap-8px">
-        <span className="t-13px">Desired look and feel: pick one from each pair</span>
+        <span className="t-13px flex gap-8px items-center">Desired look and feel: pick one from each pair<span className="t-12px c-ink-2">Required</span></span>
         <div className="two">
           {vm.lookPairs.map((lp, i_) => (
             <Fragment key={i_}>
@@ -71,7 +71,7 @@ export default function StepBranding({ vm }) {
         {vm.pk.open && vm.pk.mode === "keep" && <ColorPicker vm={vm} />}
       </div>
       <div className="flex col gap-8px">
-        <span className="t-13px">Colors to avoid</span>
+        <span className="t-13px flex gap-8px items-center">Colors to avoid<span className="t-12px c-ink-2">Required: a color here or a treatment below</span></span>
         <div className="flex gap-10px wrap items-stretch">
           {vm.avoidColors.map((ac, i_) => (
             <Fragment key={i_}>
@@ -103,14 +103,19 @@ export default function StepBranding({ vm }) {
         </div>
       </div>
       <div className="flex col gap-8px">
-        <label className="t-13px" htmlFor="f-avoidOther">Visuals to avoid</label>
-        <input className="p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-avoidOther" name="avoidOther" value={vm.f.avoidOther} onChange={vm.onField} placeholder="For example: hard hats, handshake photos" />
+        <label className="t-13px" htmlFor="f-avoidIn">Visuals to avoid (optional)</label>
+        <div className="flex gap-8px wrap items-center">
+          {vm.avoidVisuals.map((c, i_) => (
+            <span key={i_} className="flex items-center gap-6px p-6px-6px-6px-12px bg-bg t-14px r-pill bd-1px-solid-grey-1">{c.label}<button className="w-px-22px h-22px bd-0 r-4px bg-bg p-0 flex items-center justify-center" type="button" onClick={c.remove} aria-label={c.aria}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></span>
+          ))}
+          <input className="flex-1 minw-180px p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-avoidIn" name="avoidIn" value={vm.f.avoidIn || ""} onChange={vm.onField} onKeyDown={vm.avoidKey} placeholder="e.g. hard hats, then Enter" />
+        </div>
       </div>
       <div className="flex col gap-24px">
         {vm.brandGroups.map((bg, i_) => (
           <Fragment key={i_}>
             <div className="flex col gap-8px">
-              <label className="t-13px" htmlFor={bg.inputId}>{bg.title}</label>
+              <label className="t-13px flex gap-8px items-center" htmlFor={bg.inputId}>{bg.title}<span className="t-12px c-ink-2">Required</span></label>
               <div className="flex gap-8px">
                 <input className="flex-1 p-10px-12px r-pill bd-1px-solid-grey-2 bg-bg" id={bg.inputId} name={bg.field} value={bg.value} onChange={vm.onField} placeholder="Search for a brand" />
                 <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-14px" type="button" onClick={bg.add}>Add</button>
@@ -194,7 +199,7 @@ function ColorPicker({ vm }) {
           <div className="w-px-64px h-64px r-8px bd-1px-solid-line" style={{ background: vm.pk.hex }} />
           <div className="flex col gap-4px">
             <label className="t-12px" htmlFor="pk-hex">Hex</label>
-            <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} placeholder=" " aria-invalid={vm.pk.badHex} aria-describedby={vm.pk.badHex ? "pk-hex-err" : undefined} />
+            <input className="w-px-120px p-8px r-pill bd-1px-solid-grey-2 ff-monospace t-14px" id="pk-hex" value={vm.pk.hexText} onChange={vm.setPickHex} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); vm.addPicked(); } }} placeholder=" " aria-invalid={vm.pk.badHex} aria-describedby={vm.pk.badHex ? "pk-hex-err" : undefined} />
             {vm.pk.badHex && <span className="t-12px c-ink-2" id="pk-hex-err" role="alert">Not a color code. Use # and six characters, like #1A2B3C.</span>}
           </div>
         </div>

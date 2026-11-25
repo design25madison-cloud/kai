@@ -186,3 +186,102 @@ test("the stored copy survives a save and a reload unchanged, and stays small", 
   t.diagnostic(`saved project ${size(data)} bytes: directions ${size(data.dirs.directions)}, photos ${size(data.dirs.images)} (${Object.keys(data.dirs.images).length})`);
   assert.ok(size(data) < 60000, "small enough for the save made while a tab closes");
 });
+
+test("a hand edit renames the color, says it locked it, and undoes in one step; the mix says when its option changed", async () => {
+  const a = await boot();
+  mock.timers.enable({ apis: ["setTimeout"] }); // The toasts' timers.
+  try {
+    // As a brief for field users gets it.
+    const dirs = JSON.parse(JSON.stringify(first.dirs));
+    dirs.directions[first.option].primaryReasons.push({ layer: "Audience", text: "For field and operational users, white text on the primary reaches AAA (7:1)." });
+    const app = a.make(Object.assign({}, first, { screen: "out", edit: "palette", dirs }));
+    const i = app.state.option, k = app.current().colors.findIndex((c) => c.role === "Primary"), before = app.state.ov[i];
+    const type = (v) => app.current().colors[k].setHex({ target: { value: v } });
+    type("#C8"); type("#C8421E");
+    const c = app.current().colors[k];
+    assert.deepEqual([c.show, c.name, c.locked], ["#C8421E", a.gen.colorName(a.gen.hexToHsl("#C8421E")), true]);
+    assert.equal(app.vm.toast, "Primary color changed. Locked because you edited it.");
+    assert.ok(app.current().primaryReasons.some((r) => r.text.includes(`is ${a.gen.contrast("#C8421E", "#FFFFFF").toFixed(2)}:1, short of AAA`)), "the AAA claim gives the real ratio");
+    app.vm.doUndo();
+    assert.deepEqual(app.state.ov[i], before, "one Undo goes back to before the first keystroke");
+
+    app.setState({ mixPick: { word: 0, palette: 1, type: 0, refs: 0, voice: 0 } });
+    app.vm.createMix();
+    assert.deepEqual(app.vm.mixStale, {});
+    app.setState({ option: 1 });
+    app.current().colors[0].setHex({ target: { value: "#123456" } });
+    app.setState({ option: 3 });
+    assert.deepEqual(app.vm.mixStale, { palette: "Option 2's palette has changed since you made this mix." });
+    app.vm.updateMix();
+    assert.deepEqual([app.vm.mixStale, app.current().colors[0].show], [{}, "#123456"]);
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test("PowerPoint shows every section ticked and locked, and keeps the person's own ticks for other formats", async () => {
+  const a = await boot();
+  const app = a.make(Object.assign({}, first, { screen: "out", allMenu: true, exportSel: ["palette"], exportFormat: "css" }));
+  assert.deepEqual(app.vm.exportMenu.sections.filter((x) => x.on).map((x) => x.id), ["palette"]);
+  assert.equal(app.vm.exportMenu.locked, false);
+  app.vm.exportMenu.formats.find((f) => f.id === "pptx").pick();
+  const menu = app.vm.exportMenu;
+  assert.ok(menu.locked && menu.sections.every((x) => x.on) && menu.canRun);
+  assert.deepEqual(app.state.exportSel, ["palette"], "the ticks are kept");
+  // With nothing ticked PowerPoint can still be picked, since it doesn't depend on the ticks.
+  app.setState({ exportSel: [], exportFormat: "css" });
+  assert.equal(app.vm.exportMenu.formats.find((f) => f.id === "pptx").disabled, false);
+});
+
+test("Regenerate never shows the same thing twice in a row, goes through every variant, and says when nothing can change", async () => {
+  const a = await boot();
+  mock.timers.enable({ apis: ["setTimeout"] }); // The toasts' timers.
+  try {
+    const J = JSON.stringify, app = a.make(Object.assign({}, first, { screen: "out", banned: [] }));
+    const i = app.state.option, base = app.opts()[i];
+    const part = { palette: (d) => d.colors.map((c) => c.show), type: (d) => [d.display, d.body], voice: (d) => [d.toneArr, d.headline], word: (d) => [d.wordFont, d.track], refs: (d) => d.imgs.map((x) => x[0]) };
+    const variants = { palette: base.palettes.map((p) => p.map((c) => c[1].toUpperCase())), type: base.types, voice: base.voices.map((v) => [v.tone, v.headline]), word: base.words.map((w) => w.slice(0, 2)), refs: [1, 2, 3] };
+    for (const m of Object.keys(part)) {
+      const n = new Set(variants[m].map((v) => J(v))).size, seen = [J(part[m](app.current()))];
+      for (let k = 1; k <= n; k++) {
+        app.doRegen([m]);
+        const now = J(part[m](app.current()));
+        assert.notEqual(now, seen[seen.length - 1], `${m}: press ${k} changes what is shown`);
+        if (k < n) assert.ok(!seen.includes(now), `${m}: press ${k} shows a variant not seen yet`);
+        seen.push(now);
+      }
+      assert.match(app.vm.toast, /^New /);
+    }
+
+    // Three palettes that differ only in the first color, which is locked: nothing can change.
+    const dirs = JSON.parse(JSON.stringify(first.dirs)), P0 = dirs.directions[i].palettes[0];
+    dirs.directions[i].palettes = ["#112233", "#445566", "#778899"].map((h) => P0.map((c, k) => (k === 0 ? [c[0], h, c[2], c[3]] : c.slice())));
+    const ov = first.ov.slice(); ov[i] = { lock: {}, swLock: [true] };
+    const locked = a.make(Object.assign({}, first, { screen: "out", dirs, ov }));
+    const before = locked.state.ov[i];
+    locked.doRegen(["palette"]);
+    assert.equal(locked.vm.toast, "No other palette to show with what you locked.");
+    assert.equal(locked.state.ov[i], before, "nothing changed");
+    assert.equal(locked.state.undo, null, "no Undo for a change that did not happen");
+    // Unlocked, the first color is the one part that can change, through all three.
+    locked.setState({ ov: Object.assign([], ov, { [i]: { lock: {} } }) });
+    const firsts = [1, 2, 3].map(() => { locked.doRegen(["palette"]); return locked.current().colors[0].show; });
+    assert.deepEqual(firsts, ["#445566", "#778899", "#112233"]);
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test("the UI primary warns when a pairing is below WCAG AA, and says which one", async () => {
+  const a = await boot();
+  const at = (ui) => { const ov = first.ov.slice(); ov[first.option] = { uiFixed: ui }; return a.make(Object.assign({}, first, { screen: "out", ov })).current(); };
+  const pale = at("#8A8AFF");
+  assert.match(pale.uiWarn, /^White text on this button is \d\.\d\d:1, below the 4\.5:1 that AA needs for text\.$/);
+  assert.equal(pale.passLabel, "Fails AA");
+  const dark = at("#202020");
+  assert.equal(dark.uiWarn, "");
+  assert.ok(dark.uiDarkWarn.startsWith(`In dark mode the button is ${dark.uiDarkRatio}:1 against ${dark.darkName}, below the 3:1`));
+  assert.equal(dark.darkPassLabel, "Fails AA");
+  // A ratio just under a threshold isn't rounded up to it.
+  assert.ok(Number(pale.uiRatio) <= a.gen.contrast("#8A8AFF", "#FFFFFF"));
+});

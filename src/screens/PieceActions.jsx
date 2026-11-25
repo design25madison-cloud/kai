@@ -10,7 +10,7 @@ function LockIcon({ shut }) {
   );
 }
 
-// Lock and comment controls for one piece of a direction, shown on hover or keyboard focus.
+// Lock and AI edit controls for one piece of a direction, shown on hover or keyboard focus.
 // The parent must be positioned. A locked piece keeps a badge when it isn't hovered.
 export default function PieceActions({ vm, piece }) {
   const interactive = !vm.cmode && !vm.presenting;
@@ -31,14 +31,25 @@ export default function PieceActions({ vm, piece }) {
               {piece.locked ? "Locked" : "Lock"}
             </button>
           )}
-          <button className="piece-action" type="button" onClick={piece.comment} aria-label={"Comment on " + piece.label.toLowerCase()}>
+          <button className="piece-action" type="button" onClick={piece.comment} aria-label={"AI edit: " + piece.label.toLowerCase()}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M4 5h16v11H9l-5 4z" />
             </svg>
-            Comment
+            AI edit
           </button>
         </span>
       )}
     </>
+  );
+}
+
+// On the mix: says when the option this part was copied from has changed since, next to the way to bring it in.
+export function MixStale({ vm, part }) {
+  if (!vm.mixStale[part]) return null;
+  return (
+    <div className="p-12px flex gap-12px wrap items-center bg-bg bd-1px-solid-grey-2 r-12px" role="status">
+      <span className="t-13px flex-1">{vm.mixStale[part]} Updating rebuilds the whole mix from its options.</span>
+      <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={vm.updateMix}>Update your mix</button>
+    </div>
   );
 }

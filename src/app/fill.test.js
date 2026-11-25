@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { applyFill, suggestedKeys } from "./fill.js";
+import { applyFill, blank, suggestedKeys } from "./fill.js";
 
 const empty = () => ({ f: { name: "", desc: "", who: "operator" }, tone: [], sl: { warmth: 50, energy: 50, serious: 50 }, looks: {} });
 const after = (state, patch) => ({ ...state, ...patch });
@@ -38,5 +38,13 @@ test("confirmed answers count as the person's own", () => {
   state = { ...state, sugg: {} }; // What "Confirm all" does.
   const { patch, filled } = applyFill(state, { f: { name: "Something else" } });
   assert.equal(filled, 0);
+  assert.equal(patch.f.name, "Ferra");
+});
+
+test("an answer of only spaces counts as empty, so a suggestion can fill it", () => {
+  assert.ok([undefined, "", "   ", "\n ", [], {}].every(blank));
+  assert.ok(!["a", " a ", ["x"], { 0: "a" }].some(blank));
+  const { patch, filled } = applyFill({ ...empty(), f: { name: "     ", desc: "" } }, { f: { name: "Ferra" } });
+  assert.equal(filled, 1);
   assert.equal(patch.f.name, "Ferra");
 });

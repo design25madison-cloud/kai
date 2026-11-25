@@ -23,11 +23,13 @@ export default function UiPrimarySection({ vm }) {
         </div>
       )}
       <div className="flex gap-24px wrap items-stretch">
-        <div className="relative w-px-180px h-140px r-10px flex items-flex-end p-12px c-bg t-14px w-600" style={{ background: vm.cur.ui }}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.ui} aria-pressed={vm.pinSel.ui} aria-label="Comment on the UI primary" />)}<PieceActions vm={vm} piece={vm.pieces.ui} />{vm.cur.ui}</div>
+        <div className="relative w-px-180px h-140px r-10px flex items-flex-end p-12px c-bg t-14px w-600" style={{ background: vm.cur.ui }}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.ui} aria-pressed={vm.pinSel.ui} aria-label="Add the UI primary to the AI edit" />)}<PieceActions vm={vm} piece={vm.pieces.ui} />{vm.cur.ui}</div>
         <div className="flex col gap-8px justify-center">
           <span className="t-14px">Tuned from {vm.cur.accentName} ({vm.cur.accent})</span>
           <span className="t-14px">White text: <strong>{vm.cur.uiRatio}:1</strong> <span className="p-2px-10px r-9px t-12px c-bg" style={{ background: vm.cur.passBg }}>{vm.cur.passLabel}</span></span>
-          <span className="t-14px">On {vm.cur.darkName}, for dark mode: {vm.cur.uiDarkRatio}:1</span>
+          <span className="t-14px">On {vm.cur.darkName}, for dark mode: <strong>{vm.cur.uiDarkRatio}:1</strong> <span className="p-2px-10px r-9px t-12px c-bg" style={{ background: vm.cur.darkPassBg }}>{vm.cur.darkPassLabel}</span></span>
+          {vm.cur.uiWarn && <span className="language-flag">{vm.cur.uiWarn}</span>}
+          {vm.cur.uiDarkWarn && <span className="language-flag">{vm.cur.uiDarkWarn}</span>}
         </div>
       </div>
     </section>

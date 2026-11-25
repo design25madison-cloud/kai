@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import PieceActions from "./PieceActions.jsx";
+import PieceActions, { MixStale } from "./PieceActions.jsx";
 import RefImage, { RefCredit } from "./RefImage.jsx";
 
 export default function ImagerySection({ vm }) {
@@ -18,6 +18,7 @@ export default function ImagerySection({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-13px" type="button" onClick={vm.sec.refs.toggleEdit} aria-pressed={vm.sec.refs.editing} style={{ background: vm.sec.refs.editBg, color: vm.sec.refs.editFg }}>{vm.sec.refs.editLabel}</button>
         </div>
       </div>
+      <MixStale vm={vm} part="refs" />
       <div className="three">
         {vm.cur.imageCards.map((im, i_) => (
           <Fragment key={i_}>

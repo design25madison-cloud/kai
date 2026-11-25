@@ -27,7 +27,10 @@
   font-size: 22px;
   letter-spacing: var(--m-track);
   color: var(--m-primary);
-  white-space: nowrap;
+  /* A long name wraps inside its card, sidebar or bar instead of being cut or running into the
+     next heading. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .mock-wordmark--sm {
   font-size: 18px;
@@ -332,6 +335,7 @@
   position: absolute;
   top: 24px;
   left: 24px;
+  right: 24px;
   color: inherit;
 }
 
@@ -1125,6 +1129,7 @@
   .mock-fan__word {
     top: 12px;
     left: 12px;
+    right: 12px;
     font-size: 13px;
   }
   .mock-hero__title {

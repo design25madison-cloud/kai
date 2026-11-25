@@ -13,7 +13,7 @@ const TEXT = {
   meaning: [600, "Name meaning, metaphor, or origin"],
   lookNote: [600, "How the brand should look and feel, including what existing logos or decks show"],
   colorDir: [300, "Color direction, for example warm earth tones with one bright accent"],
-  avoidOther: [300, "Visuals to avoid"],
+  avoidOther: [300, "Visuals to avoid, separated by commas"],
   buyerRole: [120, "Economic buyer: role or title"],
   mot: [600, "What motivates the buyer to purchase"],
   success: [600, "How the buyer defines success"],
@@ -46,7 +46,8 @@ const TEXT = {
 const INDUSTRIES = ["construction", "manufacturing", "logistics", "finance", "healthcare", "energy", "legal", "software", "retail", "food", "education", "government", "agriculture", "media", "other"];
 const WHO = ["buyer", "operator", "end"];
 const TONES = ["Sturdy", "Industrial", "Precise", "Warm", "Playful", "Calm", "Bold", "Minimal"];
-const CARES = ["ROI", "Growth", "Efficiency", "Reliability", "Cost", "Risk"];
+// Every "cares about" chip the Customer step can show (src/app/briefCopy.js); keep the two in step.
+const CARES = ["ROI", "Growth", "Efficiency", "Reliability", "Cost", "Risk", "Price", "Quality", "Convenience", "Trust", "Fun", "Health", "Ease of use"];
 const TREATMENTS = ["Gradients", "Neon", "All caps", "Drop shadows", "Pill buttons"];
 // The brief's four look pairs, in the order the app stores them (0…3, "a" = first, "b" = second).
 const LOOKS = [["temperature", "Warm", "Cool"], ["letterforms", "Serif", "Sans"], ["detail", "Ornate", "Minimal"], ["shape", "Soft", "Geometric"]];

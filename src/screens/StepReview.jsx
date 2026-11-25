@@ -11,10 +11,13 @@ export default function StepReview({ vm }) {
         {vm.coreChecks.map((c, i_) => (
           <Fragment key={i_}>
             <div className="flex justify-space-between items-center gap-12px p-12px-16px bd-b-1px-solid-divider">
-              <span className="t-14px">{c.label}</span>
-              <span className="flex gap-12px items-center">
+              <span className="flex col gap-4px minw-0">
+                <span className="t-14px">{c.label}</span>
+                {c.preview && <span className="t-13px c-ink-2" style={{ overflowWrap: "anywhere" }}>{c.preview}</span>}
+              </span>
+              <span className="flex gap-12px items-center flex-none">
                 <span className="t-12px p-2px-10px r-9px" style={{ background: c.bg, color: c.fg }}>{c.status}</span>
-                <button className="bd-0 bg-none t-13px td-underline" type="button" onClick={c.go}>Edit</button>
+                <button className="bd-0 bg-none t-13px td-underline" type="button" onClick={c.go} aria-label={c.aria}>{c.action}</button>
               </span>
             </div>
           </Fragment>

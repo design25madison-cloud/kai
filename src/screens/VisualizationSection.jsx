@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { copyHits } from "../app/language.js";
-import DashboardMockup, { DASHBOARD_COPY } from "./DashboardMockup.jsx";
-import LandingMockup, { LANDING_COPY } from "./LandingMockup.jsx";
+import { mockCopy } from "../app/mockCopy.js";
+import DashboardMockup from "./DashboardMockup.jsx";
+import LandingMockup from "./LandingMockup.jsx";
 import PieceActions from "./PieceActions.jsx";
 
 // Every string in a nested copy object, for the restricted word check.
 const strings = (value) => (typeof value === "string" ? [value] : typeof value === "object" && value ? Object.values(value).flatMap(strings) : []);
-const MOCK_COPY = [...strings(LANDING_COPY), ...strings(DASHBOARD_COPY)];
 
 export default function VisualizationSection({ vm, printing = false }) {
   const c = vm.cur;
@@ -17,7 +17,8 @@ export default function VisualizationSection({ vm, printing = false }) {
     if (landingOpen) landingFrame.current?.scrollIntoView({ block: "start" });
     setLandingOpen(!landingOpen);
   };
-  const hits = copyHits(vm.banned, MOCK_COPY);
+  const copy = mockCopy(vm.f.industry);
+  const hits = copyHits(vm.banned, strings(copy));
   // Everything inside the mockups reads from these, so each direction restyles them completely.
   const theme = {
     "--m-ui": c.ui,
@@ -49,7 +50,7 @@ export default function VisualizationSection({ vm, printing = false }) {
 
       <div className="mock-frame mock-frame--landing" style={theme} ref={landingFrame}>
         {vm.cmode && (
-          <button className="pick" type="button" onClick={vm.pins.landing} aria-pressed={vm.pinSel.landing} aria-label="Comment on the landing page" />
+          <button className="pick" type="button" onClick={vm.pins.landing} aria-pressed={vm.pinSel.landing} aria-label="Add the landing page to the AI edit" />
         )}
         <PieceActions vm={vm} piece={vm.pieces.landing} />
         <LandingMockup vm={vm} expanded={printing || landingOpen} />
@@ -65,9 +66,10 @@ export default function VisualizationSection({ vm, printing = false }) {
         )}
       </div>
 
+      <p className="m-0 t-13px c-muted">Sample app screen: {copy.dashboard.label}</p>
       <div className="mock-frame" style={theme}>
         {vm.cmode && (
-          <button className="pick" type="button" onClick={vm.pins.preview} aria-pressed={vm.pinSel.preview} aria-label="Comment on the product UI" />
+          <button className="pick" type="button" onClick={vm.pins.preview} aria-pressed={vm.pinSel.preview} aria-label="Add the product UI to the AI edit" />
         )}
         <PieceActions vm={vm} piece={vm.pieces.preview} />
         <DashboardMockup vm={vm} />
@@ -76,9 +78,9 @@ export default function VisualizationSection({ vm, printing = false }) {
       <div className="two" style={theme}>
         <div className="mock-tile" style={{ background: c.light }}>
           <div className="mock-card">
-            <span className="mock-card__tag">New</span>
-            <span className="mock-card__title">Project update</span>
-            <span className="mock-card__text">Three items moved forward this week. One needs a decision.</span>
+            <span className="mock-card__tag">{copy.card[0]}</span>
+            <span className="mock-card__title">{copy.card[1]}</span>
+            <span className="mock-card__text">{copy.card[2]}</span>
             <span className="mock-link mock-link--sm">Read more →</span>
           </div>
         </div>

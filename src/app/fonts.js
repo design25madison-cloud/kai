@@ -23,6 +23,9 @@ export function ensureFonts(families) {
     link.rel = "stylesheet";
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family).replace(/%20/g, "+")}${weights ? `:wght@${weights}` : ""}&display=swap`;
     link.dataset.brandFont = family;
+    // The stylesheet alone downloads no font until text uses it, so an option opened later would
+    // flash its fallback. Fetch the files once the stylesheet is in, after the first paint.
+    link.onload = () => (weights || "400").split(";").forEach((w) => document.fonts?.load(`${w} 1em "${family}"`).catch(() => {}));
     document.head.appendChild(link);
   });
 }

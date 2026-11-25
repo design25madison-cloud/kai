@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import PieceActions from "./PieceActions.jsx";
+import PieceActions, { MixStale } from "./PieceActions.jsx";
 
 export default function WordmarkSection({ vm }) {
   return (
@@ -17,6 +17,7 @@ export default function WordmarkSection({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-13px" type="button" onClick={vm.sec.word.toggleEdit} aria-pressed={vm.sec.word.editing} style={{ background: vm.sec.word.editBg, color: vm.sec.word.editFg }}>{vm.sec.word.editLabel}</button>
         </div>
       </div>
+      <MixStale vm={vm} part="word" />
       {vm.sec.word.editing && (
         <div className="p-16px flex gap-20px wrap items-flex-end bg-bg bd-1px-solid-grey-2 r-12px">
           <div className="flex col gap-6px">
@@ -36,18 +37,18 @@ export default function WordmarkSection({ vm }) {
         </div>
       )}
       <div className="two">
-        <div className="relative h-200px r-10px flex col items-center justify-center gap-6px" style={{ background: vm.cur.surface }}>
+        <div className="word-box relative h-200px r-10px flex col items-center justify-center gap-6px" style={{ background: vm.cur.surface }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.word} aria-pressed={vm.pinSel.word} aria-label="Comment on the wordmark" />
+            <button className="pick" type="button" onClick={vm.pins.word} aria-pressed={vm.pinSel.word} aria-label="Add the wordmark to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.word} />
           <span className="t-12px" style={{ color: vm.cur.primary }}>{vm.cur.wordFont}</span>
-          <span className="t-64px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>
+          <span className="t-64px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary, ...vm.wordFit(64, vm.cur.trackPx) }}>{vm.wordUpper}</span>
         </div>
-        <div className="relative h-200px r-10px flex items-center justify-center" style={{ background: vm.cur.deep }}>
+        <div className="word-box relative h-200px r-10px flex items-center justify-center" style={{ background: vm.cur.deep }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.wordDark} aria-pressed={vm.pinSel.wordDark} aria-label="Comment on the wordmark on dark" />
+            <button className="pick" type="button" onClick={vm.pins.wordDark} aria-pressed={vm.pinSel.wordDark} aria-label="Add the wordmark on dark to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.wordDark} />
-          <span className="t-64px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.onDeep }}>{vm.wordUpper}</span>
+          <span className="t-64px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.onDeep, ...vm.wordFit(64, vm.cur.trackPx) }}>{vm.wordUpper}</span>
         </div>
         <div className="full-row h-120px r-10px bd-1px-solid-line flex items-center justify-center gap-24px" style={{ background: vm.cur.card }}>
           <span className="t-22px" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>

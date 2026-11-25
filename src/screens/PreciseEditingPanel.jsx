@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { brokenImage, referenceImage } from "../app/referenceImages.js";
 
 // One side of a proposed image swap. A label with no photo keeps the plain tile.
@@ -13,17 +13,25 @@ function SwapImage({ state, label }) {
   );
 }
 
+// Minutes and seconds since a request was sent, ticking. Hidden from screen readers so the live log isn't read out every second.
+function Elapsed({ since }) {
+  const [, tick] = useState(0);
+  useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []);
+  const sec = Math.max(0, Math.floor((Date.now() - since) / 1000));
+  return <span aria-hidden="true">{Math.floor(sec / 60)}:{String(sec % 60).padStart(2, "0")}</span>;
+}
+
 export default function PreciseEditingPanel({ vm }) {
   return (
     <>
       {vm.cmode && (
-        <aside className="fixed top-0 right-0 bottom-0 w-px-380px z-15 bg-bg bd-l-1px-solid-line flex col" aria-label="Precise editing">
+        <aside className="fixed top-0 right-0 bottom-0 w-px-380px z-15 bg-bg bd-l-1px-solid-line flex col" aria-label="AI edits">
           <div className="p-16px-18px bd-b-1px-solid-divider flex items-flex-start gap-12px">
             <div className="flex-1 flex col gap-2px">
-              <span className="t-16px w-600">Precise editing</span>
+              <span className="t-16px w-600">AI edits</span>
               <span className="t-12px c-muted">{vm.cur.title} · {vm.cmCount}</span>
             </div>
-            <button className="w-px-32px h-32px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={vm.toggleCmode} aria-label="Close precise editing">
+            <button className="w-px-32px h-32px r-50pct bd-1px-solid-grey-1 bg-bg p-0 flex items-center justify-center" type="button" onClick={vm.toggleCmode} aria-label="Close AI edits">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
@@ -39,7 +47,10 @@ export default function PreciseEditingPanel({ vm }) {
                   </div>
                   <div className="self-flex-start w-px-100pct p-12px r-12px bg-bg bd-1px-solid-grey-2 flex col gap-10px">
                     {cmt.thinking && (
-                      <span className="t-13px c-ink-2">Working on {cmt.label}…</span>
+                      <div className="flex gap-8px items-center wrap">
+                        <span className="t-13px c-ink-2 flex-1">Working on {cmt.label}… <Elapsed since={cmt.started} /> This can take a minute or two.</span>
+                        <button className="p-8px-14px r-pill bd-1px-solid-grey-1 bg-bg t-13px" type="button" onClick={cmt.cancel}>Cancel</button>
+                      </div>
                     )}
                     {cmt.canApply && (
                       <div className="flex gap-8px items-center wrap">
@@ -48,7 +59,10 @@ export default function PreciseEditingPanel({ vm }) {
                       </div>
                     )}
                     {cmt.isApplied && (
-                      <span className="t-13px c-ink">Applied and locked. <a className="c-ink-2" href={cmt.href}>Show</a></span>
+                      <span className="t-13px c-ink">Applied and locked. <a className="c-ink-2" href={cmt.href} onClick={(e) => { const el = document.querySelector(cmt.href); if (el) { e.preventDefault(); el.scrollIntoView({ behavior: "smooth" }); } }}>Show</a></span>
+                    )}
+                    {(cmt.isApplied || cmt.canApply) && (
+                      <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-1 bg-bg t-12px" type="button" onClick={cmt.remove}>{cmt.isApplied ? "Remove from list (keeps the change)" : "Remove from list"}</button>
                     )}
                     {cmt.proposed && (
                       <>

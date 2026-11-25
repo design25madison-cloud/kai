@@ -1,4 +1,4 @@
-// Precise editing with the server's AI (server/edit.js): what to send about the piece being
+// AI edits, made by the server's AI (server/edit.js): what to send about the piece being
 // edited, and how to turn the checked answer into the proposal the panel shows.
 //
 // c is the comment ({ sec, target, label, text, rejected }), d is the direction as shown
@@ -14,12 +14,12 @@ export function editContext({ c, d, base, ov, f, tone, banned }) {
   const one = typeof c.target === "number";
   const ctx = { name: f.name, desc: f.desc, direction: base.name, tone, banned, rejected: c.rejected || [], piece: c.label };
   if (c.sec === "palette" || c.sec === "preview") {
-    ctx.colors = d.colors.map((x) => ({ name: x.name, hex: x.show }));
+    ctx.colors = d.colors.map((x) => ({ name: x.name, hex: x.show, role: x.role }));
     ctx.targets = one ? [c.target] : unlocked(ov.swLock || [], d.colors.length);
   }
   if (c.sec === "ui") {
     ctx.ui = d.ui;
-    ctx.colors = d.colors.map((x) => ({ name: x.name, hex: x.show }));
+    ctx.colors = d.colors.map((x) => ({ name: x.name, hex: x.show, role: x.role }));
   }
   if (c.sec === "word") Object.assign(ctx, { fonts: FONTS, wordFont: d.wordFont, track: d.track });
   if (c.sec === "type") Object.assign(ctx, { fonts: FONTS, display: d.display, body: d.body });
@@ -71,4 +71,14 @@ export function editProposal({ c, d, base, ov, change, ratio }) {
   }
   const say = (tone, headline) => tone.map((t) => t[0]).join(", ") + " · " + headline;
   return { kind: "text", summary, bText: say(d.toneArr, d.headline), aText: say(change.tone, change.headline), patch: { tone: change.tone, headline: change.headline, lock: { ...lock, voice: true } } };
+}
+
+// Generated text promises AAA (7:1) for white text on the primary. After a hand or AI edit that can
+// stop being true, so the claim is restated with the real ratio.
+export function honestAAA(text, ratio) {
+  if (ratio >= 7) return text;
+  const r = ratio.toFixed(2) + ":1";
+  return text
+    .replace("white text on the primary reaches AAA (7:1)", `white text on the primary is ${r}, short of AAA (7:1)`)
+    .replace("pushed contrast to AAA", `aimed for AAA contrast (white text on the primary is now ${r})`);
 }

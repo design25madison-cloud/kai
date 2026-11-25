@@ -2,7 +2,7 @@ import { Fragment } from "react";
 
 export default function StepGeneral({ vm }) {
   return (
-    <div className="flex col gap-24px">
+    <div className="flex col gap-24px" onBlur={vm.trimField}>
       <h2 className="m-0 t-22px w-600">General</h2>
       {vm.imported && (
         <div className="p-14px-16px flex col items-flex-start gap-12px bg-bg bd-1px-solid-grey-2 r-12px">
@@ -11,7 +11,7 @@ export default function StepGeneral({ vm }) {
         </div>
       )}
       <div className="flex col gap-8px">
-        <label className="t-13px flex gap-8px items-center" htmlFor="f-name">Working name{vm.sug.name && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+        <label className="t-13px flex gap-8px items-center" htmlFor="f-name">Working name<span className="t-12px c-ink-2">Required</span>{vm.sug.name && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         <input className="p-12px r-pill bd-1px-solid-grey-2 bg-bg" id="f-name" name="name" value={vm.f.name} onChange={vm.onField} placeholder="What are you calling it for now?" />
         <button className="self-flex-start p-4px-0 bd-0 bg-none t-13px td-underline c-ink-2" type="button" onClick={vm.toggleLegal} aria-expanded={vm.legalOpen}>{vm.legalLabel}</button>
         {vm.legalOpen && (
@@ -23,7 +23,7 @@ export default function StepGeneral({ vm }) {
       </div>
       <div className="flex col gap-8px">
         <div className="flex justify-space-between items-center">
-          <label className="t-13px flex gap-8px items-center" htmlFor="f-desc">Company description{vm.sug.desc && (<span className="status-pill">{vm.badgeText}</span>)}</label>
+          <label className="t-13px flex gap-8px items-center" htmlFor="f-desc">Company description<span className="t-12px c-ink-2">Required</span>{vm.sug.desc && (<span className="status-pill">{vm.badgeText}</span>)}</label>
         </div>
         <textarea className="p-12px r-8px bd-1px-solid-grey-2 bg-bg resize-vertical" id="f-desc" name="desc" value={vm.f.desc} onChange={vm.onField} rows="2" placeholder="A short, plain-language description of what the company does and for whom." />
       </div>
@@ -63,7 +63,7 @@ export default function StepGeneral({ vm }) {
         <button className="self-flex-start p-8px-12px r-pill bd-1px-dashed-grey-2 bg-bg t-14px" type="button" onClick={vm.addDeliv}>Add deliverable</button>
       </div>
       <div className="flex col gap-8px">
-        <label className="t-13px" htmlFor="f-domainIn">Domains secured</label>
+        <label className="t-13px flex gap-8px items-center" htmlFor="f-domainIn">Domains secured<span className="t-12px c-ink-2">Required</span></label>
         <div className="flex gap-8px wrap items-center">
           {vm.domains.map((c, i_) => (
             <Fragment key={i_}>

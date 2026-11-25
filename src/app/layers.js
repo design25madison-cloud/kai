@@ -33,9 +33,9 @@ export const INDUSTRY_BY_ID = Object.fromEntries(INDUSTRIES.map((x) => [x.id, x]
 // be blended in but shouldn't lead for this audience. contrast: minimum for white text on primary.
 export const AUDIENCES = {
   executive: { label: "executive and procurement buyers", cap: 0.6, bias: -0.15, noLead: ["rebel", "jester"], contrast: 4.5, pair: ["Proven", "boastful"], effect: "kept it conservative and led with proof" },
-  field: { label: "field and operational users", cap: 0.9, noLead: ["lover"], contrast: 7, pair: ["Plain", "curt"], effect: "pushed contrast to AAA and kept the voice plain" },
+  field: { label: "field and operational users", cap: 0.9, noLead: ["lover"], contrast: 7, pair: ["Plain", "curt"], effect: "kept the voice plain" },
   technical: { label: "technical users", cap: 0.9, noLead: [], contrast: 4.5, pair: ["Precise", "dense"], effect: "kept the voice precise" },
-  broad: { label: "a broad audience", cap: 0.95, bias: 0.05, noLead: [], contrast: 4.5, pair: ["Welcoming", "generic"], effect: "added color and kept it welcoming", extraAccent: true },
+  broad: { label: "a broad audience", cap: 0.95, bias: 0.05, noLead: [], contrast: 4.5, pair: ["Welcoming", "generic"], effect: "kept the voice welcoming", extraAccent: true },
 };
 
 const FIELD = /\b(field|crew|crews|site|sites|driver|drivers|technician|technicians|warehouse|nurse|nurses|foreman|installer|installers|inspector|inspectors|mechanic|operator|operators|frontline|plant)\b/;
@@ -47,9 +47,11 @@ export function audienceOf(f) {
   const op = strip(`${f.opRole} ${f.opTeam} ${f.opCares}`);
   const buyer = strip(`${f.buyerRole} ${f.mot}`);
   const end = strip(`${f.endWho} ${f.endCares}`);
-  if (f.who === "operator") return FIELD.test(op) ? "field" : TECH.test(op) ? "technical" : op.trim() ? "field" : null;
+  // An operator description that matches no keyword says nothing about the audience, so no profile.
+  if (f.who === "operator") return FIELD.test(op) ? "field" : TECH.test(op) ? "technical" : null;
   if (f.who === "end") return FIELD.test(end) ? "field" : TECH.test(end) ? "technical" : end.trim() ? "broad" : null;
-  if (f.who === "buyer") return EXEC.test(buyer) || buyer.trim() ? "executive" : null;
+  // A buyer described without an executive word ("parents, gift buyers") isn't an executive buyer.
+  if (f.who === "buyer") return EXEC.test(buyer) ? "executive" : null;
   return null;
 }
 

@@ -16,7 +16,7 @@ export default function BriefScreen({ vm }) {
       {vm.sugCss && <style>{vm.sugCss}</style>}
       <HomeLogo vm={vm} className="page-logo" />
       <div className="flex justify-space-between items-center gap-12px wrap">
-        <Breadcrumbs items={vm.crumbs} />
+        <Breadcrumbs items={[{ label: "Your projects", go: vm.toProjects }, ...vm.crumbs]} />
         <div className="flex items-center gap-16px">
           <SaveStatus vm={vm} />
           <div className="relative" ref={startRef}>
@@ -51,15 +51,18 @@ export default function BriefScreen({ vm }) {
       {vm.isS4 && <StepTone vm={vm} />}
       {vm.isS5 && <StepReview vm={vm} />}
       <div className="flex justify-flex-end items-center gap-12px pt-8px bd-t-1px-solid-divider">
-        {vm.canReturn && (
-          <button className="btn" type="button" onClick={vm.backToResults}>Back to results</button>
+        {vm.isS5 && vm.oldDirs && ask !== "generate" && (
+          <span className="t-13px">Your answers changed since these directions were made. Generate to update them, or see the old ones as they are.</span>
+        )}
+        {(vm.canReturn || vm.oldDirs) && (
+          <button className="btn" type="button" onClick={vm.backToResults}>{vm.canReturn ? "Back to results" : "See old directions"}</button>
         )}
         {vm.notLast && (
           <button className="btn-cta" type="button" onClick={vm.nextStep}>Next</button>
         )}
         {vm.isS5 && ask === "generate" && (
           <>
-            <span className="t-13px">Generating again replaces your directions and clears every lock, edit and comment.</span>
+            <span className="t-13px">Generating again replaces your directions and clears every lock, edit and comment{vm.hasMix ? ", and your custom mix" : ""}.</span>
             <button className="btn" type="button" onClick={() => setAsk(null)}>Cancel</button>
           </>
         )}

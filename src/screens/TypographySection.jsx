@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import PieceActions from "./PieceActions.jsx";
+import PieceActions, { MixStale } from "./PieceActions.jsx";
 
 export default function TypographySection({ vm }) {
   return (
@@ -17,6 +17,7 @@ export default function TypographySection({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-13px" type="button" onClick={vm.sec.type.toggleEdit} aria-pressed={vm.sec.type.editing} style={{ background: vm.sec.type.editBg, color: vm.sec.type.editFg }}>{vm.sec.type.editLabel}</button>
         </div>
       </div>
+      <MixStale vm={vm} part="type" />
       {vm.sec.type.editing && (
         <div className="p-16px flex gap-20px wrap bg-bg bd-1px-solid-grey-2 r-12px">
           <div className="flex col gap-6px">
@@ -44,17 +45,17 @@ export default function TypographySection({ vm }) {
       <div className="two">
         <div className="relative r-10px p-22px flex col gap-8px" style={{ background: vm.cur.deep, color: vm.cur.accentText }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.typeDisplay} aria-pressed={vm.pinSel.typeDisplay} aria-label="Comment on the header typeface" />
+            <button className="pick" type="button" onClick={vm.pins.typeDisplay} aria-pressed={vm.pinSel.typeDisplay} aria-label="Add the header typeface to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.typeDisplay} />
-          <span className="t-11px ls-0_06em">HEADER · {vm.cur.displayPkg}</span>
+          <span className="t-11px ls-0_06em" title={vm.cur.displayPkg}>HEADER · {vm.cur.display}</span>
           <span className="t-34px w-600" style={{ fontFamily: `'${vm.cur.display}', sans-serif` }}>{vm.cur.display}</span>
           <span className="t-18px" style={{ fontFamily: `'${vm.cur.display}', sans-serif` }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</span>
         </div>
         <div className="relative r-10px p-22px flex col gap-8px" style={{ background: vm.cur.deep, color: vm.cur.accentText }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.typeBody} aria-pressed={vm.pinSel.typeBody} aria-label="Comment on the body typeface" />
+            <button className="pick" type="button" onClick={vm.pins.typeBody} aria-pressed={vm.pinSel.typeBody} aria-label="Add the body typeface to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.typeBody} />
-          <span className="t-11px ls-0_06em">BODY · {vm.cur.bodyPkg}</span>
+          <span className="t-11px ls-0_06em" title={vm.cur.bodyPkg}>BODY · {vm.cur.body}</span>
           <span className="t-34px" style={{ fontFamily: `'${vm.cur.body}', sans-serif` }}>{vm.cur.body}</span>
           <span className="t-18px" style={{ fontFamily: `'${vm.cur.body}', sans-serif` }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</span>
         </div>

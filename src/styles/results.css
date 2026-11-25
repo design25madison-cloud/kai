@@ -25,11 +25,26 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+/* A long project name shortens to fit its line; actions that wrap stay at the right, so their
+   menus open inside the screen. */
 .results-header__crumb {
   gap: 8px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+.results-header__crumb > .relative {
+  min-width: 0;
+}
+.results-header__actions {
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .crumb-btn {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   padding: 0;
   border: 0;
   background: none;
@@ -60,6 +75,10 @@
 .menu--end {
   right: 0;
   width: 280px;
+}
+/* Never wider than the screen, whatever the anchor. */
+.menu {
+  max-width: calc(100vw - 2 * var(--page-gutter));
 }
 .export-menu {
   gap: 12px;
@@ -182,6 +201,65 @@
 }
 .results-body--compare {
   gap: 20px;
+}
+/* Compare table: the three options share the width on tablets. On phones each option takes most
+   of the screen and the table scrolls sideways a column at a time, with the row names pinned and
+   the next option peeking in and a shadow on the right edge while there is more. */
+@media (max-width: 1000px) {
+  .results-body--compare > .overfl-auto > .grid {
+    min-width: 0;
+    grid-template-columns: 110px repeat(3, minmax(0, 1fr));
+  }
+  .results-body--compare > .overfl-auto > .grid > * {
+    overflow-wrap: anywhere;
+  }
+}
+/* Only phones scroll the table sideways, so only they are told. */
+.compare-hint {
+  display: none;
+}
+@media (max-width: 560px) {
+  .compare-hint {
+    display: block;
+  }
+  .results-body--compare > .overfl-auto {
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 104px;
+    background:
+      linear-gradient(to left, var(--color-bg) 30%, transparent) right / 24px 100% no-repeat local,
+      radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.16), transparent) right / 12px 100% no-repeat scroll;
+  }
+  .results-body--compare > .overfl-auto > .grid {
+    grid-template-columns: 104px repeat(3, 200px);
+  }
+  .results-body--compare > .overfl-auto > .grid > * {
+    scroll-snap-align: start;
+  }
+  .results-body--compare > .overfl-auto > .grid > :nth-child(4n + 1) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    padding-inline: 12px;
+    scroll-snap-align: none;
+    background: var(--color-bg);
+    box-shadow: 1px 0 0 var(--color-divider);
+  }
+  .results-body--compare > .sticky {
+    z-index: 2;
+    gap: 8px 12px;
+    padding: 10px 12px 10px 16px;
+  }
+  .results-body--compare > .sticky > span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: var(--text-12);
+  }
+  .results-body--compare > .sticky > button {
+    padding: 8px 14px;
+    font-size: var(--text-13);
+  }
 }
 .results-body-wrap--rail {
   padding-inline: 110px;
@@ -313,6 +391,28 @@
     display: none;
   }
 }
+/* Below 1000px tiles get narrower than the labelled pills, and touch screens always show them:
+   icons only (each button keeps its aria-label), tucked into the corner so they fit any tile. */
+@media (hover: none), (max-width: 1000px) {
+  .piece-actions {
+    top: 6px;
+    right: 6px;
+    padding: 2px;
+  }
+  .piece-action {
+    width: 28px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+}
+/* Always-shown controls, and phone widths where a wordmark wraps up into the corner: moodboard tiles
+   keep their text below the controls. */
+@media (hover: none), (max-width: 560px) {
+  .bento > :has(> .piece-actions) {
+    padding-top: 40px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .piece-actions {
     transition: none;
@@ -338,7 +438,37 @@
 
 @media (max-width: 760px) {
   .results-header__inner {
-    padding-inline: 24px;
+    padding: 12px 24px 8px;
+    gap: 8px;
+  }
+}
+/* Phones: one row for the view and its tools (icons only, names kept for screen readers), and all
+   three option tabs side by side. */
+@media (max-width: 560px) {
+  .results-tools {
+    gap: 8px;
+  }
+  .tool-btn {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+  .results-tab {
+    min-width: 0;
+    padding-right: 8px;
+  }
+  .results-tab > span:first-child {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  /* With "Your mix" there are four tabs, each narrower than the badge at its usual size. */
+  .results-tab > span:first-child > span + span {
+    max-width: 100%;
+    padding: 1px 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 10px;
   }
 }
 
@@ -358,6 +488,9 @@
   padding: 12px 8px;
   border-radius: var(--radius-min);
   font-size: var(--text-11);
+  /* Mid grey shows against both the light and the dark moodboard, so a swatch the same color as
+     the background keeps its edge. */
+  box-shadow: inset 0 0 0 1px rgb(128 128 128 / 0.4);
 }
 .swatch:hover,
 .swatch:focus-within {
@@ -442,6 +575,23 @@
 
 .full-row {
   grid-column: 1 / -1;
+}
+/* The wordmark at small sizes: a long name wraps onto more lines instead of overflowing. */
+.full-row.flex {
+  height: auto;
+  min-height: 120px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  padding: 16px;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+/* Type specimens and wordmarks are long unbroken runs of letters: wrap them inside their card
+   rather than run out of it. */
+.two > .relative > span,
+.bento > .tile span {
+  overflow-wrap: anywhere;
 }
 
 /* Reference photos */
@@ -645,4 +795,9 @@
   display: inline-block;
   min-width: 88px;
   color: var(--color-ink);
+}
+
+/* A box whose wordmark sizes itself to the box's width (see wordFit in BrandApp.jsx). */
+.word-box {
+  container-type: inline-size;
 }

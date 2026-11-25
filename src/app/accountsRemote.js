@@ -44,8 +44,9 @@ export const createProject = (userId, data, summary = {}) => api("/projects", se
 
 // updatedAt is the version this tab last saw: the server answers 409 if the project changed since.
 // projects.js sends one save at a time, so each carries the version the one before got back.
-export function saveProject(userId, id, data, summary = {}, updatedAt, closing = false) {
-  const options = send("PUT", { data, summary, updatedAt });
+// edited is false when only where you were changed: the server then keeps the version (and edited time).
+export function saveProject(userId, id, data, summary = {}, updatedAt, closing = false, edited = true) {
+  const options = send("PUT", { data, summary, updatedAt, edited });
   // keepalive lets the closing save finish after the page is gone. Browsers cap keepalive bodies at 64 KiB in total.
   options.keepalive = closing && new TextEncoder().encode(options.body).length < 60000;
   return api(`/projects/${id}`, options).then((saved) => saved.updatedAt);
@@ -71,4 +72,5 @@ export async function deckPdf(deck) {
   return res.blob();
 }
 // Precise editing: one piece, one request, one proposed change (server/edit.js).
-export const editPiece = (id, edit) => api(`/projects/${id}/edit`, send("POST", edit));
+// signal: Cancel in the AI edit panel stops the request, not only the waiting.
+export const editPiece = (id, edit, signal) => api(`/projects/${id}/edit`, { ...send("POST", edit), signal });

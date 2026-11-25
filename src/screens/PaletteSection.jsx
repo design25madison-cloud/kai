@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import PieceActions from "./PieceActions.jsx";
+import PieceActions, { MixStale } from "./PieceActions.jsx";
 
 export default function PaletteSection({ vm }) {
   return (
@@ -17,6 +17,7 @@ export default function PaletteSection({ vm }) {
           <button className="p-8px-14px r-pill bd-1px-solid-grey-1 t-13px" type="button" onClick={vm.sec.palette.toggleEdit} aria-pressed={vm.sec.palette.editing} style={{ background: vm.sec.palette.editBg, color: vm.sec.palette.editFg }}>{vm.sec.palette.editLabel}</button>
         </div>
       </div>
+      <MixStale vm={vm} part="palette" />
       <div className="flex h-26px r-6px of-hidden">
         {vm.cur.colors.map((c, i_) => (
           <Fragment key={i_}>

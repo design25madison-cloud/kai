@@ -62,6 +62,7 @@ function ProjectCard({ card }) {
                   <button className="menu__item" type="button" role="menuitem" onClick={card.open}>Open</button>
                   <button className="menu__item" type="button" role="menuitem" onClick={card.startRename}>Rename</button>
                   <button className="menu__item" type="button" role="menuitem" onClick={card.duplicate}>Duplicate</button>
+                  <div className="bd-t-1px-solid-divider" role="separator" />
                   <button className="menu__item" type="button" role="menuitem" onClick={card.askDelete}>Delete</button>
                 </>
               )}

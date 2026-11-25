@@ -227,8 +227,8 @@ select.r-pill {
   opacity: 0;
 }
 .dropzone:focus-within {
-  border-color: var(--color-action);
-  outline: 2px solid var(--color-action);
+  border-color: var(--color-ink);
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 .dropzone[aria-disabled="true"] {

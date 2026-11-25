@@ -13,18 +13,18 @@ export default function Moodboard({ vm }) {
         </div>
       </div>
       <div className="bento r-14px" style={{ padding: vm.bentoPad, background: vm.bentoBg }}>
-        <div className="tile relative gc-span-2 p-18px flex col justify-center items-center gap-4px" style={{ background: vm.cur.surface }}>
+        <div className="tile word-box relative gc-span-2 p-18px flex col justify-center items-center gap-4px" style={{ background: vm.cur.surface }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.word} aria-pressed={vm.pinSel.word} aria-label="Add to precise editing" />
+            <button className="pick" type="button" onClick={vm.pins.word} aria-pressed={vm.pinSel.word} aria-label="Add to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.word} />
           <span className="t-12px" style={{ color: vm.cur.primary }}>{vm.cur.wordFont}</span>
-          <span className="t-52px lh-1" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary }}>{vm.wordUpper}</span>
+          <span className="t-52px lh-1" style={{ fontFamily: `'${vm.cur.wordFont}', sans-serif`, letterSpacing: vm.cur.trackPx, color: vm.cur.primary, ...vm.wordFit(52, vm.cur.trackPx) }}>{vm.wordUpper}</span>
         </div>
-        <div className="tile relative bg-track p-16px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img0} aria-pressed={vm.pinSel.img0} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img0} /><RefImage label={vm.cur.img0} /></div>
-        <div className="tile relative bg-line p-16px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img1} aria-pressed={vm.pinSel.img1} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img1} /><RefImage label={vm.cur.img1} /></div>
+        <div className="tile relative bg-track p-16px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img0} aria-pressed={vm.pinSel.img0} aria-label="Add to the AI edit" />)}<PieceActions vm={vm} piece={vm.pieces.img0} /><RefImage label={vm.cur.img0} /></div>
+        <div className="tile relative bg-line p-16px flex items-flex-end t-12px c-ink-2">{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img1} aria-pressed={vm.pinSel.img1} aria-label="Add to the AI edit" />)}<PieceActions vm={vm} piece={vm.pieces.img1} /><RefImage label={vm.cur.img1} /></div>
         <div className="tile relative gc-span-2 gr-span-2 p-22px flex col justify-space-between" style={{ background: vm.cur.deep, color: vm.cur.accentText }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.typeDisplay} aria-pressed={vm.pinSel.typeDisplay} aria-label="Add to precise editing" />
+            <button className="pick" type="button" onClick={vm.pins.typeDisplay} aria-pressed={vm.pinSel.typeDisplay} aria-label="Add to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.typeDisplay} />
           <span className="flex col gap-4px">
             <span className="t-11px ls-0_06em">HEADER</span>
@@ -38,7 +38,7 @@ export default function Moodboard({ vm }) {
         </div>
         <div className="tile relative gc-span-2 gr-span-2 p-14px flex gap-10px brand-ui" style={{ background: vm.cur.light, fontFamily: `'${vm.cur.body}', sans-serif` }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.preview} aria-pressed={vm.pinSel.preview} aria-label="Add to precise editing" />
+            <button className="pick" type="button" onClick={vm.pins.preview} aria-pressed={vm.pinSel.preview} aria-label="Add to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.preview} />
           <span className="w-px-70px r-6px flex-none" style={{ background: vm.cur.surface }} />
           <span className="flex-1 flex col gap-8px minw-0">
@@ -85,11 +85,11 @@ export default function Moodboard({ vm }) {
                     </svg>
                     {c.locked ? "Locked" : "Lock"}
                   </button>
-                  <button className="piece-action" type="button" onClick={c.pinC} aria-label={c.pinAria.replace("Add ", "Comment on ").replace(" to precise editing", "")}>
+                  <button className="piece-action" type="button" onClick={c.pinC} aria-label={c.pinAria}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M4 5h16v11H9l-5 4z" />
                     </svg>
-                    Comment
+                    AI edit
                   </button>
                   {vm.avoidColors.some((a) => a.hex.toUpperCase() === c.show.toUpperCase()) && <span className="swatch__warn">On your avoid list</span>}
                 </div>
@@ -99,7 +99,7 @@ export default function Moodboard({ vm }) {
         </div>
         <div className="tile relative p-16px flex col justify-center gap-10px items-flex-start brand-ui" style={{ background: vm.cur.surface }}>
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.ui} aria-pressed={vm.pinSel.ui} aria-label="Add to precise editing" />
+            <button className="pick" type="button" onClick={vm.pins.ui} aria-pressed={vm.pinSel.ui} aria-label="Add to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.ui} />
           <span className="t-12px" style={{ color: vm.cur.ink }}>UI primary</span>
           <span className="p-9px-14px r-6px c-bg t-13px w-600" style={{ background: vm.cur.ui }}>Button</span>
@@ -107,7 +107,7 @@ export default function Moodboard({ vm }) {
         </div>
         <div className="tile relative p-16px flex col justify-center gap-6px bg-bg bd-1px-solid-grey-2">
           {vm.cmode && (
-            <button className="pick" type="button" onClick={vm.pins.voiceTone} aria-pressed={vm.pinSel.voiceTone} aria-label="Add to precise editing" />
+            <button className="pick" type="button" onClick={vm.pins.voiceTone} aria-pressed={vm.pinSel.voiceTone} aria-label="Add to the AI edit" />
           )}<PieceActions vm={vm} piece={vm.pieces.voiceTone} />
           {vm.cur.tone.map((tn, i_) => (
             <Fragment key={i_}>
@@ -115,8 +115,8 @@ export default function Moodboard({ vm }) {
             </Fragment>
           ))}
         </div>
-        <div className={`tile relative gr-span-2 bg-line p-16px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img2} aria-pressed={vm.pinSel.img2} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img2} /><RefImage label={vm.cur.img2} /></div>
-        <div className={`tile relative gr-span-2 bg-track p-16px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img3} aria-pressed={vm.pinSel.img3} aria-label="Add to precise editing" />)}<PieceActions vm={vm} piece={vm.pieces.img3} /><RefImage label={vm.cur.img3} /></div>
+        <div className={`tile relative gr-span-2 bg-line p-16px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img2} aria-pressed={vm.pinSel.img2} aria-label="Add to the AI edit" />)}<PieceActions vm={vm} piece={vm.pieces.img2} /><RefImage label={vm.cur.img2} /></div>
+        <div className={`tile relative gr-span-2 bg-track p-16px flex items-flex-end t-12px c-ink-2${vm.presenting ? " gc-span-2" : ""}`}>{vm.cmode && (<button className="pick" type="button" onClick={vm.pins.img3} aria-pressed={vm.pinSel.img3} aria-label="Add to the AI edit" />)}<PieceActions vm={vm} piece={vm.pieces.img3} /><RefImage label={vm.cur.img3} /></div>
         {!vm.presenting && (
         <section className="rec gc-span-2 gr-span-2 p-18px-20px flex col gap-10px bg-bg bd-1px-solid-grey-2 r-12px" aria-labelledby="why-h">
           <span className="flex gap-6px items-center t-12px c-ink-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z" /><path d="M18 15l.8 2 2 .8-2 .8L18 21l-.8-2.4-2-.8 2-.8z" /></svg>AI recommendation</span>

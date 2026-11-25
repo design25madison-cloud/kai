@@ -1,34 +1,7 @@
-export const DASHBOARD_COPY = {
-  nav: ["Overview", "Projects", "Reports", "Team", "Settings"],
-  title: "Overview",
-  search: "Search projects",
-  range: ["Week", "Month", "Quarter"],
-  action: "New report",
-  kpis: [
-    ["Active projects", "48", "+6", [12, 14, 13, 17, 16, 20, 24]],
-    ["On schedule", "94%", "+2%", [80, 84, 83, 88, 90, 92, 94]],
-    ["Open items", "126", "-18", [30, 28, 29, 24, 22, 19, 16]],
-    ["Hours saved", "312", "+41", [8, 12, 11, 15, 19, 22, 27]],
-  ],
-  chartTitle: "Completed work",
-  chartLegend: ["This year", "Best month"],
-  months: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
-  chart: [42, 55, 48, 62, 58, 71, 66, 88, 74, 69, 78, 83],
-  activityTitle: "Needs attention",
-  activity: [
-    ["Vendor review", "Due tomorrow"],
-    ["Site onboarding", "Waiting on sign-off"],
-    ["Q4 audit", "2 items open"],
-  ],
-  tableTitle: "Projects",
-  tableHead: ["Project", "Owner", "Status", "Progress"],
-  rows: [
-    ["North line rollout", "AK", "On schedule", 82],
-    ["Q4 audit", "JM", "In review", 64],
-    ["Vendor review", "RS", "At risk", 38],
-    ["Site onboarding", "TL", "On schedule", 91],
-  ],
-};
+import { mockCopy } from "../app/mockCopy.js";
+
+// Sparkline shapes for the four stats. The third falls: every copy set puts a count that should go down there.
+const SPARKS = [[12, 14, 13, 17, 16, 20, 24], [80, 84, 83, 88, 90, 92, 94], [30, 28, 29, 24, 22, 19, 16], [8, 12, 11, 15, 19, 22, 27]];
 
 function Sparkline({ points }) {
   const max = Math.max(...points);
@@ -42,7 +15,7 @@ function Sparkline({ points }) {
 }
 
 export default function DashboardMockup({ vm }) {
-  const copy = DASHBOARD_COPY;
+  const copy = mockCopy(vm.f.industry).dashboard;
   const best = Math.max(...copy.chart);
   return (
     <div className="mock-app">
@@ -67,14 +40,14 @@ export default function DashboardMockup({ vm }) {
         </header>
 
         <div className="mock-kpis">
-          {copy.kpis.map(([label, value, delta, points], k) => (
+          {copy.kpis.map(([label, value, delta], k) => (
             <div key={label} className={k === 1 ? "mock-kpi mock-kpi--strong" : "mock-kpi"}>
               <span className="mock-kpi__label">{label}</span>
               <span className="mock-kpi__row">
                 <span className="mock-kpi__value">{value}</span>
                 <span className="mock-kpi__delta">{delta}</span>
               </span>
-              <Sparkline points={points} />
+              <Sparkline points={SPARKS[k]} />
             </div>
           ))}
         </div>

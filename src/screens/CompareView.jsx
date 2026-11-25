@@ -7,6 +7,7 @@ export default function CompareView({ vm }) {
       <div className="flex col gap-6px">
         <h1 className="m-0 t-28px">Compare the three directions</h1>
       </div>
+      <p className="compare-hint m-0 t-13px c-ink-2">Swipe sideways to see all three options.</p>
       <div className="overfl-auto bd-1px-solid-line r-12px">
         <div className="minw-960px grid cols-150px-repeat-3-minmax-0-1fr">
           <div className="p-16px" />
@@ -26,8 +27,8 @@ export default function CompareView({ vm }) {
           {vm.cols.map((col, i_) => (
             <Fragment key={i_}>
               <div className="p-16px bd-t-1px-solid-divider bd-l-1px-solid-divider flex col gap-10px minw-0">
-                <div className="h-90px r-8px flex items-center justify-center" style={{ background: col.surface }}>
-                  <span className="t-30px" style={{ fontFamily: `'${col.wordFont}', sans-serif`, letterSpacing: col.trackPx, color: col.primary }}>{vm.wordUpper}</span>
+                <div className="word-box h-90px r-8px flex items-center justify-center" style={{ background: col.surface }}>
+                  <span className="t-30px" style={{ fontFamily: `'${col.wordFont}', sans-serif`, letterSpacing: col.trackPx, color: col.primary, ...vm.wordFit(30, col.trackPx) }}>{vm.wordUpper}</span>
                 </div>
                 <span className="t-12px c-ink-2">{col.wordFont}, {col.trackPx} spacing</span>
                 <button className="self-flex-start p-6px-12px r-pill bd-1px-solid-grey-1 t-12px" type="button" onClick={col.pk.word.pick} aria-pressed={col.pk.word.on} style={{ background: col.pk.word.bg, color: col.pk.word.fg }}>{col.pk.word.label}</button>
@@ -41,11 +42,16 @@ export default function CompareView({ vm }) {
                 <div className="flex h-48px r-6px of-hidden brand-ui">
                   {col.colors.map((c, i_) => (
                     <Fragment key={i_}>
-                      <span style={{ flex: c.ratio, background: c.show }} />
+                      <span style={{ flex: c.ratio, background: c.show }} title={c.name + " " + c.show} />
                     </Fragment>
                   ))}
                 </div>
-                <span className="t-12px c-ink-2">{col.palNames}</span>
+                {/* Hex values, so an edited palette can be told from the original. */}
+                <span className="t-12px c-ink-2 flex col gap-2px">
+                  {col.colors.map((c, i_) => (
+                    <span key={i_}>{c.name} <span className="ff-monospace">{c.show}</span></span>
+                  ))}
+                </span>
                 {/* UI primary comes with the palette, so it's shown here as a swatch, not a button
                     sample that would look like the Use this control below it. */}
                 <span className="t-12px c-ink-2 flex items-center gap-6px">

@@ -54,8 +54,15 @@ export async function logOut() {
   localStorage.removeItem(SESSION);
 }
 
+// A New brand left by closing the tab, never edited, renamed or copied, goes after a week (as on the server).
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+const abandoned = (p) => !p.renamed && !p.copied && p.createdAt === p.updatedAt && p.updatedAt < Date.now() - WEEK;
+
 export async function listProjects(userId) {
-  return read(projectsKey(userId), [])
+  const projects = read(projectsKey(userId), []);
+  const kept = projects.filter((p) => !abandoned(p));
+  if (kept.length < projects.length) write(projectsKey(userId), kept);
+  return kept
     .map(({ data, ...summary }) => summary)
     .sort((a, b) => b.updatedAt - a.updatedAt);
 }
@@ -74,13 +81,14 @@ export async function createProject(userId, data, summary = {}) {
 }
 
 // Writes synchronously before returning, so it also works while the page is closing.
-export function saveProject(userId, id, data, summary = {}) {
+// edited is false when only where you were changed, which keeps the edited time.
+export function saveProject(userId, id, data, summary = {}, updatedAt, closing, edited = true) {
   const projects = read(projectsKey(userId), []);
   const k = projects.findIndex((p) => p.id === id);
   if (k < 0) return Promise.reject(new Error("That project no longer exists."));
   // A name someone typed in the project list wins over the brief's working name.
   const name = projects[k].renamed ? projects[k].name : summary.name || projects[k].name;
-  projects[k] = { ...projects[k], ...summary, name, data, updatedAt: Date.now() };
+  projects[k] = { ...projects[k], ...summary, name, data, updatedAt: edited ? Date.now() : projects[k].updatedAt };
   try {
     write(projectsKey(userId), projects);
   } catch (err) {
@@ -105,6 +113,7 @@ export async function duplicateProject(userId, id) {
   if (!source) throw new Error("That project no longer exists.");
   const now = Date.now();
   const copy = { ...structuredClone(source), id: newId(), name: `${source.name} copy`, renamed: true, createdAt: now, updatedAt: now };
+  source.copied = true; // Never cleaned up as untouched (see listProjects).
   write(projectsKey(userId), projects.concat(copy));
   return copy;
 }

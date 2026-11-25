@@ -82,6 +82,15 @@ export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
   api.get("/me", (req, res) => res.json({ email: req.email }));
 
   api.get("/projects", async (req, res) => {
+    // A New brand left by closing the tab or reloading holds nothing a person made, so it goes after a week.
+    // Untouched: never edited or renamed (a save of only where you were keeps updated_at), never copied,
+    // and no uploads (they don't change the project row). A week, so one still open in a tab isn't pulled away.
+    await pool.query(
+      `delete from projects p where owner = $1 and not renamed and created_at = updated_at
+         and updated_at < now() - interval '7 days' and summary->'copied' is null
+         and not exists (select 1 from project_files f where f.project_id = p.id)`,
+      [req.email],
+    );
     const { rows } = await pool.query(`select ${COLS} from projects where owner = $1 order by updated_at desc`, [req.email]);
     res.json(rows.map(toProject));
   });
@@ -104,12 +113,13 @@ export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
     const { data, name, rest } = parseSave(req.body);
     const version = Number.isSafeInteger(req.body.updatedAt) ? req.body.updatedAt : null;
     // A name someone typed in the project list wins over the brief's working name. Only the version the
-    // tab last saw is replaced, so a stale tab can't overwrite newer work.
+    // tab last saw is replaced, so a stale tab can't overwrite newer work. A save of only where the person
+    // was (edited: false) keeps the version: its content is what that version already holds.
     const result = await pool.query(
       `update projects set name = case when renamed then name else coalesce($3, name) end,
-         summary = summary || $4, data = $5, updated_at = now()
+         summary = summary || $4, data = $5, updated_at = case when $7 then now() else updated_at end
        where id = $1 and owner = $2 and ${UPDATED_MS} = $6 returning ${COLS}`,
-      [req.params.id, req.email, name, rest, data, version],
+      [req.params.id, req.email, name, rest, data, version, req.body.edited !== false],
     );
     if (!result.rows[0] && (await pool.query(`select 1 from projects where id = $1 and owner = $2`, [req.params.id, req.email])).rows[0]) {
       throw fail(409, "This project was changed in another tab or device. Reload the page to get the latest.");
@@ -126,9 +136,11 @@ export function createApp({ pool, identify, unsplashKey, staticDir, cloud }) {
   });
 
   api.post("/projects/:id/duplicate", async (req, res) => {
+    // The source is marked as copied, so it's never cleaned up as untouched (see GET /projects).
     const result = await pool.query(
-      `insert into projects (owner, name, renamed, summary, data)
-       select owner, left(name || ' copy', 200), true, summary, data from projects where id = $1 and owner = $2
+      `with source as (update projects set summary = summary || '{"copied": true}' where id = $1 and owner = $2 returning owner, name, summary, data)
+       insert into projects (owner, name, renamed, summary, data)
+       select owner, left(name || ' copy', 200), true, summary, data from source
        returning ${COLS}, data`,
       [req.params.id, req.email],
     );
